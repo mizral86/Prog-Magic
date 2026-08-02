@@ -1,0 +1,73 @@
+// Tipi condivisi tra parser, integrazione Scryfall, motore di simulazione e UI.
+
+export type Color = "W" | "U" | "B" | "R" | "G";
+export const COLORS: Color[] = ["W", "U", "B", "R", "G"];
+
+/** Abilità di mana di una carta non-terra (dork, rock, o ramp che mette terre). */
+export interface ManaAbility {
+  /** 'permanent' = permanente che tappa per mana; 'fetch' = mette terre in gioco. */
+  kind: "permanent" | "fetch";
+  /** Colori prodotti (vuoto = solo mana incolore/generico). Per 'fetch' è vuoto. */
+  colors: Color[];
+  /** 'permanent': mana per tap; 'fetch': terre messe in gioco. */
+  amount: number;
+  /** Se è una creatura (rilevante per la malattia da evocazione). */
+  isCreature: boolean;
+}
+
+export type CardCategory =
+  | "land"
+  | "creature"
+  | "instant"
+  | "sorcery"
+  | "artifact"
+  | "enchantment"
+  | "planeswalker"
+  | "battle"
+  | "other";
+
+/** Informazioni su una carta, distillate da Scryfall in ciò che serve al goldfish. */
+export interface CardInfo {
+  name: string;
+  cmc: number;
+  typeLine: string;
+  categories: CardCategory[];
+  colors: Color[];
+  colorIdentity: Color[];
+  isLand: boolean;
+  /** Colori che questa carta può produrre (soprattutto terre e mana dork). */
+  producedMana: Color[];
+  /** Euristica: la terra entra tappata (non produce mana il turno in cui entra). */
+  entersTapped: boolean;
+  manaCost: string; // es. "{1}{R}"
+  /** Pip colorati richiesti dal costo, es. { R: 1 }. */
+  pips: Partial<Record<Color, number>>;
+  /** Mana generico nel costo (la parte numerica). */
+  generic: number;
+  /** Testo oracle (usato per dedurre i ruoli: rimozione, counter, ecc.). */
+  oracleText: string;
+  /** Abilità di mana (dork/rock/ramp), se presente. */
+  manaAbility?: ManaAbility;
+  /** URL immagine (fronte) per la UI, se disponibile. */
+  imageUrl?: string;
+  /** URL immagine piccola (miniatura per il replay). */
+  imageSmallUrl?: string;
+}
+
+export interface DeckEntry {
+  quantity: number;
+  name: string;
+  card?: CardInfo; // popolata dopo la risoluzione via Scryfall
+}
+
+export interface Deck {
+  name: string;
+  /** Mazzo principale. */
+  entries: DeckEntry[];
+  /** Sideboard. */
+  side: DeckEntry[];
+  /** Nomi non risolti da Scryfall. */
+  unresolved: string[];
+  /** Numero totale di carte nel mazzo principale. */
+  size: number;
+}

@@ -1,0 +1,24 @@
+# Dipendenze
+node_modules
+
+# Build
+dist
+dist-ssr
+*.local
+
+# Cache
+.vite
+tsconfig.tsbuildinfo
+
+# Impostazioni locali di Claude Code
+.claude/settings.local.json
+
+# Log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Sistema operativo / editor
+.DS_Store
+Thumbs.db
