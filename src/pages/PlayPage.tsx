@@ -35,17 +35,43 @@ function isPermanent(name: string, lookup: Map<string, CardInfo>): boolean {
   return cats.some((c) => PERM_CATS.includes(c));
 }
 
+interface BoardPerm {
+  name: string;
+  enteredTurn: number;
+}
+
 // Ricostruisce le zone del tavolo dai primi `idx` turni.
 function boardAt(turns: GameLog["turns"], idx: number, lookup: Map<string, CardInfo>) {
   const lands: string[] = [];
-  const permanents: string[] = [];
+  const permanents: BoardPerm[] = [];
   for (let i = 0; i < idx; i++) {
     const t = turns[i];
     if (t.playedLand) lands.push(t.playedLand);
     for (let r = 0; r < t.rampLands; r++) lands.push("Terra (ramp)");
-    for (const n of t.cast) if (isPermanent(n, lookup)) permanents.push(n);
+    for (const n of t.cast)
+      if (isPermanent(n, lookup)) permanents.push({ name: n, enteredTurn: t.turn });
   }
   return { lands, permanents };
+}
+
+function isCreature(name: string, lookup: Map<string, CardInfo>): boolean {
+  return (lookup.get(name.toLowerCase())?.categories ?? []).includes("creature");
+}
+
+// Potenza che può attaccare al turno `current`: creature non malate (entrate
+// in un turno precedente). Coerente col clock di danno del motore.
+function attackPower(
+  permanents: BoardPerm[],
+  current: number,
+  lookup: Map<string, CardInfo>,
+): number {
+  let p = 0;
+  for (const perm of permanents) {
+    if (perm.enteredTurn >= current) continue; // malattia da evocazione
+    if (!isCreature(perm.name, lookup)) continue;
+    p += Math.max(0, lookup.get(perm.name.toLowerCase())?.power ?? 0);
+  }
+  return p;
 }
 
 export default function PlayPage() {
@@ -230,11 +256,11 @@ export default function PlayPage() {
           )}
 
           <PlayZone title="🌱 Terre in gioco" cards={board.lands} lookup={lookup} empty="nessuna terra" />
-          <PlayZone
-            title="🧱 Permanenti"
-            cards={board.permanents}
+          <PermZone
+            permanents={board.permanents}
+            currentTurn={turnIdx}
             lookup={lookup}
-            empty="nessun permanente"
+            attack={attackPower(board.permanents, turnIdx, lookup)}
           />
           <PlayZone
             title={`✋ Mano (${hand.length})`}
@@ -272,6 +298,54 @@ function PlayZone({
           {cards.map((n, i) => (
             <CardThumb key={i} name={n} lookup={lookup} size={54} />
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PermZone({
+  permanents,
+  currentTurn,
+  lookup,
+  attack,
+}: {
+  permanents: BoardPerm[];
+  currentTurn: number;
+  lookup: Map<string, CardInfo>;
+  attack: number;
+}) {
+  return (
+    <div className="play-zone">
+      <div className="play-zone-head">
+        🧱 Permanenti
+        <span className="muted small"> · {permanents.length}</span>
+        {attack > 0 && (
+          <span className="pill cast" style={{ marginLeft: 8 }}>
+            ⚔ attacco: {attack}
+          </span>
+        )}
+      </div>
+      {permanents.length === 0 ? (
+        <div className="muted small play-zone-empty">nessun permanente</div>
+      ) : (
+        <div className="thumb-row">
+          {permanents.map((perm, i) => {
+            const card = lookup.get(perm.name.toLowerCase());
+            const creature = (card?.categories ?? []).includes("creature");
+            const sick = perm.enteredTurn >= currentTurn;
+            return (
+              <div className="thumb-tagged" key={i}>
+                <CardThumb name={perm.name} lookup={lookup} size={54} />
+                {creature && card?.power != null && (
+                  <span className="thumb-tag">
+                    {card.power}/{card.toughness ?? 0}
+                  </span>
+                )}
+                {sick && <span className="thumb-tag warn">malato</span>}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

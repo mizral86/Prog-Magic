@@ -5,6 +5,7 @@ import { FORMATS, Format, useDecks } from "../decks";
 import { deckStats } from "../deckStats";
 import { formatMoney } from "../prices";
 import { DeckEditor } from "../components/DeckEditor";
+import { MetaPanel } from "../components/MetaPanel";
 
 const FORMAT_LABEL: Record<Format, string> = {
   standard: "Standard",
@@ -91,6 +92,8 @@ export default function DecksPage() {
           })}
         </div>
       )}
+
+      <MetaPanel />
     </div>
   );
 }

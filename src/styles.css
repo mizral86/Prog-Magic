@@ -1176,6 +1176,11 @@ label.field select {
   background: rgba(124, 92, 255, 0.15);
   border-color: rgba(124, 92, 255, 0.4);
 }
+.thumb-tag.warn {
+  background: rgba(217, 119, 6, 0.14);
+  border-color: rgba(217, 119, 6, 0.4);
+  color: var(--warn);
+}
 
 /* Breakdown fattori / spiegazione */
 details.explain {
@@ -1585,4 +1590,35 @@ button.ghost.active {
 }
 .play-zone-empty {
   padding: 6px 0;
+}
+
+/* ---- Pannello meta (Top mazzi) ---- */
+.meta-list {
+  margin: 6px 0 10px;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.meta-list li {
+  font-size: 13.5px;
+}
+.meta-name {
+  font-weight: 600;
+  color: var(--text);
+}
+.meta-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.meta-links a {
+  font-weight: 600;
+  font-size: 13px;
+}
+.meta-disclaimer {
+  margin: 8px 0 0;
 }
