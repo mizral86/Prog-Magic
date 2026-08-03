@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { CardInfo } from "../types";
 import { getPrintings } from "../scryfall";
 import { bestPrice, formatMoney, formatPrice } from "../prices";
+import { useCollection } from "../collection";
 
 interface CardDetailProps {
   card: CardInfo;
@@ -14,6 +15,8 @@ export function CardDetail({ card, onClose }: CardDetailProps) {
   const [shown, setShown] = useState<CardInfo>(card);
   const [printings, setPrintings] = useState<CardInfo[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const collection = useCollection();
+  const owned = shown.scryfallId ? collection.get(shown.scryfallId) : undefined;
 
   useEffect(() => {
     setShown(card);
@@ -76,6 +79,53 @@ export function CardDetail({ card, onClose }: CardDetailProps) {
                 </span>
               )}
               {shown.rarity && <span className="badge">{shown.rarity}</span>}
+            </div>
+
+            <div className="collect-box">
+              <div className="collect-status">
+                In collezione:{" "}
+                <strong>{owned?.qty ?? 0}</strong> normali
+                {" · "}
+                <strong>{owned?.foilQty ?? 0}</strong> foil
+              </div>
+              <div className="collect-actions">
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={() => collection.add(shown, { foil: false })}
+                >
+                  + Aggiungi
+                </button>
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={() => collection.add(shown, { foil: true })}
+                >
+                  + Foil
+                </button>
+                {owned && owned.qty > 0 && (
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={() =>
+                      collection.setQty(owned.id, owned.qty - 1)
+                    }
+                  >
+                    − Normale
+                  </button>
+                )}
+                {owned && owned.foilQty > 0 && (
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={() =>
+                      collection.setFoilQty(owned.id, owned.foilQty - 1)
+                    }
+                  >
+                    − Foil
+                  </button>
+                )}
+              </div>
             </div>
 
             <h3 className="mini-title">Stampe / edizioni</h3>
