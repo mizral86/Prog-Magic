@@ -1478,3 +1478,46 @@ button.ghost.active {
   margin-left: auto;
   white-space: nowrap;
 }
+
+/* ---- Analisi single-deck ---- */
+.analysis-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.analysis-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  padding: 5px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.analysis-row .an-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: 0 0 8px;
+  align-self: center;
+  background: var(--faint);
+}
+.analysis-row.good .an-dot {
+  background: var(--good);
+}
+.analysis-row.warn .an-dot {
+  background: var(--warn);
+}
+.analysis-row .an-label {
+  color: var(--text);
+}
+.analysis-row .an-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.analysis-row .an-note {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+}

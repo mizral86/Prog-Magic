@@ -6,7 +6,7 @@ import { Board, FORMATS, Format, useDecks } from "../decks";
 import { CardInfo, COLORS } from "../types";
 import { searchCards } from "../scryfall";
 import { deckToText, parseAndResolve } from "../deckIO";
-import { deckStats, legalityIssues } from "../deckStats";
+import { deckAnalysis, deckStats, legalityIssues } from "../deckStats";
 import { formatMoney } from "../prices";
 import { Bar } from "./Bar";
 
@@ -35,6 +35,7 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
   const [exportText, setExportText] = useState<string | null>(null);
 
   const stats = useMemo(() => (deck ? deckStats(deck) : null), [deck]);
+  const analysis = useMemo(() => (deck ? deckAnalysis(deck) : null), [deck]);
   const issues = useMemo(() => (deck ? legalityIssues(deck) : []), [deck]);
 
   if (!deck) {
@@ -281,6 +282,25 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
                 ))}
               </div>
             </div>
+            {analysis && !analysis.empty && (
+              <div className="chart">
+                <h3>Analisi &amp; consistenza</h3>
+                <div className="analysis-list">
+                  {analysis.items.map((it) => (
+                    <div key={it.label} className={`analysis-row ${it.verdict}`}>
+                      <span className="an-dot" />
+                      <span className="an-label">{it.label}</span>
+                      <span className="an-value">{it.value}</span>
+                      {it.note && <span className="an-note">{it.note}</span>}
+                    </div>
+                  ))}
+                </div>
+                <p className="muted small" style={{ margin: "8px 0 0" }}>
+                  Linee guida euristiche (mano iniziale via ipergeometrica), non
+                  regole assolute.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="panel">
