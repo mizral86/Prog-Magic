@@ -47,6 +47,8 @@ export interface SavedDeck {
   cards: DeckCard[];
   createdAt: number;
   updatedAt: number;
+  /** URL immagine di copertina (art di una carta scelta dall'utente). */
+  coverImageUrl?: string;
 }
 
 const KEY = "pm.decks.v1";
@@ -105,6 +107,7 @@ interface DecksCtx {
   setQty: (deckId: string, cardId: string, board: Board, qty: number) => void;
   removeCard: (deckId: string, cardId: string, board: Board) => void;
   replaceCards: (deckId: string, cards: DeckCard[]) => void;
+  setCover: (deckId: string, url: string | undefined) => void;
 }
 
 const Ctx = createContext<DecksCtx | null>(null);
@@ -173,6 +176,7 @@ export function DecksProvider({ children }: { children: ReactNode }) {
           cards: d.cards.filter((c) => !(c.id === cardId && c.board === board)),
         })),
       replaceCards: (deckId, cards) => mutate(deckId, (d) => ({ ...d, cards })),
+      setCover: (deckId, url) => mutate(deckId, (d) => ({ ...d, coverImageUrl: url })),
     };
   }, [map]);
 
@@ -188,4 +192,17 @@ export function useDecks(): DecksCtx {
 // Helper per costruire DeckCard da CardInfo (usato dall'import).
 export function makeDeckCard(card: CardInfo, board: Board, qty: number): DeckCard {
   return toDeckCard(card, board, qty);
+}
+
+// URL della copertina: quella scelta dall'utente, oppure — in mancanza —
+// l'art della carta non-terra più costosa del main (la "bomba" del mazzo).
+export function deckCoverUrl(deck: SavedDeck): string | undefined {
+  if (deck.coverImageUrl) return deck.coverImageUrl;
+  const main = deck.cards.filter((c) => c.board === "main");
+  const pool = main.filter((c) => !c.isLand);
+  const pick = (pool.length ? pool : main).reduce<DeckCard | undefined>(
+    (best, c) => (!best || c.cmc > best.cmc ? c : best),
+    undefined,
+  );
+  return pick?.imageUrl ?? pick?.imageSmallUrl;
 }

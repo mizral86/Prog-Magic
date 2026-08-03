@@ -1,7 +1,7 @@
 // Sezione "Mazzi": elenco dei mazzi salvati, creazione, apertura editor.
 
 import { useState } from "react";
-import { FORMATS, Format, useDecks } from "../decks";
+import { deckCoverUrl, FORMATS, Format, useDecks } from "../decks";
 import { deckStats } from "../deckStats";
 import { formatMoney } from "../prices";
 import { DeckEditor } from "../components/DeckEditor";
@@ -70,6 +70,7 @@ export default function DecksPage() {
         <div className="deck-cards" style={{ marginTop: 14 }}>
           {decks.decks.map((d) => {
             const s = deckStats(d);
+            const cover = deckCoverUrl(d);
             return (
               <button
                 key={d.id}
@@ -77,6 +78,14 @@ export default function DecksPage() {
                 className="deck-card-item"
                 onClick={() => setSelected(d.id)}
               >
+                {cover ? (
+                  <span
+                    className="dci-cover"
+                    style={{ backgroundImage: `url(${cover})` }}
+                  />
+                ) : (
+                  <span className="dci-cover dci-cover--empty">🗂️</span>
+                )}
                 <div className="dci-main">
                   <div className="dci-name">{d.name}</div>
                   <div className="muted small">

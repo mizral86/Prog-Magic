@@ -614,6 +614,81 @@ body {
   padding: 2px 8px;
   font-size: 12px;
 }
+
+/* Tasti +Main / +Side nei risultati di ricerca */
+.ar-actions {
+  display: inline-flex;
+  gap: 6px;
+}
+.ar-add {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+/* Miniatura + selezione copertina nelle liste del mazzo */
+.dl-thumb {
+  position: relative;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+  transition: border-color 0.12s ease, transform 0.08s ease;
+}
+.dl-thumb:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+}
+.dl-thumb img {
+  width: 30px;
+  border-radius: 3px;
+  display: block;
+}
+.dl-thumb-empty {
+  display: inline-block;
+  width: 30px;
+  height: 42px;
+  border-radius: 3px;
+  background: var(--panel-2);
+}
+.dl-thumb.is-cover {
+  border-color: var(--accent);
+}
+.dl-cover-star {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  font-size: 11px;
+  color: var(--accent);
+  background: var(--panel);
+  border-radius: 50%;
+  line-height: 1;
+  padding: 1px;
+}
+
+/* Copertina sulle schede della lista Mazzi */
+.dci-cover {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center 20%;
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+.dci-cover--empty {
+  background: var(--panel-2);
+  color: var(--faint);
+}
+.deck-card-item .dci-main {
+  flex: 1;
+}
 .issues {
   list-style: none;
   margin: 0;

@@ -27,7 +27,6 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
   const navigate = useNavigate();
   const deck = decks.get(deckId);
 
-  const [target, setTarget] = useState<Board>("main");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<CardInfo[] | null>(null);
   const [searching, setSearching] = useState(false);
@@ -156,23 +155,7 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
 
       {/* Aggiunta carte */}
       <div className="panel" style={{ marginTop: 12 }}>
-        <div className="row" style={{ justifyContent: "space-between" }}>
-          <strong style={{ fontSize: 14 }}>Aggiungi carte</strong>
-          <span className="segmented">
-            <button
-              className={target === "main" ? "on" : ""}
-              onClick={() => setTarget("main")}
-            >
-              Main
-            </button>
-            <button
-              className={target === "side" ? "on" : ""}
-              onClick={() => setTarget("side")}
-            >
-              Side
-            </button>
-          </span>
-        </div>
+        <strong style={{ fontSize: 14 }}>Aggiungi carte</strong>
         <form className="search-bar" style={{ marginTop: 8 }} onSubmit={doSearch}>
           <input
             type="search"
@@ -187,19 +170,30 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
         {results && (
           <div className="add-results">
             {results.slice(0, 24).map((c) => (
-              <button
-                key={c.scryfallId ?? c.name}
-                type="button"
-                className="add-result"
-                onClick={() => decks.addCard(deckId, c, target)}
-                title={`Aggiungi a ${target}`}
-              >
+              <div key={c.scryfallId ?? c.name} className="add-result">
                 {c.imageSmallUrl && (
                   <img src={c.imageSmallUrl} alt={c.name} loading="lazy" />
                 )}
                 <span className="ar-name">{c.name}</span>
-                <span className="ar-plus">+</span>
-              </button>
+                <span className="ar-actions">
+                  <button
+                    type="button"
+                    className="ghost ar-add"
+                    onClick={() => decks.addCard(deckId, c, "main")}
+                    title="Aggiungi al mazzo principale"
+                  >
+                    + Main
+                  </button>
+                  <button
+                    type="button"
+                    className="ghost ar-add"
+                    onClick={() => decks.addCard(deckId, c, "side")}
+                    title="Aggiungi al sideboard"
+                  >
+                    + Side
+                  </button>
+                </span>
+              </div>
             ))}
             {results.length === 0 && (
               <span className="muted small">Nessun risultato.</span>
@@ -388,6 +382,7 @@ function CardList({
   board: Board;
 }) {
   const decks = useDecks();
+  const cover = decks.get(deckId)?.coverImageUrl;
   const sorted = [...cards].sort(
     (a, b) => a.cmc - b.cmc || a.name.localeCompare(b.name),
   );
@@ -398,8 +393,24 @@ function CardList({
       </h2>
       {sorted.length === 0 && <div className="muted small">Vuoto.</div>}
       <div className="deck-cardlist">
-        {sorted.map((c) => (
+        {sorted.map((c) => {
+          const art = c.imageUrl ?? c.imageSmallUrl;
+          const isCover = !!art && cover === art;
+          return (
           <div className="deck-line" key={c.id}>
+            <button
+              type="button"
+              className={`dl-thumb${isCover ? " is-cover" : ""}`}
+              title={isCover ? "Copertina del mazzo" : "Usa come copertina"}
+              onClick={() => decks.setCover(deckId, isCover ? undefined : art)}
+            >
+              {c.imageSmallUrl ? (
+                <img src={c.imageSmallUrl} alt="" loading="lazy" />
+              ) : (
+                <span className="dl-thumb-empty" />
+              )}
+              {isCover && <span className="dl-cover-star">★</span>}
+            </button>
             <span className="dl-qty">{c.qty}×</span>
             <span className="dl-name">{c.name}</span>
             <span className="stepper">
@@ -424,7 +435,8 @@ function CardList({
               ✕
             </button>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
