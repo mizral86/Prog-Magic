@@ -446,6 +446,20 @@ function computeDeckColors(deck: CardInfo[]): Color[] {
   return COLORS.filter((c) => set.has(c));
 }
 
+// Gioca UNA sola partita e restituisce il log completo (per la modalità
+// interattiva "Gioca"). Con lo stesso seed la partita è riproducibile.
+export function playSingleGame(
+  deck: CardInfo[],
+  cfg: SimConfig,
+  seed?: number,
+): GameLog {
+  const rng = mulberry32(seed ?? ((Math.random() * 2 ** 32) >>> 0));
+  const keyCmc = computeKeyCmc(deck);
+  const deckColors = computeDeckColors(deck);
+  const r = playGame(deck, cfg, keyCmc, deckColors, rng, true);
+  return r.log!;
+}
+
 // ---------------------------------------------------------------------------
 // Esecuzione della simulazione completa.
 // ---------------------------------------------------------------------------

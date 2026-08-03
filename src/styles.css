@@ -1542,3 +1542,47 @@ button.ghost.active {
   align-items: center;
   flex-wrap: wrap;
 }
+
+/* ---- Sezione Gioca ---- */
+.play-setup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 14px 0 4px;
+}
+.play-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 8px 10px;
+  margin: 8px 0;
+  position: sticky;
+  top: 8px;
+  z-index: 5;
+}
+.play-turn {
+  font-weight: 700;
+  font-size: 14px;
+  margin: 0 4px;
+}
+.play-zone {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--panel);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.play-zone-head {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+.play-zone-empty {
+  padding: 6px 0;
+}
