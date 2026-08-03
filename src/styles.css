@@ -1042,8 +1042,16 @@ label.field select {
 }
 
 .turn-card .turn-detail {
-  font-size: 12.5px;
-  color: var(--muted);
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.45;
+}
+
+.turn-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: 6px;
 }
 
 .pill {
@@ -1063,6 +1071,12 @@ label.field select {
 .pill.land {
   background: rgba(52, 211, 153, 0.12);
   border-color: rgba(52, 211, 153, 0.35);
+}
+
+.pill.warn {
+  background: rgba(217, 119, 6, 0.14);
+  border-color: rgba(217, 119, 6, 0.4);
+  color: var(--warn);
 }
 
 .mono {

@@ -458,6 +458,7 @@ export default function SimulatorPage() {
                 game={resultA!.stats.representativeGame}
                 deckName={resultA!.deck.name}
                 lookup={lookup}
+                keyCmc={resultA!.stats.keyCmc}
               />
             </div>
             <div className="panel">
@@ -466,6 +467,7 @@ export default function SimulatorPage() {
                 game={resultB!.stats.representativeGame}
                 deckName={resultB!.deck.name}
                 lookup={lookup}
+                keyCmc={resultB!.stats.keyCmc}
               />
             </div>
           </div>

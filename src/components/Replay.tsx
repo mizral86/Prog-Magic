@@ -9,10 +9,41 @@ interface ReplayProps {
   game: GameLog;
   deckName: string;
   lookup: Map<string, CardInfo>;
+  /** CMC "chiave": la prima magia con cmc ≥ questo segna il "deck attivo". */
+  keyCmc?: number;
 }
 
-export function Replay({ game, deckName, lookup }: ReplayProps) {
+// "A", "A e B", "A, B e C".
+function listWithAnd(names: string[]): string {
+  if (names.length <= 1) return names[0] ?? "";
+  return `${names.slice(0, -1).join(", ")} e ${names[names.length - 1]}`;
+}
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+export function Replay({ game, deckName, lookup, keyCmc }: ReplayProps) {
   const [upTo, setUpTo] = useState(game.turns.length);
+
+  const cmcOf = (name: string) => lookup.get(name.toLowerCase())?.cmc ?? 0;
+
+  // Primo turno in cui viene lanciata una magia "chiave" (cmc ≥ keyCmc).
+  const activeTurn = keyCmc
+    ? game.turns.find((t) => t.cast.some((n) => cmcOf(n) >= keyCmc))?.turn
+    : undefined;
+
+  // Narrazione leggibile di un turno.
+  function narrate(t: GameLog["turns"][number]): string {
+    const clauses: string[] = [];
+    if (t.drew) clauses.push(`peschi ${t.drew}`);
+    else if (t.turn === 1 && game.onThePlay)
+      clauses.push("nessuna pescata (sei in gioco)");
+    if (t.playedLand) clauses.push(`giochi ${t.playedLand}`);
+    else clauses.push("niente terra da giocare");
+    if (t.cast.length) clauses.push(`lanci ${listWithAnd(t.cast)}`);
+    else clauses.push("nessuna magia");
+    return capitalize(clauses.join(", ")) + ".";
+  }
 
   return (
     <div className="replay">
@@ -68,26 +99,25 @@ export function Replay({ game, deckName, lookup }: ReplayProps) {
             </span>
           </div>
 
-          <div className="turn-detail">
-            {t.drew && (
-              <span style={{ marginRight: 8 }}>
-                Pesca: <span className="mono">{t.drew}</span>
-              </span>
-            )}
-            {!t.playedLand && (
-              <span style={{ color: "var(--warn)" }}>nessuna terra giocata</span>
-            )}
-            {t.cast.length === 0 && t.playedLand && (
-              <span style={{ color: "var(--muted)" }}>
-                gioca terra, nessuna magia
-              </span>
-            )}
-            {t.rampLands > 0 && (
-              <span className="pill land" style={{ marginLeft: 6 }}>
-                🌱 ramp: +{t.rampLands} terra
-              </span>
-            )}
-          </div>
+          <div className="turn-detail">{narrate(t)}</div>
+
+          {(t.turn === activeTurn ||
+            (!t.playedLand && t.landsInPlay < t.turn) ||
+            t.rampLands > 0) && (
+            <div className="turn-badges">
+              {t.turn === activeTurn && (
+                <span className="pill" title={`Prima magia con cmc ≥ ${keyCmc}`}>
+                  🔑 deck attivo
+                </span>
+              )}
+              {!t.playedLand && t.landsInPlay < t.turn && (
+                <span className="pill warn">⚠ salti la terra</span>
+              )}
+              {t.rampLands > 0 && (
+                <span className="pill land">🌱 ramp: +{t.rampLands} terra</span>
+              )}
+            </div>
+          )}
 
           {(t.playedLand || t.cast.length > 0) && (
             <div className="thumb-row">
