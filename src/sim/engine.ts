@@ -69,6 +69,12 @@ export interface SimStats {
   colorAvailByTurn: Record<Color, number[]>;
   onlineRateByTurn: number[];
   avgOnlineTurn: number;
+  /** Prob. di avere almeno T terre in gioco al turno T ("land drop rispettati"). */
+  onCurveLandsByTurn: number[];
+  /** Danno cumulativo medio inflitto entro il turno (clock goldfish, ottimistico). */
+  avgDamageByTurn: number[];
+  /** Turno medio in cui il danno cumulativo raggiunge 20 (kill goldfish). */
+  avgKillTurn: number;
   keyCmc: number;
   representativeGame: GameLog;
 }
@@ -218,6 +224,8 @@ function playGame(
   manaByTurn: number[];
   colorMaskByTurn: number[];
   onlineTurn: number;
+  damageByTurn: number[];
+  killTurn: number;
   log?: GameLog;
 } {
   // --- Mulligan alla londinese ---
@@ -251,6 +259,8 @@ function playGame(
   const colorMaskByTurn = new Array(cfg.maxTurns + 1).fill(0);
   let onlineTurn = cfg.maxTurns + 1;
   const turnLogs: TurnSnapshot[] = [];
+  // Creature entrate: potenza e turno d'ingresso (per il clock di danno).
+  const creatures: { power: number; enteredTurn: number }[] = [];
   let libTop = 0;
 
   for (let turn = 1; turn <= cfg.maxTurns; turn++) {
@@ -329,6 +339,9 @@ function playGame(
       cast.push(c.name);
       hand.splice(chosen, 1);
       if (c.cmc >= keyCmc && turn < onlineTurn) onlineTurn = turn;
+      if (c.categories.includes("creature")) {
+        creatures.push({ power: Math.max(0, c.power ?? 0), enteredTurn: turn });
+      }
 
       // Effetti di mana della carta lanciata.
       const ma = c.manaAbility;
@@ -379,6 +392,18 @@ function playGame(
     }
   }
 
+  // Clock di danno goldfish (ottimistico: nessun bloccante né rimozione).
+  // Una creatura entrata al turno `ct` attacca dai turni successivi: al turno t
+  // ha inflitto potenza × (t − ct) danni cumulativi.
+  const damageByTurn = new Array(cfg.maxTurns + 1).fill(0);
+  let killTurn = cfg.maxTurns + 1;
+  for (let t = 1; t <= cfg.maxTurns; t++) {
+    let dmg = 0;
+    for (const cr of creatures) if (cr.enteredTurn < t) dmg += cr.power * (t - cr.enteredTurn);
+    damageByTurn[t] = dmg;
+    if (dmg >= 20 && killTurn > cfg.maxTurns) killTurn = t;
+  }
+
   return {
     mulligans,
     kept7: mulligans === 0,
@@ -386,6 +411,8 @@ function playGame(
     manaByTurn,
     colorMaskByTurn,
     onlineTurn,
+    damageByTurn,
+    killTurn,
     log: wantLog
       ? { mulligans, openingHand, onThePlay: cfg.onPlay, turns: turnLogs }
       : undefined,
@@ -445,6 +472,9 @@ export function runSimulation(
     G: new Array(cfg.maxTurns + 1).fill(0),
   };
   const onlineCountByTurn = new Array(cfg.maxTurns + 2).fill(0);
+  const onCurveCountByTurn = new Array(cfg.maxTurns + 1).fill(0);
+  const damageByTurnSum = new Array(cfg.maxTurns + 1).fill(0);
+  let killSum = 0;
 
   const SAMPLE = Math.min(cfg.numGames, 500);
   const sampleLogs: GameLog[] = [];
@@ -469,7 +499,10 @@ export function runSimulation(
     }
     for (let t = 1; t <= cfg.maxTurns; t++) {
       if (r.onlineTurn <= t) onlineCountByTurn[t]++;
+      if (r.landsByTurn[t] >= t) onCurveCountByTurn[t]++;
+      damageByTurnSum[t] += r.damageByTurn[t];
     }
+    killSum += Math.min(r.killTurn, cfg.maxTurns + 1);
     if (r.log) openLandsSum += r.log.openingHand.filter(isLandName(deck)).length;
 
     if (r.log) {
@@ -491,6 +524,9 @@ export function runSimulation(
     G: colorCountByTurn.G.map((s) => s / n),
   };
   const onlineRateByTurn = onlineCountByTurn.map((s) => s / n);
+  const onCurveLandsByTurn = onCurveCountByTurn.map((s) => s / n);
+  const avgDamageByTurn = damageByTurnSum.map((s) => s / n);
+  const avgKillTurn = killSum / n;
 
   const avgOpeningLands = sampleLogs.length
     ? openLandsSum / sampleLogs.length
@@ -523,6 +559,9 @@ export function runSimulation(
     colorAvailByTurn,
     onlineRateByTurn,
     avgOnlineTurn: onlineSum / n,
+    onCurveLandsByTurn,
+    avgDamageByTurn,
+    avgKillTurn,
     keyCmc,
     representativeGame: sampleLogs[repIdx],
   };

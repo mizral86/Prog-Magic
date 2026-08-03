@@ -29,6 +29,7 @@ export function StatsView({ stats, curve, landCount, deckSize }: StatsViewProps)
   const turns = Array.from({ length: maxTurns }, (_, i) => i + 1);
   const maxCurve = Math.max(1, ...curve.map((c) => c.count));
   const maxMana = Math.max(maxTurns, ...stats.avgManaByTurn);
+  const maxDamage = Math.max(1, ...stats.avgDamageByTurn);
 
   // Colori effettivamente presenti nel mazzo (ultimo turno > 0).
   const activeColors = COLORS.filter(
@@ -61,6 +62,10 @@ export function StatsView({ stats, curve, landCount, deckSize }: StatsViewProps)
             </span>
           </div>
           <div className="label">Terre nel mazzo</div>
+        </div>
+        <div className="stat-card">
+          <div className="value">{formatTurn(stats.avgKillTurn, maxTurns)}</div>
+          <div className="label">Kill goldfish (20 danni)</div>
         </div>
       </div>
 
@@ -114,6 +119,40 @@ export function StatsView({ stats, curve, landCount, deckSize }: StatsViewProps)
             display={`${(stats.onlineRateByTurn[t] * 100).toFixed(0)}%`}
           />
         ))}
+      </div>
+
+      <div className="chart">
+        <h3>Land drop rispettati (prob. ≥ T terre al turno T)</h3>
+        {turns.map((t) => (
+          <Bar
+            key={t}
+            label={`T${t}`}
+            value={stats.onCurveLandsByTurn[t]}
+            fraction={stats.onCurveLandsByTurn[t]}
+            display={`${(stats.onCurveLandsByTurn[t] * 100).toFixed(0)}%`}
+          />
+        ))}
+        <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
+          Quanto spesso il mazzo tiene il passo con la curva (terre in gioco ≥
+          numero del turno).
+        </div>
+      </div>
+
+      <div className="chart">
+        <h3>Danno cumulativo per turno (clock goldfish)</h3>
+        {turns.map((t) => (
+          <Bar
+            key={t}
+            label={`T${t}`}
+            value={stats.avgDamageByTurn[t]}
+            fraction={stats.avgDamageByTurn[t] / maxDamage}
+            display={stats.avgDamageByTurn[t].toFixed(1)}
+          />
+        ))}
+        <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
+          Stima ottimistica: nessun bloccante né rimozione, tutte le creature
+          attaccano. 20 danni = partita vinta.
+        </div>
       </div>
 
       {activeColors.length > 0 && (
