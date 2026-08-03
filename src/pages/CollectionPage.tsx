@@ -10,6 +10,7 @@ import {
 } from "../collection";
 import { Color, COLORS } from "../types";
 import { formatMoney } from "../prices";
+import { CollectionTools } from "../components/CollectionTools";
 
 const COLOR_NAMES: Record<Color, string> = {
   W: "Bianco",
@@ -43,13 +44,15 @@ export default function CollectionPage() {
     return (
       <div className="page">
         <h1 className="page-title">Collezione</h1>
+        <CollectionTools />
         <div className="coming-soon">
           <div className="cs-emoji">📚</div>
           <h2>Collezione vuota</h2>
           <p className="muted">
-            Vai nella sezione <strong>Cerca</strong>, apri una carta e usa
-            <em> + Aggiungi</em> per inserirla qui. I dati restano salvati sul
-            dispositivo.
+            Aggiungi carte da <strong>Cerca</strong> (apri una carta →
+            <em> + Aggiungi</em>), oppure <strong>importa una lista</strong> o
+            <strong> sfoglia un set</strong> qui sopra. I dati restano salvati
+            sul dispositivo.
           </p>
         </div>
       </div>
@@ -59,6 +62,7 @@ export default function CollectionPage() {
   return (
     <div className="page">
       <h1 className="page-title">Collezione</h1>
+      <CollectionTools />
 
       <div className="stat-cards">
         <div className="stat-card">

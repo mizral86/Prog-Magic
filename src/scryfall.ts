@@ -336,6 +336,79 @@ export async function searchCards(
   return out;
 }
 
+// --- Set / espansioni --------------------------------------------------------
+
+export interface SetInfo {
+  code: string;
+  name: string;
+  released?: string;
+  cardCount: number;
+  iconUrl?: string;
+  setType?: string;
+  digital?: boolean;
+}
+
+const SETS_URL = "https://api.scryfall.com/sets";
+
+// Elenco di tutti i set pubblicati, dal più recente.
+export async function getSets(): Promise<SetInfo[]> {
+  const res = await fetch(SETS_URL, { headers: { Accept: "application/json" } });
+  if (!res.ok) {
+    throw new Error(`Scryfall ha risposto ${res.status}. Riprova tra poco.`);
+  }
+  const json = (await res.json()) as {
+    data: {
+      code: string;
+      name: string;
+      released_at?: string;
+      card_count: number;
+      icon_svg_uri?: string;
+      set_type?: string;
+      digital?: boolean;
+    }[];
+  };
+  return json.data
+    .map((s) => ({
+      code: s.code,
+      name: s.name,
+      released: s.released_at,
+      cardCount: s.card_count,
+      iconUrl: s.icon_svg_uri,
+      setType: s.set_type,
+      digital: s.digital,
+    }))
+    .sort((a, b) => (b.released ?? "").localeCompare(a.released ?? ""));
+}
+
+// Carte di un set (per codice), in ordine di numero di collezione.
+// Segue la paginazione di Scryfall (175/pagina) con un tetto di sicurezza.
+export async function getSetCards(code: string): Promise<CardInfo[]> {
+  const q = `e:${code} unique:prints`;
+  let next: string | null =
+    `${SEARCH_URL}?q=${encodeURIComponent(q)}&order=set&dir=asc`;
+  const out: CardInfo[] = [];
+  let guard = 0;
+  while (next && guard < 8) {
+    const res: Response = await fetch(next, {
+      headers: { Accept: "application/json" },
+    });
+    if (res.status === 404) break; // set senza carte / codice ignoto
+    if (!res.ok) {
+      throw new Error(`Scryfall ha risposto ${res.status}. Riprova tra poco.`);
+    }
+    const json = (await res.json()) as {
+      data: ScryCard[];
+      has_more?: boolean;
+      next_page?: string;
+    };
+    for (const c of json.data) out.push(toCardInfo(c));
+    next = json.has_more ? json.next_page ?? null : null;
+    guard++;
+    if (next) await sleep(100);
+  }
+  return out;
+}
+
 // Tutte le stampe/edizioni di una carta (per nome esatto), dalla più recente.
 export async function getPrintings(name: string): Promise<CardInfo[]> {
   const q = `!"${name}" unique:prints`;
