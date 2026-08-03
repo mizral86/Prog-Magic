@@ -366,6 +366,21 @@ function biggest(p: Player): number {
   return m;
 }
 
+// Miglior creatura avversaria uccidibile con `dmg` danni (costituzione <= dmg),
+// scegliendo quella con più forza; -1 se nessuna vale la pena (forza < 2).
+function bestBurnTarget(opp: Player, dmg: number): number {
+  let bi = -1;
+  let bestPow = 1;
+  for (let i = 0; i < opp.creatures.length; i++) {
+    const c = opp.creatures[i];
+    if (c.p.toughness <= dmg && c.p.power > bestPow) {
+      bestPow = c.p.power;
+      bi = i;
+    }
+  }
+  return bi;
+}
+
 function worthCountering(spell: Profile): boolean {
   return (
     spell.isCreature ||
@@ -430,9 +445,22 @@ function resolve(spell: Profile, me: Player, opp: Player, myColors: Color[], log
     return;
   }
   if (spell.burn > 0) {
-    opp.life -= spell.burn;
-    say(log, `  ${me.name} lancia ${spell.name}: ${spell.burn} danni (${opp.name} a ${opp.life})`);
-    // niente return: alcune bruciano E fanno altro? teniamo semplice: return
+    // Il burn può uccidere una creatura avversaria invece di andare in faccia,
+    // se non è già letale e c'è un bersaglio che vale la pena.
+    const ti = bestBurnTarget(opp, spell.burn);
+    if (opp.life > spell.burn && ti >= 0) {
+      const dead = opp.creatures.splice(ti, 1)[0];
+      say(
+        log,
+        `  ${me.name} lancia ${spell.name}: ${spell.burn} danni uccidono ${dead.p.name}`,
+      );
+    } else {
+      opp.life -= spell.burn;
+      say(
+        log,
+        `  ${me.name} lancia ${spell.name}: ${spell.burn} danni (${opp.name} a ${opp.life})`,
+      );
+    }
   }
   if (spell.isCreature) {
     me.creatures.push({ p: spell, sick: true, tapped: false, damage: 0 });
@@ -454,12 +482,35 @@ function resolve(spell: Profile, me: Player, opp: Player, myColors: Color[], log
 // ---------------------------------------------------------------------------
 // Combattimento
 // ---------------------------------------------------------------------------
+// Decide se una creatura debba attaccare, evitando attacchi suicidi.
+function shouldAttack(
+  a: Creature,
+  blockers: Creature[],
+  def: Player,
+  teamCount: number,
+  teamPower: number,
+): boolean {
+  if (blockers.length === 0) return true; // nessun bloccante
+  if (def.life <= teamPower) return true; // spinta per la vittoria / corsa
+  // un bloccante uccide A e sopravvive? allora è un attacco svantaggioso
+  const badBlock = blockers.some(
+    (b) => b.p.power >= a.p.toughness && b.p.toughness > a.p.power,
+  );
+  if (!badBlock) return true; // attacco sicuro
+  // rischioso: attacca solo se possiamo sommergere i bloccanti (più attaccanti)
+  return teamCount > blockers.length;
+}
+
 function combat(att: Player, def: Player, log: Log) {
-  const attackers = att.creatures.filter((c) => !c.sick && !c.tapped);
+  const potential = att.creatures.filter((c) => !c.sick && !c.tapped);
+  if (potential.length === 0) return;
+  const blockers = def.creatures.filter((c) => !c.tapped);
+  const teamPower = potential.reduce((s, c) => s + c.p.power, 0);
+  const attackers = potential.filter((a) =>
+    shouldAttack(a, blockers, def, potential.length, teamPower),
+  );
   if (attackers.length === 0) return;
   for (const a of attackers) a.tapped = true;
-
-  const blockers = def.creatures.filter((c) => !c.tapped);
   const usedBlocker = new Set<Creature>();
   const blockOf = new Map<Creature, Creature>();
 
