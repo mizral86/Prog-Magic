@@ -15,6 +15,9 @@ interface ScryCardFace {
   type_line?: string;
   oracle_text?: string;
   colors?: string[];
+  power?: string;
+  toughness?: string;
+  loyalty?: string;
   image_uris?: { normal?: string; small?: string };
 }
 interface ScryCard {
@@ -34,6 +37,9 @@ interface ScryCard {
   set_name?: string;
   collector_number?: string;
   released_at?: string;
+  power?: string;
+  toughness?: string;
+  loyalty?: string;
   legalities?: Record<string, string>;
   prices?: {
     eur?: string | null;
@@ -156,10 +162,13 @@ function deriveManaAbility(
   }
 
   // Ramp che mette terre in gioco (Rampant Growth, Cultivate, Explosive Vegetation…).
+  // Deve essere il proprietario a cercare NELLA PROPRIA libreria una terra da
+  // mettere in gioco: così si evita di scambiare per ramp le rimozioni con
+  // clausola "il controllore cerca una terra" (es. Path to Exile).
   if (
+    /search your library for [^.]*\bland/.test(text) &&
     /onto the battlefield/.test(text) &&
-    /\bland/.test(text) &&
-    /(search your library|put)/.test(text)
+    !/exile target|destroy target|counter target/.test(text)
   ) {
     const two =
       /two (basic )?lands?[^.]*onto the battlefield/.test(text) ||
@@ -214,6 +223,9 @@ function toCardInfo(card: ScryCard): CardInfo {
     setName: card.set_name,
     collectorNumber: card.collector_number,
     releasedAt: card.released_at,
+    power: parsePT(card.power ?? front?.power),
+    toughness: parsePT(card.toughness ?? front?.toughness),
+    loyalty: parsePT(card.loyalty ?? front?.loyalty),
     legalities: card.legalities,
     prices: {
       eur: num(card.prices?.eur),
@@ -228,6 +240,13 @@ function num(v: string | null | undefined): number | undefined {
   if (v == null) return undefined;
   const n = parseFloat(v);
   return isNaN(n) ? undefined : n;
+}
+
+// Forza/costituzione/lealtà: numerico, con "*"/valori variabili trattati come 0.
+function parsePT(v: string | null | undefined): number | undefined {
+  if (v == null) return undefined;
+  const n = parseInt(v, 10);
+  return isNaN(n) ? 0 : n;
 }
 
 export interface ResolveResult {

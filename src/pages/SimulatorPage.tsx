@@ -3,7 +3,8 @@ import { parseDecklist, ParsedLine } from "../deckParser";
 import { resolveCards } from "../scryfall";
 import { CardInfo, Deck, DeckEntry } from "../types";
 import { DEFAULT_CONFIG, expandDeck, SimConfig, SimStats } from "../sim/engine";
-import { runInWorker } from "../sim/runner";
+import { runBattleInWorker, runInWorker } from "../sim/runner";
+import { BattleResult, DEFAULT_BATTLE } from "../sim/battle";
 import { compareDecks, Comparison } from "../compare";
 import { adviceFor, MatchupAdvice, postSideEntries } from "../advice";
 import { StatsView, CurveBucket } from "../components/StatsView";
@@ -11,6 +12,7 @@ import { Replay } from "../components/Replay";
 import { ComparisonView } from "../components/ComparisonView";
 import { AdviceView } from "../components/AdviceView";
 import { MetricsGlossary } from "../components/MetricsGlossary";
+import { BattleResultView } from "../components/BattleResultView";
 import { SAMPLE_A, SAMPLE_B } from "../sampleDecks";
 
 interface DeckResult {
@@ -94,8 +96,19 @@ export default function SimulatorPage() {
   const [adviceB, setAdviceB] = useState<MatchupAdvice | null>(null);
   const [lookup, setLookup] = useState<Map<string, CardInfo>>(new Map());
 
+  const [battleStatus, setBattleStatus] = useState<
+    "idle" | "resolving" | "running" | "done" | "error"
+  >("idle");
+  const [battleProgress, setBattleProgress] = useState(0);
+  const [battleResult, setBattleResult] = useState<BattleResult | null>(null);
+  const [battleError, setBattleError] = useState<string | null>(null);
+
+  const battleBusy = battleStatus === "resolving" || battleStatus === "running";
   const busy =
-    status === "resolving" || status === "sim-pre" || status === "sim-post";
+    status === "resolving" ||
+    status === "sim-pre" ||
+    status === "sim-post" ||
+    battleBusy;
 
   const statusText = useMemo(() => {
     switch (status) {
@@ -209,6 +222,56 @@ export default function SimulatorPage() {
     setStatus("done");
   }
 
+  async function handleBattle() {
+    setBattleError(null);
+    setBattleResult(null);
+    setBattleProgress(0);
+    setBattleStatus("resolving");
+
+    const pA = parseDecklist(textA);
+    const pB = parseDecklist(textB);
+    if (pA.main.length === 0 || pB.main.length === 0) {
+      setBattleError("Inserisci entrambe le liste.");
+      setBattleStatus("error");
+      return;
+    }
+    const allNames = [...pA.main, ...pA.side, ...pB.main, ...pB.side].map(
+      (l) => l.name,
+    );
+    let resolved;
+    try {
+      resolved = await resolveCards(allNames);
+    } catch (e) {
+      setBattleError(e instanceof Error ? e.message : String(e));
+      setBattleStatus("error");
+      return;
+    }
+    setLookup(resolved.cards);
+    const deckA = buildDeck(nameA, pA.main, pA.side, resolved.cards);
+    const deckB = buildDeck(nameB, pB.main, pB.side, resolved.cards);
+    const expA = expandEntries(deckA.entries);
+    const expB = expandEntries(deckB.entries);
+    if (expA.length < 7 || expB.length < 7) {
+      setBattleError("Troppe poche carte risolte. Controlla i nomi.");
+      setBattleStatus("error");
+      return;
+    }
+    setBattleStatus("running");
+    try {
+      const result = await runBattleInWorker(
+        expA,
+        expB,
+        { ...DEFAULT_BATTLE },
+        setBattleProgress,
+      );
+      setBattleResult(result);
+      setBattleStatus("done");
+    } catch (e) {
+      setBattleError(e instanceof Error ? e.message : String(e));
+      setBattleStatus("error");
+    }
+  }
+
   function mkResult(deck: Deck, stats: SimStats | undefined): DeckResult {
     return {
       deck,
@@ -253,7 +316,12 @@ export default function SimulatorPage() {
 
       <div className="controls">
         <button className="primary" onClick={handleSimulate} disabled={busy}>
-          {busy ? "Simulazione…" : "▶ Simula"}
+          {status === "sim-pre" || status === "sim-post" || status === "resolving"
+            ? "Simulazione…"
+            : "▶ Goldfish"}
+        </button>
+        <button className="primary" onClick={handleBattle} disabled={busy}>
+          {battleBusy ? "In corso…" : "⚔️ Partite reali"}
         </button>
         <label className="field">
           Partite
@@ -291,6 +359,22 @@ export default function SimulatorPage() {
             <div style={{ width: `${progressB * 100}%` }} />
           </div>
         </div>
+      )}
+
+      {battleStatus === "error" && (
+        <div className="status-line error" style={{ marginTop: 8 }}>
+          {battleError}
+        </div>
+      )}
+      {battleBusy && (
+        <div className="progress-wrap">
+          <div className="progress">
+            <div style={{ width: `${battleProgress * 100}%` }} />
+          </div>
+        </div>
+      )}
+      {battleResult && (
+        <BattleResultView result={battleResult} nameA={nameA} nameB={nameB} />
       )}
 
       {haveResults && comparison && (

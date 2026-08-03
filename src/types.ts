@@ -48,6 +48,11 @@ export interface CardInfo {
   oracleText: string;
   /** Abilità di mana (dork/rock/ramp), se presente. */
   manaAbility?: ManaAbility;
+  /** Forza/costituzione (creature); undefined se non creatura. `*` → 0. */
+  power?: number;
+  toughness?: number;
+  /** Lealtà iniziale (planeswalker). */
+  loyalty?: number;
   /** URL immagine (fronte) per la UI, se disponibile. */
   imageUrl?: string;
   /** URL immagine piccola (miniatura per il replay). */
