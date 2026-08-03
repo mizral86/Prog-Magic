@@ -297,17 +297,31 @@ function sleep(ms: number): Promise<void> {
 const SEARCH_URL = "https://api.scryfall.com/cards/search";
 
 // Ricerca carte per query (nome o sintassi Scryfall). Prima pagina di risultati.
+// include_multilingual=true fa matchare anche i nomi in italiano (e altre
+// lingue), così si può cercare sia "Lightning Bolt" sia "Fulmine".
 export async function searchCards(query: string): Promise<CardInfo[]> {
   const q = query.trim();
   if (!q) return [];
-  const url = `${SEARCH_URL}?q=${encodeURIComponent(q)}&unique=cards&order=name`;
+  const url =
+    `${SEARCH_URL}?q=${encodeURIComponent(q)}` +
+    `&unique=cards&order=name&include_multilingual=true`;
   const res = await fetch(url, { headers: { Accept: "application/json" } });
   if (res.status === 404) return []; // nessun risultato
   if (!res.ok) {
     throw new Error(`Scryfall ha risposto ${res.status}. Riprova tra poco.`);
   }
   const json = (await res.json()) as { data: ScryCard[] };
-  return json.data.map(toCardInfo);
+  // Con il multilingua possono arrivare doppioni per nome (stessa carta in più
+  // lingue): li riduciamo a una voce per carta (oracle_id o nome).
+  const seen = new Set<string>();
+  const out: CardInfo[] = [];
+  for (const c of json.data) {
+    const key = (c.name || "").toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(toCardInfo(c));
+  }
+  return out;
 }
 
 // Tutte le stampe/edizioni di una carta (per nome esatto), dalla più recente.
