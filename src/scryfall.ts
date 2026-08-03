@@ -296,15 +296,27 @@ function sleep(ms: number): Promise<void> {
 
 const SEARCH_URL = "https://api.scryfall.com/cards/search";
 
+// Criteri di ordinamento supportati dalla ricerca (sottoinsieme di Scryfall).
+export type SortOrder = "name" | "cmc" | "rarity" | "eur" | "released";
+export interface SearchOptions {
+  order?: SortOrder;
+  dir?: "asc" | "desc";
+}
+
 // Ricerca carte per query (nome o sintassi Scryfall). Prima pagina di risultati.
 // include_multilingual=true fa matchare anche i nomi in italiano (e altre
 // lingue), così si può cercare sia "Lightning Bolt" sia "Fulmine".
-export async function searchCards(query: string): Promise<CardInfo[]> {
+export async function searchCards(
+  query: string,
+  opts: SearchOptions = {},
+): Promise<CardInfo[]> {
   const q = query.trim();
   if (!q) return [];
+  const order = opts.order ?? "name";
+  const dir = opts.dir ?? (order === "name" ? "asc" : "desc");
   const url =
     `${SEARCH_URL}?q=${encodeURIComponent(q)}` +
-    `&unique=cards&order=name&include_multilingual=true`;
+    `&unique=cards&order=${order}&dir=${dir}&include_multilingual=true`;
   const res = await fetch(url, { headers: { Accept: "application/json" } });
   if (res.status === 404) return []; // nessun risultato
   if (!res.ok) {

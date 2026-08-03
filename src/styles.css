@@ -1298,3 +1298,105 @@ table.factors .fav-b {
 }
 .delta-up { color: var(--good); }
 .delta-down { color: var(--bad); }
+
+/* ---- Ricerca avanzata ---- */
+.search-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 0;
+}
+.link-btn:hover {
+  filter: brightness(1.1);
+}
+
+.adv-panel {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--panel-2);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.adv-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.adv-label {
+  font-size: 13px;
+  color: var(--muted);
+  min-width: 46px;
+}
+
+.color-toggles {
+  display: inline-flex;
+  gap: 6px;
+}
+.color-tog {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  background: var(--panel-3);
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.12s ease;
+}
+.color-tog:hover {
+  transform: translateY(-1px);
+}
+.color-tog.on {
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+.color-tog.c-W.on { background: var(--W); color: #3b2f00; }
+.color-tog.c-U.on { background: var(--U); }
+.color-tog.c-B.on { background: var(--B); }
+.color-tog.c-R.on { background: var(--R); }
+.color-tog.c-G.on { background: var(--G); }
+.color-tog.c-C.on { background: var(--faint); }
+
+.chip.toggle {
+  cursor: pointer;
+  background: var(--panel-3);
+  color: var(--muted);
+  transition: color 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+}
+.chip.toggle:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+.chip.toggle.on {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+}
+
+.adv-preview {
+  font-size: 12.5px;
+  color: var(--muted);
+  border-top: 1px dashed var(--border);
+  padding-top: 10px;
+  word-break: break-word;
+}
+.adv-preview .mono {
+  color: var(--text);
+}
