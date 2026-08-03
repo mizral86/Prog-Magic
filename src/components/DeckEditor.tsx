@@ -2,7 +2,9 @@
 // legalità e liste main/sideboard.
 
 import { FormEvent, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Board, FORMATS, Format, useDecks } from "../decks";
+import { setCompareSlot } from "../compareTray";
 import { CardInfo, COLORS } from "../types";
 import { searchCards } from "../scryfall";
 import { deckToText, parseAndResolve } from "../deckIO";
@@ -22,6 +24,7 @@ const FORMAT_LABEL: Record<Format, string> = {
 
 export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => void }) {
   const decks = useDecks();
+  const navigate = useNavigate();
   const deck = decks.get(deckId);
 
   const [target, setTarget] = useState<Board>("main");
@@ -85,6 +88,12 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
   const main = deck.cards.filter((c) => c.board === "main");
   const side = deck.cards.filter((c) => c.board === "side");
 
+  function sendToSim(slot: "A" | "B") {
+    if (!deck) return;
+    setCompareSlot(slot, { name: deck.name, text: deckToText(deck) });
+    navigate("/simula");
+  }
+
   return (
     <div className="page">
       <button className="ghost" onClick={onBack} style={{ marginBottom: 10 }}>
@@ -120,6 +129,28 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
           }}
         >
           Elimina
+        </button>
+      </div>
+
+      <div className="row compare-row" style={{ marginTop: 10, gap: 8 }}>
+        <span className="muted small">Confronta in Simula:</span>
+        <button
+          type="button"
+          className="ghost"
+          onClick={() => sendToSim("A")}
+          disabled={main.length === 0}
+          title="Invia questo mazzo allo slot A del simulatore"
+        >
+          ⚔ come Mazzo A
+        </button>
+        <button
+          type="button"
+          className="ghost"
+          onClick={() => sendToSim("B")}
+          disabled={main.length === 0}
+          title="Invia questo mazzo allo slot B del simulatore"
+        >
+          ⚔ come Mazzo B
         </button>
       </div>
 

@@ -14,6 +14,7 @@ import { AdviceView } from "../components/AdviceView";
 import { MetricsGlossary } from "../components/MetricsGlossary";
 import { BattleResultView } from "../components/BattleResultView";
 import { SAMPLE_A, SAMPLE_B } from "../sampleDecks";
+import { getCompareSlots } from "../compareTray";
 
 interface DeckResult {
   deck: Deck;
@@ -76,10 +77,11 @@ function expandEntries(entries: DeckEntry[]): CardInfo[] {
 }
 
 export default function SimulatorPage() {
-  const [textA, setTextA] = useState(SAMPLE_A);
-  const [textB, setTextB] = useState(SAMPLE_B);
-  const [nameA, setNameA] = useState("Mono-Red Aggro");
-  const [nameB, setNameB] = useState("Azorius Control");
+  const slots = getCompareSlots();
+  const [textA, setTextA] = useState(slots.A?.text ?? SAMPLE_A);
+  const [textB, setTextB] = useState(slots.B?.text ?? SAMPLE_B);
+  const [nameA, setNameA] = useState(slots.A?.name ?? "Mono-Red Aggro");
+  const [nameB, setNameB] = useState(slots.B?.name ?? "Azorius Control");
   const [numGames, setNumGames] = useState(10000);
   const [onPlay, setOnPlay] = useState(true);
 

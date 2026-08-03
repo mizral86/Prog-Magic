@@ -1521,3 +1521,10 @@ button.ghost.active {
   font-size: 12px;
   text-align: right;
 }
+
+/* ---- Confronta in Simula (handoff dai Mazzi) ---- */
+.compare-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
