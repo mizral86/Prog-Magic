@@ -52,6 +52,22 @@ export interface CardInfo {
   imageUrl?: string;
   /** URL immagine piccola (miniatura per il replay). */
   imageSmallUrl?: string;
+  /** ID Scryfall della stampa (utile come chiave). */
+  scryfallId?: string;
+  rarity?: string;
+  setCode?: string;
+  setName?: string;
+  collectorNumber?: string;
+  releasedAt?: string;
+  /** Legalità per formato: nome formato -> "legal" | "not_legal" | "banned" | "restricted". */
+  legalities?: Record<string, string>;
+  /** Prezzi (numerici) da Scryfall. */
+  prices?: {
+    eur?: number;
+    eurFoil?: number;
+    usd?: number;
+    usdFoil?: number;
+  };
 }
 
 export interface DeckEntry {

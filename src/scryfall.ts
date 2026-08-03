@@ -18,6 +18,7 @@ interface ScryCardFace {
   image_uris?: { normal?: string; small?: string };
 }
 interface ScryCard {
+  id?: string;
   name: string;
   cmc?: number;
   mana_cost?: string;
@@ -28,6 +29,18 @@ interface ScryCard {
   produced_mana?: string[];
   image_uris?: { normal?: string; small?: string };
   card_faces?: ScryCardFace[];
+  rarity?: string;
+  set?: string;
+  set_name?: string;
+  collector_number?: string;
+  released_at?: string;
+  legalities?: Record<string, string>;
+  prices?: {
+    eur?: string | null;
+    eur_foil?: string | null;
+    usd?: string | null;
+    usd_foil?: string | null;
+  };
 }
 
 interface CollectionResponse {
@@ -195,7 +208,26 @@ function toCardInfo(card: ScryCard): CardInfo {
     ),
     imageUrl,
     imageSmallUrl,
+    scryfallId: card.id,
+    rarity: card.rarity,
+    setCode: card.set,
+    setName: card.set_name,
+    collectorNumber: card.collector_number,
+    releasedAt: card.released_at,
+    legalities: card.legalities,
+    prices: {
+      eur: num(card.prices?.eur),
+      eurFoil: num(card.prices?.eur_foil),
+      usd: num(card.prices?.usd),
+      usdFoil: num(card.prices?.usd_foil),
+    },
   };
+}
+
+function num(v: string | null | undefined): number | undefined {
+  if (v == null) return undefined;
+  const n = parseFloat(v);
+  return isNaN(n) ? undefined : n;
 }
 
 export interface ResolveResult {
@@ -241,4 +273,33 @@ export async function resolveCards(names: string[]): Promise<ResolveResult> {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+const SEARCH_URL = "https://api.scryfall.com/cards/search";
+
+// Ricerca carte per query (nome o sintassi Scryfall). Prima pagina di risultati.
+export async function searchCards(query: string): Promise<CardInfo[]> {
+  const q = query.trim();
+  if (!q) return [];
+  const url = `${SEARCH_URL}?q=${encodeURIComponent(q)}&unique=cards&order=name`;
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  if (res.status === 404) return []; // nessun risultato
+  if (!res.ok) {
+    throw new Error(`Scryfall ha risposto ${res.status}. Riprova tra poco.`);
+  }
+  const json = (await res.json()) as { data: ScryCard[] };
+  return json.data.map(toCardInfo);
+}
+
+// Tutte le stampe/edizioni di una carta (per nome esatto), dalla più recente.
+export async function getPrintings(name: string): Promise<CardInfo[]> {
+  const q = `!"${name}" unique:prints`;
+  const url = `${SEARCH_URL}?q=${encodeURIComponent(q)}&order=released&dir=desc`;
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  if (res.status === 404) return [];
+  if (!res.ok) {
+    throw new Error(`Scryfall ha risposto ${res.status}. Riprova tra poco.`);
+  }
+  const json = (await res.json()) as { data: ScryCard[] };
+  return json.data.map(toCardInfo);
 }
