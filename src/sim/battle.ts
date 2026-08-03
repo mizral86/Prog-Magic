@@ -304,7 +304,7 @@ function mainPhase(me: Player, opp: Player, myColors: Color[], log: Log) {
       tryOppCounter(opp, oppMana.src, oppManaLeft, spell)
     ) {
       oppManaLeft -= counterCost(opp);
-      say(log, `  ${opp.name} neutralizza ${spell.name}`);
+      say(log, `  ${me.name} prova ${spell.name}, ${opp.name} la neutralizza`);
       continue;
     }
 
@@ -661,11 +661,15 @@ export function runBattle(
   let lifeASum = 0;
   let lifeBSum = 0;
   let sampleLog: string[] = [];
+  let haveDecisiveSample = false;
 
   const every = Math.max(1, Math.floor(cfg.games / 40));
 
   for (let g = 0; g < cfg.games; g++) {
-    const log: Log = { on: g === 0, lines: [] };
+    // Registra il log finché non troviamo una partita "decisa" da mostrare come
+    // esempio (qualcuno vince prima del limite turni), entro le prime partite.
+    const tryLog = !haveDecisiveSample && g < 80;
+    const log: Log = { on: tryLog, lines: [] };
     const r = playMatch(profA, profB, colorsA, colorsB, cfg, rng, log);
     if (r.winner === "A") winsA++;
     else if (r.winner === "B") winsB++;
@@ -673,7 +677,13 @@ export function runBattle(
     turnsSum += r.turns;
     lifeASum += r.lifeA;
     lifeBSum += r.lifeB;
-    if (g === 0) sampleLog = log.lines;
+    if (tryLog) {
+      const decisive = r.winner !== "draw" && r.turns < cfg.maxTurns;
+      if (sampleLog.length === 0 || decisive) {
+        sampleLog = log.lines;
+        if (decisive) haveDecisiveSample = true;
+      }
+    }
     if (onProgress && g % every === 0) onProgress(g / cfg.games);
   }
   if (onProgress) onProgress(1);
