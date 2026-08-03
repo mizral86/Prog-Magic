@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { CollectionProvider } from "./collection";
+import { DecksProvider } from "./decks";
 import "./styles.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -11,7 +12,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
     >
       <CollectionProvider>
-        <App />
+        <DecksProvider>
+          <App />
+        </DecksProvider>
       </CollectionProvider>
     </BrowserRouter>
   </React.StrictMode>,
