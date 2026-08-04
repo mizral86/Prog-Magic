@@ -24,7 +24,7 @@ const FORMAT_LABEL: Record<Format, string> = {
 export function MetaPanel({
   onCreateDeck,
 }: {
-  onCreateDeck: (name: string, format: Format) => void;
+  onCreateDeck: (name: string, format: Format, deck?: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [format, setFormat] = useState<Format>("modern");
@@ -71,8 +71,12 @@ export function MetaPanel({
                     <button
                       type="button"
                       className="ghost meta-create"
-                      title="Crea un mazzo mio da questo archetipo"
-                      onClick={() => onCreateDeck(a.name, format)}
+                      title={
+                        a.deck
+                          ? "Crea un mazzo con le carte-firma dell'archetipo"
+                          : "Crea un mazzo vuoto con questo nome"
+                      }
+                      onClick={() => onCreateDeck(a.name, format, a.deck)}
                     >
                       + Crea mazzo
                     </button>
@@ -99,8 +103,10 @@ export function MetaPanel({
 
           <p className="muted small meta-disclaimer">
             ⚠ Elenco <strong>indicativo</strong> (agg. {META_UPDATED}), non un
-            dato live: gli archetipi cambiano. Per il metagame corrente usa i
-            link qui sopra.
+            dato live: gli archetipi cambiano. <strong>+ Crea mazzo</strong>{" "}
+            genera una lista-<em>scheletro</em> con le carte-firma (da
+            completare/aggiornare); i nomi non trovati vengono scartati. Per il
+            metagame corrente usa i link qui sopra.
           </p>
         </>
       )}

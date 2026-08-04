@@ -4,6 +4,7 @@ import { useState } from "react";
 import { deckCoverUrl, FORMATS, Format, useDecks } from "../decks";
 import { deckStats } from "../deckStats";
 import { formatMoney } from "../prices";
+import { parseAndResolve } from "../deckIO";
 import { DeckEditor } from "../components/DeckEditor";
 import { MetaPanel } from "../components/MetaPanel";
 
@@ -114,9 +115,16 @@ export default function DecksPage() {
       )}
 
       <MetaPanel
-        onCreateDeck={(name, format) => {
+        onCreateDeck={(name, format, deck) => {
           const id = decks.create(name, format);
           setSelected(id);
+          if (deck) {
+            parseAndResolve(deck)
+              .then(({ cards }) => decks.replaceCards(id, cards))
+              .catch(() => {
+                /* import fallito: resta il mazzo vuoto, l'utente riprova */
+              });
+          }
         }}
       />
     </div>
