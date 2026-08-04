@@ -15,6 +15,7 @@ import {
 } from "../sim/engine";
 import { CardInfo, CardCategory } from "../types";
 import { CardThumb } from "../components/CardThumb";
+import { InteractivePlay } from "../components/InteractivePlay";
 import { SAMPLE_A, SAMPLE_B } from "../sampleDecks";
 
 const SAMPLES: { id: string; label: string; text: string }[] = [
@@ -96,6 +97,8 @@ export default function PlayPage() {
   const [turnIdx, setTurnIdx] = useState(0); // 0 = solo mano iniziale
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<"interactive" | "auto">("interactive");
+  const [intKey, setIntKey] = useState(0); // remonta la partita interattiva
 
   const cfg: SimConfig = { ...DEFAULT_CONFIG, onPlay };
 
@@ -123,8 +126,13 @@ export default function PlayPage() {
       setDeck(expanded);
       setDeckLabel(opt.label);
       setLookup(cards);
-      setGame(playSingleGame(expanded, { ...cfg, onPlay }, freshSeed()));
-      setTurnIdx(0);
+      if (mode === "auto") {
+        setGame(playSingleGame(expanded, { ...cfg, onPlay }, freshSeed()));
+        setTurnIdx(0);
+      } else {
+        setGame(null);
+        setIntKey((k) => k + 1);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -134,8 +142,12 @@ export default function PlayPage() {
 
   function reshuffle() {
     if (!deck) return;
-    setGame(playSingleGame(deck, { ...cfg, onPlay }, freshSeed()));
-    setTurnIdx(0);
+    if (mode === "auto") {
+      setGame(playSingleGame(deck, { ...cfg, onPlay }, freshSeed()));
+      setTurnIdx(0);
+    } else {
+      setIntKey((k) => k + 1);
+    }
   }
 
   const turns = game?.turns ?? [];
@@ -148,10 +160,25 @@ export default function PlayPage() {
     <div className="page">
       <h1 className="page-title">Gioca</h1>
       <p className="muted small" style={{ marginTop: -6 }}>
-        Solitario goldfish: carica un mazzo e avanza turno per turno per vedere
-        come si sviluppa il tavolo. Le scelte sono automatiche (stessa euristica
-        del simulatore).
+        Solitario: carica un mazzo e prova a mano lo sviluppo.{" "}
+        <strong>Interattivo</strong> = decidi tu mulligan, terra e magie;{" "}
+        <strong>Automatico</strong> = guardi la partita giocata dall'euristica.
       </p>
+
+      <div className="segmented" style={{ marginBottom: 10 }}>
+        <button
+          className={mode === "interactive" ? "on" : ""}
+          onClick={() => setMode("interactive")}
+        >
+          🎮 Interattivo
+        </button>
+        <button
+          className={mode === "auto" ? "on" : ""}
+          onClick={() => setMode("auto")}
+        >
+          👁 Automatico
+        </button>
+      </div>
 
       <div className="play-setup">
         <label className="field" style={{ flex: 1, minWidth: 200 }}>
@@ -188,7 +215,7 @@ export default function PlayPage() {
           In gioco (no pescata al T1)
         </label>
         <button className="primary" onClick={loadAndPlay} disabled={loading}>
-          {loading ? "Carico…" : game ? "Cambia mazzo" : "Gioca"}
+          {loading ? "Carico…" : deck ? "Ricarica" : "Gioca"}
         </button>
       </div>
 
@@ -198,7 +225,31 @@ export default function PlayPage() {
         </div>
       )}
 
-      {game && (
+      {deck && mode === "interactive" && (
+        <>
+          <div className="play-bar">
+            <span className="play-turn">{deckLabel}</span>
+            <span className="muted small">
+              {onPlay ? "in gioco" : "in risposta"}
+            </span>
+            <button
+              className="ghost"
+              onClick={() => setIntKey((k) => k + 1)}
+              title="Nuova partita (rimescola)"
+            >
+              🔀 Nuova partita
+            </button>
+          </div>
+          <InteractivePlay
+            key={intKey}
+            deck={deck}
+            lookup={lookup}
+            onPlay={onPlay}
+          />
+        </>
+      )}
+
+      {game && mode === "auto" && (
         <>
           <div className="play-bar">
             <button

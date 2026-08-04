@@ -106,7 +106,7 @@ function shuffle<T>(arr: T[], rng: () => number): void {
 // incolori sono array vuoti (pagano solo generico). Muta `sources` in caso di
 // successo, rimuovendo le fonti consumate.
 // ---------------------------------------------------------------------------
-function tryPay(
+export function tryPay(
   pips: Partial<Record<Color, number>>,
   generic: number,
   sources: Color[][],

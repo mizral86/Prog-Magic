@@ -1702,6 +1702,54 @@ button.ghost.active {
   padding: 6px 0;
 }
 
+/* Gioca interattivo */
+.iplay-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 8px 12px;
+  margin-bottom: 10px;
+}
+.iplay-bar .play-turn {
+  margin-right: auto;
+}
+.iplay-bar .primary {
+  padding: 7px 14px;
+}
+.ihand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ihand-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.ism {
+  padding: 3px 10px;
+  font-size: 12px;
+  width: 100%;
+}
+.ism:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.ilog {
+  max-height: 220px;
+  overflow-y: auto;
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 /* ---- Pannello meta (Top mazzi) ---- */
 .meta-list {
   margin: 6px 0 10px;
