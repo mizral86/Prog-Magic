@@ -689,6 +689,17 @@ body {
 .deck-card-item .dci-main {
   flex: 1;
 }
+
+/* Gruppi per formato nella lista Mazzi */
+.format-group {
+  margin-top: 18px;
+}
+.format-heading {
+  font-size: 15px;
+  margin: 0 0 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+}
 .issues {
   list-style: none;
   margin: 0;

@@ -15,6 +15,8 @@ import { MetricsGlossary } from "../components/MetricsGlossary";
 import { BattleResultView } from "../components/BattleResultView";
 import { SAMPLE_A, SAMPLE_B } from "../sampleDecks";
 import { getCompareSlots } from "../compareTray";
+import { useDecks } from "../decks";
+import { deckToText } from "../deckIO";
 
 interface DeckResult {
   deck: Deck;
@@ -505,12 +507,35 @@ interface DeckPanelProps {
 }
 
 function DeckPanel({ title, name, setName, text, setText, result }: DeckPanelProps) {
+  const { decks } = useDecks();
   const sideCount = result
     ? result.deck.side.reduce((s, e) => s + (e.card ? e.quantity : 0), 0)
     : 0;
   return (
     <div className="panel">
       <h2>{title}</h2>
+      {decks.length > 0 && (
+        <label className="field deck-source" style={{ marginBottom: 8 }}>
+          Carica da Mazzi
+          <select
+            value=""
+            onChange={(e) => {
+              const d = decks.find((x) => x.id === e.target.value);
+              if (d) {
+                setText(deckToText(d));
+                setName(d.name);
+              }
+            }}
+          >
+            <option value="">— o scrivi la lista qui sotto —</option>
+            {decks.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       <input
         className="deck-name-input"
         value={name}

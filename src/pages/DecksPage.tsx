@@ -67,39 +67,50 @@ export default function DecksPage() {
           </p>
         </div>
       ) : (
-        <div className="deck-cards" style={{ marginTop: 14 }}>
-          {decks.decks.map((d) => {
-            const s = deckStats(d);
-            const cover = deckCoverUrl(d);
-            return (
-              <button
-                key={d.id}
-                type="button"
-                className="deck-card-item"
-                onClick={() => setSelected(d.id)}
-              >
-                {cover ? (
-                  <span
-                    className="dci-cover"
-                    style={{ backgroundImage: `url(${cover})` }}
-                  />
-                ) : (
-                  <span className="dci-cover dci-cover--empty">🗂️</span>
-                )}
-                <div className="dci-main">
-                  <div className="dci-name">{d.name}</div>
-                  <div className="muted small">
-                    {FORMAT_LABEL[d.format]} · {s.mainCount} main
-                    {s.sideCount > 0 && ` · ${s.sideCount} side`}
-                  </div>
-                </div>
-                <div className="dci-price">
-                  {formatMoney(s.totalPriceEur, "EUR")}
-                </div>
-              </button>
-            );
-          })}
-        </div>
+        FORMATS.filter((f) => decks.decks.some((d) => d.format === f)).map((f) => {
+          const group = decks.decks.filter((d) => d.format === f);
+          return (
+            <div key={f} className="format-group">
+              <h2 className="format-heading">
+                {FORMAT_LABEL[f]}
+                <span className="muted small"> · {group.length}</span>
+              </h2>
+              <div className="deck-cards">
+                {group.map((d) => {
+                  const s = deckStats(d);
+                  const cover = deckCoverUrl(d);
+                  return (
+                    <button
+                      key={d.id}
+                      type="button"
+                      className="deck-card-item"
+                      onClick={() => setSelected(d.id)}
+                    >
+                      {cover ? (
+                        <span
+                          className="dci-cover"
+                          style={{ backgroundImage: `url(${cover})` }}
+                        />
+                      ) : (
+                        <span className="dci-cover dci-cover--empty">🗂️</span>
+                      )}
+                      <div className="dci-main">
+                        <div className="dci-name">{d.name}</div>
+                        <div className="muted small">
+                          {s.mainCount} main
+                          {s.sideCount > 0 && ` · ${s.sideCount} side`}
+                        </div>
+                      </div>
+                      <div className="dci-price">
+                        {formatMoney(s.totalPriceEur, "EUR")}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })
       )}
 
       <MetaPanel />
