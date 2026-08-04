@@ -33,6 +33,14 @@ export const DEFAULT_BATTLE: BattleConfig = {
   handSize: 7,
 };
 
+// Riga del log d'esempio: testo leggibile + eventuali carte citate (per le
+// miniature) + flag intestazione (turno/esito).
+export interface BattleLogLine {
+  text: string;
+  cards?: string[];
+  head?: boolean;
+}
+
 export interface BattleResult {
   games: number;
   winsA: number;
@@ -42,7 +50,7 @@ export interface BattleResult {
   avgTurns: number;
   avgLifeA: number;
   avgLifeB: number;
-  sampleLog: string[];
+  sampleLog: BattleLogLine[];
 }
 
 // ---------------------------------------------------------------------------
@@ -262,9 +270,9 @@ function deckColors(deck: Profile[]): Color[] {
 // ---------------------------------------------------------------------------
 // Logging (solo per la partita di esempio)
 // ---------------------------------------------------------------------------
-type Log = { on: boolean; lines: string[] };
-function say(log: Log, s: string) {
-  if (log.on) log.lines.push(s);
+type Log = { on: boolean; lines: BattleLogLine[] };
+function say(log: Log, text: string, cards?: string[], head?: boolean) {
+  if (log.on) log.lines.push({ text, cards, head });
 }
 
 // ---------------------------------------------------------------------------
@@ -304,7 +312,9 @@ function mainPhase(me: Player, opp: Player, myColors: Color[], log: Log) {
       tryOppCounter(opp, oppMana.src, oppManaLeft, spell)
     ) {
       oppManaLeft -= counterCost(opp);
-      say(log, `  ${me.name} prova ${spell.name}, ${opp.name} la neutralizza`);
+      say(log, `${me.name} prova ${spell.name}, ${opp.name} la neutralizza`, [
+        spell.name,
+      ]);
       continue;
     }
 
@@ -414,13 +424,15 @@ function resolve(spell: Profile, me: Player, opp: Player, myColors: Color[], log
       amount: spell.manaAbility.amount,
       sick: spell.manaAbility.isCreature,
     });
-    say(log, `  ${me.name} lancia ${spell.name} (mana)`);
+    say(log, `${me.name} lancia ${spell.name} (mana)`, [spell.name]);
     return;
   }
   if (spell.manaAbility?.kind === "fetch") {
     for (let k = 0; k < spell.manaAbility.amount; k++)
       me.lands.push({ colors: myColors, enteredTapped: true, enteredThisTurn: true });
-    say(log, `  ${me.name} lancia ${spell.name} (+${spell.manaAbility.amount} terra)`);
+    say(log, `${me.name} lancia ${spell.name} (+${spell.manaAbility.amount} terra)`, [
+      spell.name,
+    ]);
     return;
   }
 
@@ -428,7 +440,9 @@ function resolve(spell: Profile, me: Player, opp: Player, myColors: Color[], log
     const n = me.creatures.length + opp.creatures.length;
     me.creatures = [];
     opp.creatures = [];
-    say(log, `  ${me.name} lancia ${spell.name}: spazzavia (${n} creature distrutte)`);
+    say(log, `${me.name} lancia ${spell.name}: spazzavia (${n} creature distrutte)`, [
+      spell.name,
+    ]);
     return;
   }
   if (spell.removal && opp.creatures.length > 0) {
@@ -441,7 +455,10 @@ function resolve(spell: Profile, me: Player, opp: Player, myColors: Color[], log
       )
         bi = i;
     const dead = opp.creatures.splice(bi, 1)[0];
-    say(log, `  ${me.name} lancia ${spell.name}: rimuove ${dead.p.name}`);
+    say(log, `${me.name} lancia ${spell.name}: rimuove ${dead.p.name}`, [
+      spell.name,
+      dead.p.name,
+    ]);
     return;
   }
   if (spell.burn > 0) {
@@ -452,30 +469,31 @@ function resolve(spell: Profile, me: Player, opp: Player, myColors: Color[], log
       const dead = opp.creatures.splice(ti, 1)[0];
       say(
         log,
-        `  ${me.name} lancia ${spell.name}: ${spell.burn} danni uccidono ${dead.p.name}`,
+        `${me.name} lancia ${spell.name}: ${spell.burn} danni uccidono ${dead.p.name}`,
+        [spell.name, dead.p.name],
       );
     } else {
       opp.life -= spell.burn;
       say(
         log,
-        `  ${me.name} lancia ${spell.name}: ${spell.burn} danni (${opp.name} a ${opp.life})`,
+        `${me.name} lancia ${spell.name}: ${spell.burn} danni (${opp.name} a ${opp.life})`,
+        [spell.name],
       );
     }
   }
   if (spell.isCreature) {
     me.creatures.push({ p: spell, sick: true, tapped: false, damage: 0 });
-    say(
-      log,
-      `  ${me.name} lancia ${spell.name} (${spell.power}/${spell.toughness})`,
-    );
+    say(log, `${me.name} lancia ${spell.name} (${spell.power}/${spell.toughness})`, [
+      spell.name,
+    ]);
   }
   if (spell.draw > 0) {
     for (let k = 0; k < spell.draw; k++) draw(me);
-    say(log, `  ${me.name} pesca ${spell.draw} con ${spell.name}`);
+    say(log, `${me.name} pesca ${spell.draw} con ${spell.name}`, [spell.name]);
   }
   if (spell.lifegain > 0) {
     me.life += spell.lifegain;
-    say(log, `  ${me.name} guadagna ${spell.lifegain} vita (${spell.name})`);
+    say(log, `${me.name} guadagna ${spell.lifegain} vita (${spell.name})`, [spell.name]);
   }
 }
 
@@ -565,7 +583,7 @@ function combat(att: Player, def: Player, log: Log) {
   att.creatures = att.creatures.filter((c) => !dead.includes(c));
   def.creatures = def.creatures.filter((c) => !dead.includes(c));
   if (faceDamage > 0)
-    say(log, `  ${att.name} attacca per ${faceDamage} (${def.name} a ${def.life})`);
+    say(log, `${att.name} attacca per ${faceDamage} (${def.name} a ${def.life})`);
 }
 
 // ---------------------------------------------------------------------------
@@ -583,7 +601,7 @@ function playMatch(
   const A = newPlayer("A", deckA, cfg, rng);
   const B = newPlayer("B", deckB, cfg, rng);
   const startA = rng() < 0.5;
-  say(log, `Inizia ${startA ? "A" : "B"}. Vita ${cfg.startLife}-${cfg.startLife}.`);
+  say(log, `Inizia ${startA ? "A" : "B"}. Vita ${cfg.startLife}-${cfg.startLife}.`, undefined, true);
 
   let turn = 0;
   let activeIsA = startA;
@@ -607,7 +625,7 @@ function playMatch(
     const isFirstEver = turn === 1 && startA === activeIsA;
     if (!isFirstEver) {
       if (!draw(me)) {
-        say(log, `${me.name} non può pescare: perde per deck out.`);
+        say(log, `${me.name} non può pescare: perde per deck out.`, undefined, true);
         return {
           winner: activeIsA ? "B" : "A",
           lifeA: A.life,
@@ -617,12 +635,12 @@ function playMatch(
       }
     }
 
-    say(log, `T${turnNo} ${me.name} (vita ${me.life}/${opp.life}):`);
+    say(log, `T${turnNo} ${me.name} (vita ${me.life}/${opp.life}):`, undefined, true);
     mainPhase(me, opp, myColors, log);
     combat(me, opp, log);
 
     if (opp.life <= 0) {
-      say(log, `${me.name} vince al turno ${turnNo}.`);
+      say(log, `${me.name} vince al turno ${turnNo}.`, undefined, true);
       return {
         winner: activeIsA ? "A" : "B",
         lifeA: A.life,
@@ -635,7 +653,7 @@ function playMatch(
 
   // Turni esauriti: decide la vita.
   const winner = A.life > B.life ? "A" : B.life > A.life ? "B" : "draw";
-  say(log, `Limite turni: vince ${winner} ai punti (A ${A.life}, B ${B.life}).`);
+  say(log, `Limite turni: vince ${winner} ai punti (A ${A.life}, B ${B.life}).`, undefined, true);
   return { winner, lifeA: A.life, lifeB: B.life, turns: cfg.maxTurns };
 }
 
@@ -660,7 +678,7 @@ export function runBattle(
   let turnsSum = 0;
   let lifeASum = 0;
   let lifeBSum = 0;
-  let sampleLog: string[] = [];
+  let sampleLog: BattleLogLine[] = [];
   let haveDecisiveSample = false;
 
   const every = Math.max(1, Math.floor(cfg.games / 40));

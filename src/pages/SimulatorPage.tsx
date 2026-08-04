@@ -376,7 +376,12 @@ export default function SimulatorPage() {
         </div>
       )}
       {battleResult && (
-        <BattleResultView result={battleResult} nameA={nameA} nameB={nameB} />
+        <BattleResultView
+          result={battleResult}
+          nameA={nameA}
+          nameB={nameB}
+          lookup={lookup}
+        />
       )}
 
       {haveResults && comparison && (

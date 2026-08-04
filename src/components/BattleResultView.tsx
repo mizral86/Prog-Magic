@@ -1,14 +1,17 @@
 // Risultati del simulatore interattivo: win-rate reale + log di una partita.
 
 import { BattleResult } from "../sim/battle";
+import { CardInfo } from "../types";
+import { CardThumb } from "./CardThumb";
 
 interface Props {
   result: BattleResult;
   nameA: string;
   nameB: string;
+  lookup: Map<string, CardInfo>;
 }
 
-export function BattleResultView({ result, nameA, nameB }: Props) {
+export function BattleResultView({ result, nameA, nameB, lookup }: Props) {
   const a = Math.round(result.winRateA * 100);
   const b = 100 - a;
 
@@ -52,7 +55,20 @@ export function BattleResultView({ result, nameA, nameB }: Props) {
 
       <details className="explain">
         <summary>Log di una partita di esempio</summary>
-        <pre className="battle-log">{result.sampleLog.join("\n")}</pre>
+        <div className="battle-log">
+          {result.sampleLog.map((line, i) => (
+            <div key={i} className={`bl-line${line.head ? " bl-head" : ""}`}>
+              <span className="bl-text">{line.text}</span>
+              {line.cards && line.cards.length > 0 && (
+                <span className="bl-thumbs">
+                  {line.cards.map((n, j) => (
+                    <CardThumb key={j} name={n} lookup={lookup} size={30} />
+                  ))}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
       </details>
 
       <div className="disclaimer">
