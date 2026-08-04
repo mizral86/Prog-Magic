@@ -21,7 +21,11 @@ const FORMAT_LABEL: Record<Format, string> = {
   commander: "Commander",
 };
 
-export function MetaPanel() {
+export function MetaPanel({
+  onCreateDeck,
+}: {
+  onCreateDeck: (name: string, format: Format) => void;
+}) {
   const [open, setOpen] = useState(false);
   const [format, setFormat] = useState<Format>("modern");
   const list = META[format];
@@ -58,8 +62,22 @@ export function MetaPanel() {
           <ol className="meta-list">
             {list.map((a, i) => (
               <li key={i}>
-                <span className="meta-name">{a.name}</span>
-                {a.note && <span className="muted small"> — {a.note}</span>}
+                <div className="meta-row">
+                  <div>
+                    <span className="meta-name">{a.name}</span>
+                    {a.note && <span className="muted small"> — {a.note}</span>}
+                  </div>
+                  {!a.name.startsWith("Vedi") && (
+                    <button
+                      type="button"
+                      className="ghost meta-create"
+                      title="Crea un mazzo mio da questo archetipo"
+                      onClick={() => onCreateDeck(a.name, format)}
+                    >
+                      + Crea mazzo
+                    </button>
+                  )}
+                </div>
               </li>
             ))}
           </ol>

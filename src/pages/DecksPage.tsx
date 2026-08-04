@@ -113,7 +113,12 @@ export default function DecksPage() {
         })
       )}
 
-      <MetaPanel />
+      <MetaPanel
+        onCreateDeck={(name, format) => {
+          const id = decks.create(name, format);
+          setSelected(id);
+        }}
+      />
     </div>
   );
 }

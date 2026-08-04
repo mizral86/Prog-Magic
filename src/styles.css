@@ -1713,6 +1713,17 @@ button.ghost.active {
 .meta-list li {
   font-size: 13.5px;
 }
+.meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.meta-create {
+  padding: 4px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
 .meta-name {
   font-weight: 600;
   color: var(--text);
