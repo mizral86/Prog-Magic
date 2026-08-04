@@ -297,7 +297,13 @@ function sleep(ms: number): Promise<void> {
 const SEARCH_URL = "https://api.scryfall.com/cards/search";
 
 // Criteri di ordinamento supportati dalla ricerca (sottoinsieme di Scryfall).
-export type SortOrder = "name" | "cmc" | "rarity" | "eur" | "released";
+export type SortOrder =
+  | "name"
+  | "cmc"
+  | "rarity"
+  | "eur"
+  | "released"
+  | "edhrec";
 export interface SearchOptions {
   order?: SortOrder;
   dir?: "asc" | "desc";

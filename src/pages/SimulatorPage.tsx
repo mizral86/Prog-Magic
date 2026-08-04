@@ -13,6 +13,7 @@ import { ComparisonView } from "../components/ComparisonView";
 import { AdviceView } from "../components/AdviceView";
 import { MetricsGlossary } from "../components/MetricsGlossary";
 import { BattleResultView } from "../components/BattleResultView";
+import { FormatSuggestions } from "../components/FormatSuggestions";
 import { SAMPLE_A, SAMPLE_B } from "../sampleDecks";
 import { getCompareSlots } from "../compareTray";
 import { useDecks } from "../decks";
@@ -99,6 +100,10 @@ export default function SimulatorPage() {
   const [adviceA, setAdviceA] = useState<MatchupAdvice | null>(null);
   const [adviceB, setAdviceB] = useState<MatchupAdvice | null>(null);
   const [lookup, setLookup] = useState<Map<string, CardInfo>>(new Map());
+  const [simEntries, setSimEntries] = useState<{
+    a: DeckEntry[];
+    b: DeckEntry[];
+  } | null>(null);
 
   const [battleStatus, setBattleStatus] = useState<
     "idle" | "resolving" | "running" | "done" | "error"
@@ -165,6 +170,7 @@ export default function SimulatorPage() {
 
     const deckA = buildDeck(nameA, pA.main, pA.side, resolved.cards);
     const deckB = buildDeck(nameB, pB.main, pB.side, resolved.cards);
+    setSimEntries({ a: deckA.entries, b: deckB.entries });
 
     const expA = expandEntries(deckA.entries);
     const expB = expandEntries(deckB.entries);
@@ -253,6 +259,7 @@ export default function SimulatorPage() {
     setLookup(resolved.cards);
     const deckA = buildDeck(nameA, pA.main, pA.side, resolved.cards);
     const deckB = buildDeck(nameB, pB.main, pB.side, resolved.cards);
+    setSimEntries({ a: deckA.entries, b: deckB.entries });
     const expA = expandEntries(deckA.entries);
     const expB = expandEntries(deckB.entries);
     if (expA.length < 7 || expB.length < 7) {
@@ -479,6 +486,16 @@ export default function SimulatorPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {simEntries && (
+        <FormatSuggestions
+          entriesA={simEntries.a}
+          entriesB={simEntries.b}
+          nameA={nameA}
+          nameB={nameB}
+          lookup={lookup}
+        />
       )}
 
       <div className="footer-note">

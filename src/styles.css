@@ -1724,6 +1724,20 @@ button.ghost.active {
   font-size: 12px;
   white-space: nowrap;
 }
+
+/* Suggerimenti dal formato (Simula) */
+.fmt-suggest {
+  margin-top: 28px;
+}
+.fmt-group {
+  margin-top: 10px;
+}
+.fmt-reason {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
 .meta-name {
   font-weight: 600;
   color: var(--text);
