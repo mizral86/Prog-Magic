@@ -189,8 +189,30 @@ export class InteractiveGame {
     const card = this.hand[handIndex];
     if (!card || !card.isLand) return false;
     this.hand.splice(handIndex, 1);
-    this.lands.push({ card, enteredThisTurn: true });
     this.landPlayedThisTurn = true;
+
+    // Fetchland (Marsh Flats, Evolving Wilds, Prismatic Vista…): mette la terra
+    // in gioco e la "cracca" subito cercando una terra dalla libreria.
+    const fetch = fetchLandMatcher(card.oracleText);
+    if (fetch) {
+      const li = this.library.findIndex((c) => c.isLand && fetch.match(c));
+      if (li >= 0) {
+        let fetched = this.library.splice(li, 1)[0];
+        if (fetch.tapped) fetched = { ...fetched, entersTapped: true };
+        this.lands.push({ card: fetched, enteredThisTurn: true });
+        this.graveyard.push(card);
+        if (!fetched.entersTapped) this.available.push(fetched.producedMana.slice());
+        shuffle(this.library, this.rng);
+        this.log.push(`T${this.turn}: giochi ${card.name}, cerchi ${fetched.name}.`);
+        return true;
+      }
+      // Nessuna terra da cercare: la fetch resta in gioco (non produce mana).
+      this.lands.push({ card, enteredThisTurn: true });
+      this.log.push(`T${this.turn}: giochi ${card.name} (nessuna terra da cercare).`);
+      return true;
+    }
+
+    this.lands.push({ card, enteredThisTurn: true });
     if (!card.entersTapped) this.available.push(card.producedMana.slice());
     this.log.push(`T${this.turn}: giochi ${card.name}.`);
     return true;
@@ -257,6 +279,29 @@ export class InteractiveGame {
 function bottomScore(c: CardInfo, lands: number): number {
   if (c.isLand) return lands > 3 ? 0 : 100;
   return 50 - c.cmc;
+}
+
+// Riconosce una fetchland dal testo e restituisce come cercare il bersaglio.
+// null se la terra non è una fetch.
+const BASIC_TYPES = ["plains", "island", "swamp", "mountain", "forest"];
+function fetchLandMatcher(
+  oracle: string,
+): { match: (c: CardInfo) => boolean; tapped: boolean } | null {
+  const t = (oracle || "").toLowerCase();
+  if (!/search your library for/.test(t) || !/onto the battlefield/.test(t)) {
+    return null;
+  }
+  if (!/\bland\b|plains|island|swamp|mountain|forest/.test(t)) return null;
+  const tapped = /onto the battlefield tapped/.test(t);
+  const types = BASIC_TYPES.filter((x) => t.includes(x));
+  const basicOnly = /basic land/.test(t);
+  const match = (c: CardInfo): boolean => {
+    const tl = c.typeLine.toLowerCase();
+    if (types.length > 0) return types.some((x) => tl.includes(x));
+    if (basicOnly) return tl.includes("basic");
+    return tl.includes("land");
+  };
+  return { match, tapped };
 }
 
 function deckColors(deck: CardInfo[]): Color[] {
