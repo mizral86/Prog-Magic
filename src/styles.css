@@ -921,6 +921,36 @@ button.ghost:hover {
   background: var(--panel-3);
 }
 
+/* Etichetta che apre un selettore di file, con l'aspetto di button.ghost */
+label.ghost-file {
+  background: var(--panel-2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 9px 15px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+label.ghost-file:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+/* Possesso delle carte di un mazzo rispetto alla collezione */
+.dl-own {
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.dl-own.ok {
+  color: var(--good);
+}
+.dl-own.miss {
+  color: var(--bad);
+}
+
 label.field {
   display: inline-flex;
   align-items: center;

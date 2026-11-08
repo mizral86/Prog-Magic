@@ -427,3 +427,42 @@ export async function getPrintings(name: string): Promise<CardInfo[]> {
   const json = (await res.json()) as { data: ScryCard[] };
   return json.data.map(toCardInfo);
 }
+
+// --- Risoluzione per identificatori (import CSV, aggiornamento prezzi) -------
+
+/** Identificatore accettato da /cards/collection. */
+export type CardIdentifier =
+  | { id: string }
+  | { set: string; collector_number: string }
+  | { name: string };
+
+/**
+ * Risolve una lista di identificatori (ID Scryfall, set+numero o nome) a gruppi
+ * di 75. Restituisce le carte trovate; chi chiama le abbina all'identificatore.
+ */
+export async function resolveIdentifiers(
+  identifiers: CardIdentifier[],
+  onProgress?: (done: number, total: number) => void,
+): Promise<CardInfo[]> {
+  const out: CardInfo[] = [];
+  const groups = chunk(identifiers, CHUNK);
+  let done = 0;
+  for (const group of groups) {
+    const res = await fetch(COLLECTION_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ identifiers: group }),
+    });
+    if (!res.ok) {
+      throw new Error(
+        `Scryfall ha risposto ${res.status} ${res.statusText}. Riprova tra poco.`,
+      );
+    }
+    const json = (await res.json()) as CollectionResponse;
+    for (const c of json.data) out.push(toCardInfo(c));
+    done += group.length;
+    onProgress?.(done, identifiers.length);
+    if (groups.length > 1) await sleep(120);
+  }
+  return out;
+}

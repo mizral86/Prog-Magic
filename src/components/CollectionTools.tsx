@@ -2,7 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { parseDecklist } from "../deckParser";
-import { getSetCards, getSets, resolveCards, SetInfo } from "../scryfall";
+import {
+  getSetCards,
+  getSets,
+  resolveCards,
+  resolveIdentifiers,
+  SetInfo,
+} from "../scryfall";
+import {
+  collectionToCSV,
+  downloadText,
+  importCollectionCSV,
+  makeBackup,
+  restoreBackup,
+} from "../collectionIO";
 import { CardInfo } from "../types";
 import { useCollection } from "../collection";
 import { formatPrice } from "../prices";
@@ -11,6 +24,32 @@ import { CardDetail } from "./CardDetail";
 export function CollectionTools() {
   const [importOpen, setImportOpen] = useState(false);
   const [setsOpen, setSetsOpen] = useState(false);
+  const [csvOpen, setCsvOpen] = useState(false);
+  const [backupOpen, setBackupOpen] = useState(false);
+  const collection = useCollection();
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshMsg, setRefreshMsg] = useState<string | null>(null);
+
+  async function refreshPrices() {
+    const ids = collection.entries.map((e) => ({ id: e.id }));
+    if (ids.length === 0) {
+      setRefreshMsg("La collezione è vuota.");
+      return;
+    }
+    setRefreshing(true);
+    setRefreshMsg(null);
+    try {
+      const cards = await resolveIdentifiers(ids, (done, total) =>
+        setRefreshMsg(`Aggiorno i prezzi: ${done} di ${total}…`),
+      );
+      collection.refreshCards(cards);
+      setRefreshMsg(`Prezzi aggiornati (${cards.length} stampe).`);
+    } catch (err) {
+      setRefreshMsg(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   return (
     <div className="coll-tools">
@@ -29,8 +68,51 @@ export function CollectionTools() {
         >
           🗂 Sfoglia i set
         </button>
+        <button
+          type="button"
+          className={`ghost${csvOpen ? " active" : ""}`}
+          onClick={() => setCsvOpen((v) => !v)}
+        >
+          📄 Importa CSV
+        </button>
+        <button
+          type="button"
+          className="ghost"
+          onClick={() =>
+            downloadText(
+              "collezione-prog-magic.csv",
+              collectionToCSV(collection.entries),
+              "text/csv",
+            )
+          }
+          disabled={collection.entries.length === 0}
+        >
+          ⬇ Esporta CSV
+        </button>
+        <button
+          type="button"
+          className={`ghost${backupOpen ? " active" : ""}`}
+          onClick={() => setBackupOpen((v) => !v)}
+        >
+          💾 Backup
+        </button>
+        <button
+          type="button"
+          className="ghost"
+          onClick={refreshPrices}
+          disabled={refreshing}
+        >
+          {refreshing ? "Aggiorno…" : "↻ Aggiorna prezzi"}
+        </button>
       </div>
+      {refreshMsg && (
+        <div className="muted small" style={{ marginTop: 6 }}>
+          {refreshMsg}
+        </div>
+      )}
 
+      {csvOpen && <CsvPanel />}
+      {backupOpen && <BackupPanel />}
       {importOpen && <ImportPanel />}
       {setsOpen && <SetBrowser />}
     </div>
@@ -103,6 +185,130 @@ function ImportPanel() {
         </button>
         {msg && <span className="muted small">{msg}</span>}
       </div>
+    </div>
+  );
+}
+
+// --- Import CSV (anche esportato da altre app) ------------------------------
+
+function CsvPanel() {
+  const collection = useCollection();
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function onFile(file: File | undefined) {
+    if (!file) return;
+    setBusy(true);
+    setMsg("Leggo il file…");
+    try {
+      const res = await importCollectionCSV(await file.text(), setMsg);
+      for (const it of res.items) collection.add(it.card, { qty: it.qty, foil: it.foil });
+      const miss =
+        res.missing.length > 0
+          ? ` · ${res.missing.length} righe non riconosciute: ${res.missing
+              .slice(0, 4)
+              .join(", ")}${res.missing.length > 4 ? "…" : ""}`
+          : "";
+      setMsg(`Aggiunte ${res.copies} copie alla collezione${miss}`);
+    } catch (err) {
+      setMsg(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="tool-panel">
+      <p className="muted small" style={{ margin: "0 0 8px" }}>
+        Carica un CSV esportato da un'altra app di collezione (per esempio
+        ManaBox) o da un foglio di calcolo. Servono le colonne{" "}
+        <strong>Scryfall ID</strong>, oppure <strong>Name</strong> con{" "}
+        <strong>Set code</strong> e <strong>Collector number</strong>. Le colonne{" "}
+        <strong>Quantity</strong> e <strong>Foil</strong> sono lette se ci sono.
+        Le quantità vengono sommate a quelle che hai già.
+      </p>
+      <input
+        type="file"
+        accept=".csv,text/csv"
+        disabled={busy}
+        onChange={(e) => onFile(e.target.files?.[0])}
+      />
+      {msg && (
+        <div className="muted small" style={{ marginTop: 8 }}>
+          {msg}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- Backup e ripristino ------------------------------------------------------
+
+function BackupPanel() {
+  const [msg, setMsg] = useState<string | null>(null);
+  const [pending, setPending] = useState<string | null>(null);
+
+  async function onFile(file: File | undefined) {
+    if (!file) return;
+    setPending(await file.text());
+    setMsg(null);
+  }
+
+  function confirmRestore() {
+    if (!pending) return;
+    try {
+      restoreBackup(pending);
+      location.reload();
+    } catch (err) {
+      setMsg(err instanceof Error ? err.message : String(err));
+      setPending(null);
+    }
+  }
+
+  return (
+    <div className="tool-panel">
+      <p className="muted small" style={{ margin: "0 0 8px" }}>
+        Collezione e mazzi restano solo in questo browser. Scarica un backup ogni
+        tanto, oppure usalo per spostare tutto su un altro dispositivo.
+      </p>
+      <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <button
+          type="button"
+          className="primary"
+          onClick={() =>
+            downloadText(
+              `prog-magic-backup-${new Date().toISOString().slice(0, 10)}.json`,
+              makeBackup(),
+              "application/json",
+            )
+          }
+        >
+          Scarica backup
+        </button>
+        <label className="ghost-file">
+          Ripristina da file…
+          <input
+            type="file"
+            accept=".json,application/json"
+            hidden
+            onChange={(e) => onFile(e.target.files?.[0])}
+          />
+        </label>
+      </div>
+      {pending && (
+        <div className="row" style={{ gap: 8, marginTop: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <span className="small">
+            Il ripristino sostituisce collezione e mazzi attuali.
+          </span>
+          <button type="button" className="primary" onClick={confirmRestore}>
+            Ripristina
+          </button>
+          <button type="button" className="ghost" onClick={() => setPending(null)}>
+            Annulla
+          </button>
+        </div>
+      )}
+      {msg && <div className="status-line error">{msg}</div>}
     </div>
   );
 }
