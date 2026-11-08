@@ -11,6 +11,7 @@ import { deckToText, parseAndResolve } from "../deckIO";
 import { deckAnalysis, deckStats, legalityIssues } from "../deckStats";
 import { formatMoney } from "../prices";
 import { ownedByName, useCollection } from "../collection";
+import { useWishlist } from "../wishlist";
 import type { DeckCard, SavedDeck } from "../decks";
 import { Bar } from "./Bar";
 
@@ -44,6 +45,28 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
   const collection = useCollection();
   const owned = useMemo(() => ownedByName(collection.entries), [collection.entries]);
   const missing = useMemo(() => (deck ? missingCards(deck, owned) : null), [deck, owned]);
+  const wishlist = useWishlist();
+  const [wishMsg, setWishMsg] = useState<string | null>(null);
+
+  function missingToWishlist() {
+    if (!deck || !missing) return;
+    let n = 0;
+    for (const m of missing.list) {
+      const c = m.card;
+      wishlist.add(
+        {
+          name: c.name,
+          scryfallId: /^[0-9a-f-]{36}$/.test(c.id) ? c.id : undefined,
+          imageSmallUrl: c.imageSmallUrl,
+          imageUrl: c.imageUrl,
+          prices: c.prices,
+        },
+        m.lack,
+      );
+      n += m.lack;
+    }
+    setWishMsg(`Aggiunte ${n} carte alla wishlist.`);
+  }
 
   if (!deck) {
     return (
@@ -291,6 +314,17 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
                       ? `Da procurare · ${formatMoney(missing.valueEur, "EUR")}`
                       : "Hai tutte le carte"}
                   </div>
+                  {missing.copies > 0 && (
+                    <button
+                      type="button"
+                      className="ghost"
+                      style={{ marginTop: 6, padding: "5px 9px", fontSize: 12 }}
+                      onClick={missingToWishlist}
+                    >
+                      ♡ Metti le mancanti in wishlist
+                    </button>
+                  )}
+                  {wishMsg && <div className="muted small">{wishMsg}</div>}
                 </div>
               )}
             </div>
@@ -485,14 +519,16 @@ function neededByName(deck: SavedDeck): Map<string, number> {
 function missingCards(deck: SavedDeck, owned: Map<string, number>) {
   let copies = 0;
   let valueEur = 0;
+  const list: { card: DeckCard; lack: number }[] = [];
   for (const [k, n] of neededByName(deck)) {
     const card = deck.cards.find((c) => c.name.toLowerCase() === k)!;
     if (isBasicLand(card)) continue;
     const lack = Math.max(0, n - (owned.get(k) ?? 0));
+    if (lack > 0) list.push({ card, lack });
     copies += lack;
     valueEur += lack * (card.prices?.eur ?? card.prices?.usd ?? 0);
   }
-  return { copies, valueEur };
+  return { copies, valueEur, list };
 }
 
 function OwnBadge({ card, have, need }: { card: DeckCard; have: number; need: number }) {

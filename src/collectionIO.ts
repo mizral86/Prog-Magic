@@ -6,6 +6,8 @@ import { CardInfo } from "./types";
 
 const COLLECTION_KEY = "pm.collection.v1";
 const DECKS_KEY = "pm.decks.v1";
+const BINDERS_KEY = "pm.binders.v1";
+const WISHLIST_KEY = "pm.wishlist.v1";
 
 /** Parser CSV minimale: virgolette, virgolette raddoppiate, separatore , o ;. */
 export function parseCSV(text: string): string[][] {
@@ -188,12 +190,20 @@ export function makeBackup(): string {
     createdAt: new Date().toISOString(),
     collection: read(COLLECTION_KEY),
     decks: read(DECKS_KEY),
+    binders: JSON.parse(localStorage.getItem(BINDERS_KEY) ?? "[]"),
+    wishlist: read(WISHLIST_KEY),
   });
 }
 
 /** Ripristina un backup: sostituisce collezione e mazzi. Va ricaricata la pagina. */
 export function restoreBackup(text: string): void {
-  let data: { app?: string; collection?: unknown; decks?: unknown };
+  let data: {
+    app?: string;
+    collection?: unknown;
+    decks?: unknown;
+    binders?: unknown;
+    wishlist?: unknown;
+  };
   try {
     data = JSON.parse(text);
   } catch {
@@ -208,6 +218,8 @@ export function restoreBackup(text: string): void {
   }
   localStorage.setItem(COLLECTION_KEY, JSON.stringify(data.collection ?? {}));
   localStorage.setItem(DECKS_KEY, JSON.stringify(data.decks ?? {}));
+  localStorage.setItem(BINDERS_KEY, JSON.stringify(Array.isArray(data.binders) ? data.binders : []));
+  localStorage.setItem(WISHLIST_KEY, JSON.stringify(data.wishlist ?? {}));
 }
 
 /** Fa scaricare un file di testo al browser. */

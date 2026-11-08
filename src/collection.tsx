@@ -29,11 +29,29 @@ export interface CollectionEntry {
   qty: number; // copie non-foil
   foilQty: number; // copie foil
   addedAt: number;
+  /** Raccoglitore in cui si trova la stampa (assente = nessuno). */
+  binder?: string;
+}
+
+/** Raccoglitore: un contenitore con nome per dividere la collezione. */
+export interface Binder {
+  id: string;
+  name: string;
 }
 
 type EntryMap = Record<string, CollectionEntry>;
 
 const KEY = "pm.collection.v1";
+const BINDERS_KEY = "pm.binders.v1";
+
+function loadBinders(): Binder[] {
+  try {
+    const raw = localStorage.getItem(BINDERS_KEY);
+    return raw ? (JSON.parse(raw) as Binder[]) : [];
+  } catch {
+    return [];
+  }
+}
 
 function load(): EntryMap {
   try {
@@ -63,16 +81,30 @@ interface CollectionCtx {
   clear: () => void;
   /** Aggiorna prezzi e immagini delle stampe già in collezione. */
   refreshCards: (cards: CardInfo[]) => void;
+  binders: Binder[];
+  createBinder: (name: string) => string;
+  renameBinder: (id: string, name: string) => void;
+  /** Elimina il raccoglitore: le carte restano in collezione, senza raccoglitore. */
+  deleteBinder: (id: string) => void;
+  setBinder: (entryId: string, binderId: string | undefined) => void;
 }
 
 const Ctx = createContext<CollectionCtx | null>(null);
 
 export function CollectionProvider({ children }: { children: ReactNode }) {
   const [map, setMap] = useState<EntryMap>(() => load());
+  const [binders, setBinders] = useState<Binder[]>(() => loadBinders());
 
   useEffect(() => {
     save(map);
   }, [map]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(BINDERS_KEY, JSON.stringify(binders));
+    } catch {
+      /* ignora */
+    }
+  }, [binders]);
 
   const api = useMemo<CollectionCtx>(() => {
     const cleanup = (m: EntryMap, id: string) => {
@@ -146,6 +178,28 @@ export function CollectionProvider({ children }: { children: ReactNode }) {
           return next;
         }),
       clear: () => setMap({}),
+      binders,
+      createBinder: (name) => {
+        const id = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+        setBinders((b) => [...b, { id, name: name.trim() || "Raccoglitore" }]);
+        return id;
+      },
+      renameBinder: (id, name) =>
+        setBinders((b) => b.map((x) => (x.id === id ? { ...x, name: name.trim() || x.name } : x))),
+      deleteBinder: (id) => {
+        setBinders((b) => b.filter((x) => x.id !== id));
+        setMap((prev) => {
+          const next = { ...prev };
+          for (const k of Object.keys(next)) {
+            if (next[k].binder === id) next[k] = { ...next[k], binder: undefined };
+          }
+          return next;
+        });
+      },
+      setBinder: (entryId, binderId) =>
+        setMap((prev) =>
+          prev[entryId] ? { ...prev, [entryId]: { ...prev[entryId], binder: binderId } } : prev,
+        ),
       refreshCards: (cards) =>
         setMap((prev) => {
           const next = { ...prev };
@@ -162,7 +216,7 @@ export function CollectionProvider({ children }: { children: ReactNode }) {
           return next;
         }),
     };
-  }, [map]);
+  }, [map, binders]);
 
   return <Ctx.Provider value={api}>{children}</Ctx.Provider>;
 }
