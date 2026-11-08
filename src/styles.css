@@ -2487,3 +2487,10 @@ button.ghost.active {
   align-items: stretch;
   gap: 4px;
 }
+.account-legal {
+  margin: 14px 0 0;
+  text-align: center;
+}
+.account-legal a {
+  color: inherit;
+}

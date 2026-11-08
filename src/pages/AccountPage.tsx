@@ -271,6 +271,10 @@ function SignInForm() {
 
       {info && <p className="account-info">{info}</p>}
       {error && <p className="account-error">{error}</p>}
+      <p className="muted small account-legal">
+        <a href={`${import.meta.env.BASE_URL}privacy.html`}>Privacy</a> ·{" "}
+        <a href={`${import.meta.env.BASE_URL}termini.html`}>Termini</a>
+      </p>
     </div>
   );
 }
