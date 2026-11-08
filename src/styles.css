@@ -2355,3 +2355,18 @@ button.ghost.active {
   opacity: 0.38;
   filter: grayscale(0.6);
 }
+/* Quota di metagame e provenienza della lista nel pannello meta */
+.meta-share {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.meta-source {
+  margin-top: 2px;
+}
