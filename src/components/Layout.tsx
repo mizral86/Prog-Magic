@@ -1,28 +1,54 @@
 // Shell dell'app: barra superiore + contenuto + navigazione inferiore a schede.
 
-import { NavLink, Outlet } from "react-router-dom";
+import { useState } from "react";
+import { Link, NavLink, Outlet } from "react-router-dom";
+import { applyTheme, getTheme, isDark, ThemeChoice } from "../theme";
 
 interface Tab {
   to: string;
   label: string;
   icon: JSX.Element;
+  className?: string;
 }
 
 const TABS: Tab[] = [
   { to: "/cerca", label: "Cerca", icon: <IconSearch /> },
   { to: "/collezione", label: "Collezione", icon: <IconCollection /> },
+  { to: "/scansiona", label: "Scansiona", icon: <IconCamera />, className: "nav-scan" },
   { to: "/mazzi", label: "Mazzi", icon: <IconDecks /> },
   { to: "/simula", label: "Simula", icon: <IconSim /> },
   { to: "/gioca", label: "Gioca", icon: <IconPlay /> },
 ];
 
 export function Layout() {
+  const [theme, setTheme] = useState<ThemeChoice>(getTheme);
+  const dark = isDark(theme);
+  function toggleTheme() {
+    const next: ThemeChoice = dark ? "light" : "dark";
+    applyTheme(next);
+    setTheme(next);
+  }
+
   return (
     <div className="shell">
       <header className="topbar">
         <span className="brand">
           <span className="brand-mark">✦</span> Prog Magic
         </span>
+        <div className="topbar-actions">
+          <Link to="/scansiona" className="icon-btn" aria-label="Scansiona carte" title="Scansiona carte">
+            <IconCamera />
+          </Link>
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={toggleTheme}
+            aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"}
+            title={dark ? "Tema chiaro" : "Tema scuro"}
+          >
+            {dark ? "☀" : "☾"}
+          </button>
+        </div>
       </header>
 
       <main className="content">
@@ -34,7 +60,10 @@ export function Layout() {
           <NavLink
             key={t.to}
             to={t.to}
-            className={({ isActive }) => `navitem ${isActive ? "active" : ""}`}
+            className={({ isActive }) =>
+              `navitem ${t.className ?? ""} ${isActive ? "active" : ""}`
+            }
+            aria-label={t.label}
           >
             {t.icon}
             <span>{t.label}</span>
@@ -82,6 +111,14 @@ function IconPlay() {
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="9" />
       <path d="M10 9l5 3-5 3V9z" fill="currentColor" />
+    </svg>
+  );
+}
+function IconCamera() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
+      <circle cx="12" cy="13.5" r="3.5" />
     </svg>
   );
 }
