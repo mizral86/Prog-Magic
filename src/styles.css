@@ -2370,3 +2370,19 @@ button.ghost.active {
 .meta-source {
   margin-top: 2px;
 }
+
+/* Simulatore: scelta del mazzo dal meta o dai propri mazzi */
+.deck-sources {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.deck-sources .deck-source select {
+  width: 100%;
+}
+.deck-sources label.field {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}

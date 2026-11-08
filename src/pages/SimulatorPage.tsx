@@ -18,6 +18,18 @@ import { SAMPLE_A, SAMPLE_B } from "../sampleDecks";
 import { getCompareSlots } from "../compareTray";
 import { useDecks } from "../decks";
 import { deckToText } from "../deckIO";
+import { META, META_UPDATED } from "../metagame";
+import { FORMATS, Format } from "../decks";
+
+const FORMAT_LABEL: Record<Format, string> = {
+  standard: "Standard",
+  pioneer: "Pioneer",
+  modern: "Modern",
+  pauper: "Pauper",
+  legacy: "Legacy",
+  vintage: "Vintage",
+  commander: "Commander",
+};
 
 interface DeckResult {
   deck: Deck;
@@ -531,28 +543,58 @@ function DeckPanel({ title, name, setName, text, setText, result }: DeckPanelPro
   return (
     <div className="panel">
       <h2>{title}</h2>
-      {decks.length > 0 && (
-        <label className="field deck-source" style={{ marginBottom: 8 }}>
-          Carica da Mazzi
+      <div className="deck-sources">
+        <label className="field deck-source">
+          Mazzi del meta · {META_UPDATED}
           <select
             value=""
             onChange={(e) => {
-              const d = decks.find((x) => x.id === e.target.value);
-              if (d) {
-                setText(deckToText(d));
-                setName(d.name);
+              const [f, idx] = e.target.value.split(":");
+              const a = META[f as Format]?.[Number(idx)];
+              if (a?.deck) {
+                setText(a.deck);
+                setName(`${a.name} (${FORMAT_LABEL[f as Format]})`);
               }
             }}
           >
-            <option value="">— o scrivi la lista qui sotto —</option>
-            {decks.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.name}
-              </option>
+            <option value="">— scegli un mazzo del meta —</option>
+            {FORMATS.map((f) => (
+              <optgroup key={f} label={FORMAT_LABEL[f]}>
+                {META[f].map((a, i) =>
+                  a.deck ? (
+                    <option key={i} value={`${f}:${i}`}>
+                      {a.name}
+                      {a.share ? ` · ${a.share}` : ""}
+                    </option>
+                  ) : null,
+                )}
+              </optgroup>
             ))}
           </select>
         </label>
-      )}
+        {decks.length > 0 && (
+          <label className="field deck-source">
+            I miei mazzi
+            <select
+              value=""
+              onChange={(e) => {
+                const d = decks.find((x) => x.id === e.target.value);
+                if (d) {
+                  setText(deckToText(d));
+                  setName(d.name);
+                }
+              }}
+            >
+              <option value="">— scegli un tuo mazzo —</option>
+              {decks.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </div>
       <input
         className="deck-name-input"
         value={name}
