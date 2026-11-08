@@ -1975,6 +1975,7 @@ button.ghost.active {
   justify-content: space-between;
   margin: 12px 0 6px;
   font-size: 14px;
+}
 /* Quota di metagame e provenienza della lista nel pannello meta */
 .meta-share {
   display: inline-block;
