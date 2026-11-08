@@ -23,19 +23,24 @@ const COLOR_NAMES: Record<Color, string> = {
 export default function CollectionPage() {
   const collection = useCollection();
   const [filter, setFilter] = useState("");
+  const [sort, setSort] = useState<SortKey>("recent");
 
   const entries = collection.entries;
   const totals = useMemo(() => computeTotals(entries), [entries]);
 
   const filtered = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    if (!q) return entries;
-    return entries.filter(
-      (e) =>
-        e.name.toLowerCase().includes(q) ||
-        (e.setName ?? "").toLowerCase().includes(q),
-    );
-  }, [entries, filter]);
+    const list = !q
+      ? [...entries]
+      : entries.filter(
+          (e) =>
+            e.name.toLowerCase().includes(q) ||
+            (e.setName ?? "").toLowerCase().includes(q) ||
+            (e.setCode ?? "").toLowerCase() === q ||
+            e.typeLine.toLowerCase().includes(q),
+        );
+    return list.sort(SORTERS[sort]);
+  }, [entries, filter, sort]);
 
   const byColor = useMemo(() => colorStats(entries), [entries]);
   const byRarity = useMemo(() => rarityStats(entries), [entries]);
@@ -113,8 +118,20 @@ export default function CollectionPage() {
           style={{ margin: 0, flex: 1 }}
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder="Filtra per nome o edizione…"
+          placeholder="Filtra per nome, tipo o edizione…"
         />
+        <select
+          className="deck-name-input"
+          style={{ margin: 0, width: "auto" }}
+          value={sort}
+          onChange={(e) => setSort(e.target.value as SortKey)}
+          aria-label="Ordina la collezione"
+        >
+          <option value="recent">Aggiunte di recente</option>
+          <option value="name">Nome</option>
+          <option value="value">Valore</option>
+          <option value="set">Edizione</option>
+        </select>
         <button
           type="button"
           className="ghost"
@@ -135,6 +152,22 @@ export default function CollectionPage() {
     </div>
   );
 }
+
+type SortKey = "recent" | "name" | "value" | "set";
+
+const lineValue = (e: CollectionEntry) =>
+  e.qty * eurUnit(e) + e.foilQty * eurFoilUnit(e);
+
+const SORTERS: Record<SortKey, (a: CollectionEntry, b: CollectionEntry) => number> = {
+  recent: (a, b) => b.addedAt - a.addedAt,
+  name: (a, b) => a.name.localeCompare(b.name, "it"),
+  value: (a, b) => lineValue(b) - lineValue(a),
+  set: (a, b) =>
+    (a.setCode ?? "").localeCompare(b.setCode ?? "") ||
+    (a.collectorNumber ?? "").localeCompare(b.collectorNumber ?? "", undefined, {
+      numeric: true,
+    }),
+};
 
 function CollectionRow({ entry }: { entry: CollectionEntry }) {
   const collection = useCollection();

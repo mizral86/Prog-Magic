@@ -61,6 +61,8 @@ interface CollectionCtx {
   setFoilQty: (id: string, qty: number) => void;
   remove: (id: string) => void;
   clear: () => void;
+  /** Aggiorna prezzi e immagini delle stampe già in collezione. */
+  refreshCards: (cards: CardInfo[]) => void;
 }
 
 const Ctx = createContext<CollectionCtx | null>(null);
@@ -144,6 +146,21 @@ export function CollectionProvider({ children }: { children: ReactNode }) {
           return next;
         }),
       clear: () => setMap({}),
+      refreshCards: (cards) =>
+        setMap((prev) => {
+          const next = { ...prev };
+          for (const c of cards) {
+            const id = c.scryfallId;
+            if (!id || !next[id]) continue;
+            next[id] = {
+              ...next[id],
+              prices: c.prices,
+              imageUrl: c.imageUrl ?? next[id].imageUrl,
+              imageSmallUrl: c.imageSmallUrl ?? next[id].imageSmallUrl,
+            };
+          }
+          return next;
+        }),
     };
   }, [map]);
 
@@ -189,4 +206,14 @@ export function computeTotals(entries: CollectionEntry[]): CollectionTotals {
     if (f === 0) missingPrice += e.foilQty;
   }
   return { cards, unique: entries.length, valueEur, missingPrice };
+}
+
+/** Copie possedute per nome carta (tutte le stampe, normali + foil). */
+export function ownedByName(entries: CollectionEntry[]): Map<string, number> {
+  const m = new Map<string, number>();
+  for (const e of entries) {
+    const k = e.name.toLowerCase();
+    m.set(k, (m.get(k) ?? 0) + e.qty + e.foilQty);
+  }
+  return m;
 }

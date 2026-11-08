@@ -10,6 +10,8 @@ import { searchCards } from "../scryfall";
 import { deckToText, parseAndResolve } from "../deckIO";
 import { deckAnalysis, deckStats, legalityIssues } from "../deckStats";
 import { formatMoney } from "../prices";
+import { ownedByName, useCollection } from "../collection";
+import type { DeckCard, SavedDeck } from "../decks";
 import { Bar } from "./Bar";
 
 const FORMAT_LABEL: Record<Format, string> = {
@@ -39,6 +41,9 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
   const stats = useMemo(() => (deck ? deckStats(deck) : null), [deck]);
   const analysis = useMemo(() => (deck ? deckAnalysis(deck) : null), [deck]);
   const issues = useMemo(() => (deck ? legalityIssues(deck) : []), [deck]);
+  const collection = useCollection();
+  const owned = useMemo(() => ownedByName(collection.entries), [collection.entries]);
+  const missing = useMemo(() => (deck ? missingCards(deck, owned) : null), [deck, owned]);
 
   if (!deck) {
     return (
@@ -273,6 +278,21 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
                   {stats.missingPrice > 0 && ` · ${stats.missingPrice} senza`}
                 </div>
               </div>
+              {missing && (
+                <div className="stat-card">
+                  <div
+                    className="value"
+                    style={{ color: missing.copies > 0 ? "var(--bad)" : "var(--good)" }}
+                  >
+                    {missing.copies > 0 ? missing.copies : "✓"}
+                  </div>
+                  <div className="label">
+                    {missing.copies > 0
+                      ? `Da procurare · ${formatMoney(missing.valueEur, "EUR")}`
+                      : "Hai tutte le carte"}
+                  </div>
+                </div>
+              )}
             </div>
             <div className="chart">
               <h3>Curva di mana (magie del main)</h3>
@@ -382,7 +402,11 @@ function CardList({
   board: Board;
 }) {
   const decks = useDecks();
-  const cover = decks.get(deckId)?.coverImageUrl;
+  const deck = decks.get(deckId);
+  const cover = deck?.coverImageUrl;
+  const collection = useCollection();
+  const owned = useMemo(() => ownedByName(collection.entries), [collection.entries]);
+  const need = useMemo(() => (deck ? neededByName(deck) : new Map<string, number>()), [deck]);
   const sorted = [...cards].sort(
     (a, b) => a.cmc - b.cmc || a.name.localeCompare(b.name),
   );
@@ -413,6 +437,7 @@ function CardList({
             </button>
             <span className="dl-qty">{c.qty}×</span>
             <span className="dl-name">{c.name}</span>
+            <OwnBadge card={c} have={owned.get(c.name.toLowerCase()) ?? 0} need={need.get(c.name.toLowerCase()) ?? 0} />
             <span className="stepper">
               <button
                 type="button"
@@ -439,5 +464,48 @@ function CardList({
         })}
       </div>
     </div>
+  );
+}
+
+// --- Possesso delle carte rispetto alla collezione ---------------------------
+
+const isBasicLand = (c: DeckCard) => /\bBasic\b/.test(c.typeLine);
+
+/** Copie richieste per nome, sommando main e sideboard. */
+function neededByName(deck: SavedDeck): Map<string, number> {
+  const m = new Map<string, number>();
+  for (const c of deck.cards) {
+    const k = c.name.toLowerCase();
+    m.set(k, (m.get(k) ?? 0) + c.qty);
+  }
+  return m;
+}
+
+/** Copie che mancano in collezione (terre base escluse) e il loro costo stimato. */
+function missingCards(deck: SavedDeck, owned: Map<string, number>) {
+  let copies = 0;
+  let valueEur = 0;
+  for (const [k, n] of neededByName(deck)) {
+    const card = deck.cards.find((c) => c.name.toLowerCase() === k)!;
+    if (isBasicLand(card)) continue;
+    const lack = Math.max(0, n - (owned.get(k) ?? 0));
+    copies += lack;
+    valueEur += lack * (card.prices?.eur ?? card.prices?.usd ?? 0);
+  }
+  return { copies, valueEur };
+}
+
+function OwnBadge({ card, have, need }: { card: DeckCard; have: number; need: number }) {
+  if (isBasicLand(card)) return null;
+  if (have >= need)
+    return (
+      <span className="dl-own ok" title={`Nella collezione: ${have}`}>
+        ✓
+      </span>
+    );
+  return (
+    <span className="dl-own miss" title={`Nella collezione: ${have} su ${need}`}>
+      manca {need - have}
+    </span>
   );
 }
