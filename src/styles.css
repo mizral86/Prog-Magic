@@ -2370,3 +2370,104 @@ button.ghost.active {
 .meta-source {
   margin-top: 2px;
 }
+
+/* ---- Account e sincronizzazione del profilo ---- */
+.account-panel {
+  max-width: 460px;
+  margin-bottom: 14px;
+}
+.account-panel h2 {
+  margin-top: 0;
+}
+.account-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.account-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--grad);
+  color: #fff;
+  font-weight: 700;
+  font-size: 18px;
+}
+.account-name {
+  font-weight: 700;
+}
+.account-sync {
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border-radius: var(--r-sm);
+  background: var(--panel-2);
+  font-size: 14px;
+}
+.account-tabs {
+  margin: 4px 0 12px;
+}
+.account-form {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.account-panel label.account-field {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.account-panel label.account-field input {
+  width: 100%;
+}
+.account-or {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.account-or::before,
+.account-or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.account-google {
+  width: 100%;
+  justify-content: center;
+}
+.g-mark {
+  font-weight: 800;
+  color: #4285f4;
+  margin-right: 6px;
+}
+.account-error {
+  color: var(--danger, #d23c3c);
+  font-size: 14px;
+}
+.account-info {
+  color: var(--accent);
+  font-size: 14px;
+}
+.account-initial {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--grad);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+.account-initial.warn {
+  background: var(--danger, #d23c3c);
+}
+.account-form h2 {
+  margin: 0;
+}
