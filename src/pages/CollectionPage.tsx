@@ -14,6 +14,7 @@ import {
 import { Color, COLORS } from "../types";
 import { formatMoney } from "../prices";
 import { CollectionTools } from "../components/CollectionTools";
+import { Shelf, ShelfBar, WishlistView } from "../components/Shelves";
 
 const COLOR_NAMES: Record<Color, string> = {
   W: "Bianco",
@@ -43,8 +44,15 @@ export default function CollectionPage() {
     }
   };
   const [detail, setDetail] = useState<CardInfo | null>(null);
+  const [shelf, setShelf] = useState<Shelf>("all");
 
-  const entries = collection.entries;
+  const entries = useMemo(
+    () =>
+      shelf === "all" || shelf === "wishlist"
+        ? collection.entries
+        : collection.entries.filter((e) => e.binder === shelf),
+    [collection.entries, shelf],
+  );
   const totals = useMemo(() => computeTotals(entries), [entries]);
 
   const filtered = useMemo(() => {
@@ -64,6 +72,35 @@ export default function CollectionPage() {
   const byColor = useMemo(() => colorStats(entries), [entries]);
   const byRarity = useMemo(() => rarityStats(entries), [entries]);
 
+  const shelfBar = <ShelfBar shelf={shelf} onChange={setShelf} />;
+
+  if (shelf === "wishlist") {
+    return (
+      <div className="page">
+        <h1 className="page-title">Collezione</h1>
+        {shelfBar}
+        <WishlistView />
+      </div>
+    );
+  }
+
+  if (shelf !== "all" && entries.length === 0) {
+    return (
+      <div className="page">
+        <h1 className="page-title">Collezione</h1>
+        {shelfBar}
+        <div className="coming-soon">
+          <div className="cs-emoji">🗂</div>
+          <h2>Raccoglitore vuoto</h2>
+          <p className="muted">
+            Apri una carta della collezione e scegli questo raccoglitore nella sua
+            scheda.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (entries.length === 0) {
     return (
       <div className="page">
@@ -73,6 +110,7 @@ export default function CollectionPage() {
           📷 Scansiona carte
         </Link>
       </div>
+        {shelfBar}
         <CollectionTools />
         <div className="coming-soon">
           <div className="cs-emoji">📚</div>
@@ -96,6 +134,7 @@ export default function CollectionPage() {
           📷 Scansiona
         </Link>
       </div>
+      {shelfBar}
 
       <div className="stat-cards coll-stats">
         <div className="stat-card">

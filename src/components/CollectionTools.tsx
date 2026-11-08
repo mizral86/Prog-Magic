@@ -18,6 +18,7 @@ import {
 } from "../collectionIO";
 import { CardInfo } from "../types";
 import { useCollection } from "../collection";
+import { useWishlist } from "../wishlist";
 import { formatPrice } from "../prices";
 import { CardDetail } from "./CardDetail";
 
@@ -315,7 +316,22 @@ function BackupPanel() {
 
 // --- Browser dei set ---------------------------------------------------------
 
+/** Stampe diverse possedute per codice set (numero da collezionista). */
+function ownedBySet(entries: { setCode?: string; collectorNumber?: string }[]) {
+  const m = new Map<string, Set<string>>();
+  for (const e of entries) {
+    if (!e.setCode) continue;
+    const k = e.setCode.toLowerCase();
+    if (!m.has(k)) m.set(k, new Set());
+    m.get(k)!.add(e.collectorNumber ?? "");
+  }
+  return m;
+}
+
 function SetBrowser() {
+  const collection = useCollection();
+  const owned = ownedBySet(collection.entries);
+  const [onlyMine, setOnlyMine] = useState(false);
   const [sets, setSets] = useState<SetInfo[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState("");
@@ -351,12 +367,11 @@ function SetBrowser() {
   }
 
   const q = filter.trim().toLowerCase();
-  const shown = q
-    ? sets.filter(
-        (s) =>
-          s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q),
-      )
-    : sets;
+  const shown = sets.filter(
+    (s) =>
+      (!q || s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q)) &&
+      (!onlyMine || owned.has(s.code.toLowerCase())),
+  );
 
   return (
     <div className="tool-panel">
@@ -367,6 +382,10 @@ function SetBrowser() {
         onChange={(e) => setFilter(e.target.value)}
         placeholder="Filtra set per nome o codice (es. Ravnica, MH3)…"
       />
+      <label className="small" style={{ display: "inline-flex", gap: 6, alignItems: "center", margin: "0 0 8px" }}>
+        <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} />
+        Solo i set di cui ho carte
+      </label>
       <div className="set-list">
         {shown.slice(0, 200).map((s) => (
           <button
@@ -385,13 +404,16 @@ function SetBrowser() {
               {s.code.toUpperCase()} · {s.cardCount} carte
               {s.released ? ` · ${s.released.slice(0, 4)}` : ""}
             </span>
+            {owned.has(s.code.toLowerCase()) && (
+              <SetProgress have={owned.get(s.code.toLowerCase())!.size} total={s.cardCount} />
+            )}
           </button>
         ))}
         {shown.length === 0 && (
           <div className="muted small">Nessun set per "{filter}".</div>
         )}
       </div>
-      {!q && sets.length > 200 && (
+      {!q && !onlyMine && sets.length > 200 && (
         <div className="muted small" style={{ marginTop: 6 }}>
           Mostrati i 200 set più recenti — usa il filtro per trovarne altri.
         </div>
@@ -400,7 +422,24 @@ function SetBrowser() {
   );
 }
 
+function SetProgress({ have, total }: { have: number; total: number }) {
+  const pct = total > 0 ? Math.min(100, Math.round((have / total) * 100)) : 0;
+  return (
+    <span className="set-progress" title={`${have} di ${total} carte`}>
+      <span className="sp-bar">
+        <span style={{ width: `${pct}%` }} />
+      </span>
+      <span className="sp-num">
+        {have}/{total}
+      </span>
+    </span>
+  );
+}
+
 function SetCards({ set, onBack }: { set: SetInfo; onBack: () => void }) {
+  const collection = useCollection();
+  const wishlist = useWishlist();
+  const [show, setShow] = useState<"all" | "missing" | "owned">("all");
   const [cards, setCards] = useState<CardInfo[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<CardInfo | null>(null);
@@ -431,19 +470,54 @@ function SetCards({ set, onBack }: { set: SetInfo; onBack: () => void }) {
       {error && <div className="status-line error">{error}</div>}
       {!cards && !error && <div className="muted small">Caricamento carte…</div>}
 
-      {cards && (
+      {cards && (() => {
+        const qtyOf = (c: CardInfo) => {
+          const e = c.scryfallId ? collection.get(c.scryfallId) : undefined;
+          return e ? e.qty + e.foilQty : 0;
+        };
+        const have = cards.filter((c) => qtyOf(c) > 0).length;
+        const missingCards = cards.filter((c) => qtyOf(c) === 0);
+        const list =
+          show === "missing" ? missingCards : show === "owned" ? cards.filter((c) => qtyOf(c) > 0) : cards;
+        return (
         <>
-          <div className="muted small" style={{ margin: "0 0 6px" }}>
-            {cards.length} carte · tocca una carta per aprirla e aggiungerla
+          <div className="set-head">
+            <SetProgress have={have} total={cards.length} />
+            <span className="small">
+              Hai <strong>{have}</strong> carte su {cards.length}
+            </span>
+          </div>
+          <div className="row" style={{ gap: 6, margin: "8px 0", flexWrap: "wrap", alignItems: "center" }}>
+            <span className="view-toggle" role="group" aria-label="Mostra">
+              <button type="button" aria-pressed={show === "all"} onClick={() => setShow("all")}>
+                Tutte
+              </button>
+              <button type="button" aria-pressed={show === "missing"} onClick={() => setShow("missing")}>
+                Mancanti
+              </button>
+              <button type="button" aria-pressed={show === "owned"} onClick={() => setShow("owned")}>
+                Possedute
+              </button>
+            </span>
+            {show === "missing" && missingCards.length > 0 && (
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => missingCards.forEach((c) => wishlist.add(c))}
+              >
+                ♡ Tutte le mancanti in wishlist
+              </button>
+            )}
           </div>
           <div className="card-grid">
-            {cards.map((c) => (
+            {list.map((c) => (
               <button
                 key={c.scryfallId ?? c.name}
                 type="button"
-                className="card-cell"
+                className={`card-cell${qtyOf(c) === 0 ? " not-owned" : ""}`}
                 onClick={() => setSelected(c)}
               >
+                {qtyOf(c) > 0 && <span className="ct-qty">×{qtyOf(c)}</span>}
                 {c.imageSmallUrl ? (
                   <img src={c.imageSmallUrl} alt={c.name} loading="lazy" />
                 ) : (
@@ -454,7 +528,8 @@ function SetCards({ set, onBack }: { set: SetInfo; onBack: () => void }) {
             ))}
           </div>
         </>
-      )}
+        );
+      })()}
 
       {selected && (
         <CardDetail card={selected} onClose={() => setSelected(null)} />

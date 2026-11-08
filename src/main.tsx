@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { CollectionProvider } from "./collection";
 import { DecksProvider } from "./decks";
+import { WishlistProvider } from "./wishlist";
 import "./styles.css";
 import { applyTheme, getTheme } from "./theme";
 
@@ -17,7 +18,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     >
       <CollectionProvider>
         <DecksProvider>
-          <App />
+          <WishlistProvider>
+            <App />
+          </WishlistProvider>
         </DecksProvider>
       </CollectionProvider>
     </BrowserRouter>

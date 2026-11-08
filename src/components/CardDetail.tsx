@@ -5,6 +5,7 @@ import { CardInfo } from "../types";
 import { getPrintings } from "../scryfall";
 import { bestPrice, formatMoney, formatPrice } from "../prices";
 import { useCollection } from "../collection";
+import { useWishlist } from "../wishlist";
 
 interface CardDetailProps {
   card: CardInfo;
@@ -17,6 +18,9 @@ export function CardDetail({ card, onClose }: CardDetailProps) {
   const [loading, setLoading] = useState(false);
   const collection = useCollection();
   const owned = shown.scryfallId ? collection.get(shown.scryfallId) : undefined;
+  const wishlist = useWishlist();
+  const wishId = shown.scryfallId ?? shown.name.toLowerCase();
+  const inWishlist = wishlist.has(wishId);
 
   useEffect(() => {
     setShown(card);
@@ -114,6 +118,14 @@ export function CardDetail({ card, onClose }: CardDetailProps) {
                     − Normale
                   </button>
                 )}
+                <button
+                  type="button"
+                  className={`ghost${inWishlist ? " active" : ""}`}
+                  onClick={() => (inWishlist ? wishlist.remove(wishId) : wishlist.add(shown))}
+                  title={inWishlist ? "Togli dalla wishlist" : "Aggiungi alla wishlist"}
+                >
+                  {inWishlist ? "♥ In wishlist" : "♡ Wishlist"}
+                </button>
                 {owned && owned.foilQty > 0 && (
                   <button
                     type="button"
@@ -127,6 +139,23 @@ export function CardDetail({ card, onClose }: CardDetailProps) {
                 )}
               </div>
             </div>
+
+            {owned && (
+              <label className="binder-pick">
+                Raccoglitore
+                <select
+                  value={owned.binder ?? ""}
+                  onChange={(e) => collection.setBinder(owned.id, e.target.value || undefined)}
+                >
+                  <option value="">Nessuno</option>
+                  {collection.binders.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
 
             <h3 className="mini-title">Stampe / edizioni</h3>
             {loading && <div className="muted small">Carico le stampe…</div>}

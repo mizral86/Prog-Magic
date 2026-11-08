@@ -2240,3 +2240,118 @@ button.ghost.active {
   padding: 7px 11px;
   font-size: 12.5px;
 }
+
+/* ---- Raccoglitori e wishlist ---- */
+.shelf-wrap {
+  margin-bottom: 12px;
+}
+.shelf-bar {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.shelf-bar button {
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.shelf-bar button[aria-selected="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--text);
+}
+.shelf-bar .shelf-add {
+  border-style: dashed;
+}
+.shelf-n {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+  margin-left: 2px;
+}
+.shelf-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.shelf-form input {
+  flex: 1;
+  min-width: 0;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 8px 12px;
+}
+.shelf-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+.binder-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 4px;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.binder-pick select {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 6px 10px;
+}
+
+/* ---- Completamento dei set ---- */
+.set-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.sp-bar {
+  width: 70px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--panel-3);
+  overflow: hidden;
+}
+.sp-bar span {
+  display: block;
+  height: 100%;
+  background: var(--good);
+}
+.sp-num {
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.set-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+.set-head .set-progress {
+  margin-left: 0;
+}
+.card-cell {
+  position: relative;
+}
+.card-cell.not-owned img {
+  opacity: 0.38;
+  filter: grayscale(0.6);
+}
