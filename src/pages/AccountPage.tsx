@@ -1,7 +1,8 @@
 // Pagina "Account": accesso, registrazione e stato della sincronizzazione.
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useAuth } from "../auth";
+import { googleEnabled } from "../cloud";
 
 type Mode = "login" | "signup" | "reset";
 
@@ -155,6 +156,15 @@ function SignInForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  // Il pulsante Google compare solo se Google è attivo nel progetto Supabase.
+  const [google, setGoogle] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    void googleEnabled().then((on) => alive && setGoogle(on));
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -236,24 +246,28 @@ function SignInForm() {
         </button>
       )}
 
-      <div className="account-or">
-        <span>oppure</span>
-      </div>
-      <button
-        type="button"
-        className="ghost account-google"
-        disabled={busy}
-        onClick={async () => {
-          setError(null);
-          try {
-            await auth.signInWithGoogle();
-          } catch (err) {
-            setError(err instanceof Error ? err.message : String(err));
-          }
-        }}
-      >
-        <span aria-hidden className="g-mark">G</span> Continua con Google
-      </button>
+      {google && (
+        <>
+          <div className="account-or">
+            <span>oppure</span>
+          </div>
+          <button
+            type="button"
+            className="ghost account-google"
+            disabled={busy}
+            onClick={async () => {
+              setError(null);
+              try {
+                await auth.signInWithGoogle();
+              } catch (err) {
+                setError(err instanceof Error ? err.message : String(err));
+              }
+            }}
+          >
+            <span aria-hidden className="g-mark">G</span> Continua con Google
+          </button>
+        </>
+      )}
 
       {info && <p className="account-info">{info}</p>}
       {error && <p className="account-error">{error}</p>}
