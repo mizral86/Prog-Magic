@@ -32,6 +32,25 @@ export function supabase(): SupabaseClient | null {
   return client;
 }
 
+/**
+ * Dice se l'accesso con Google è attivo nel progetto Supabase, così il
+ * pulsante compare solo quando funziona. In caso di dubbio (rete assente) false.
+ */
+let googleCache: Promise<boolean> | null = null;
+export function googleEnabled(): Promise<boolean> {
+  if (!cloudConfigured) return Promise.resolve(false);
+  googleCache ??= fetch(`${SUPABASE_URL}/auth/v1/settings`, {
+    headers: { apikey: SUPABASE_ANON_KEY },
+  })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((j) => Boolean(j?.external?.google))
+    .catch(() => {
+      googleCache = null;
+      return false;
+    });
+  return googleCache;
+}
+
 // ---------------------------------------------------------------------------
 // localStorage
 
