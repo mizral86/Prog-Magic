@@ -466,3 +466,44 @@ export async function resolveIdentifiers(
   }
   return out;
 }
+
+// --- Ricerca di una singola carta (scanner) -----------------------------------
+
+const API = "https://api.scryfall.com";
+
+async function getCard(path: string): Promise<CardInfo | null> {
+  const res = await fetch(API + path, { headers: { Accept: "application/json" } });
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    throw new Error(`Scryfall ha risposto ${res.status}. Riprova tra poco.`);
+  }
+  return toCardInfo((await res.json()) as ScryCard);
+}
+
+/** Stampa esatta da codice set + numero da collezionista (opzionale la lingua). */
+export function cardBySetNumber(
+  set: string,
+  number: string,
+  lang?: string,
+): Promise<CardInfo | null> {
+  const base = `/cards/${encodeURIComponent(set.toLowerCase())}/${encodeURIComponent(number)}`;
+  return getCard(lang && lang !== "en" ? `${base}/${lang}` : base);
+}
+
+/** Carta dal nome, anche scritto in modo impreciso (ricerca "fuzzy" in inglese). */
+export function cardByFuzzyName(name: string): Promise<CardInfo | null> {
+  return getCard(`/cards/named?fuzzy=${encodeURIComponent(name)}`);
+}
+
+/** Carta dal nome stampato in qualsiasi lingua (es. il nome italiano). */
+export async function cardByPrintedName(name: string): Promise<CardInfo | null> {
+  const q = `${name} lang:any`;
+  const res = await fetch(
+    `${API}/cards/search?q=${encodeURIComponent(q)}&include_multilingual=true&unique=cards`,
+    { headers: { Accept: "application/json" } },
+  );
+  if (!res.ok) return null;
+  const json = (await res.json()) as { data?: ScryCard[] };
+  const first = json.data?.[0];
+  return first ? toCardInfo(first) : null;
+}
