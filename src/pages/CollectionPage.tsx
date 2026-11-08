@@ -1,6 +1,7 @@
 // Sezione "Collezione": elenco carte possedute, valore e statistiche.
 
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   CollectionEntry,
   computeTotals,
@@ -48,7 +49,12 @@ export default function CollectionPage() {
   if (entries.length === 0) {
     return (
       <div className="page">
+        <div className="page-title-row">
         <h1 className="page-title">Collezione</h1>
+        <Link to="/scansiona" className="scan-cta">
+          📷 Scansiona carte
+        </Link>
+      </div>
         <CollectionTools />
         <div className="coming-soon">
           <div className="cs-emoji">📚</div>
@@ -66,7 +72,12 @@ export default function CollectionPage() {
 
   return (
     <div className="page">
-      <h1 className="page-title">Collezione</h1>
+      <div className="page-title-row">
+        <h1 className="page-title">Collezione</h1>
+        <Link to="/scansiona" className="scan-cta">
+          📷 Scansiona carte
+        </Link>
+      </div>
       <CollectionTools />
 
       <div className="stat-cards">

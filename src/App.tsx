@@ -5,6 +5,7 @@ import CollectionPage from "./pages/CollectionPage";
 import DecksPage from "./pages/DecksPage";
 import SimulatorPage from "./pages/SimulatorPage";
 import PlayPage from "./pages/PlayPage";
+import ScanPage from "./pages/ScanPage";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/mazzi" element={<DecksPage />} />
         <Route path="/simula" element={<SimulatorPage />} />
         <Route path="/gioca" element={<PlayPage />} />
+        <Route path="/scansiona" element={<ScanPage />} />
         <Route path="*" element={<Navigate to="/cerca" replace />} />
       </Route>
     </Routes>
