@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { CardDetail } from "../components/CardDetail";
+import { CardInfo } from "../types";
 import {
   CollectionEntry,
   computeTotals,
@@ -25,6 +27,22 @@ export default function CollectionPage() {
   const collection = useCollection();
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState<SortKey>("recent");
+  const [view, setViewState] = useState<"grid" | "list">(() => {
+    try {
+      return localStorage.getItem("pm.collectionView") === "list" ? "list" : "grid";
+    } catch {
+      return "grid";
+    }
+  });
+  const setView = (v: "grid" | "list") => {
+    setViewState(v);
+    try {
+      localStorage.setItem("pm.collectionView", v);
+    } catch {
+      /* ignora */
+    }
+  };
+  const [detail, setDetail] = useState<CardInfo | null>(null);
 
   const entries = collection.entries;
   const totals = useMemo(() => computeTotals(entries), [entries]);
@@ -75,12 +93,11 @@ export default function CollectionPage() {
       <div className="page-title-row">
         <h1 className="page-title">Collezione</h1>
         <Link to="/scansiona" className="scan-cta">
-          📷 Scansiona carte
+          📷 Scansiona
         </Link>
       </div>
-      <CollectionTools />
 
-      <div className="stat-cards">
+      <div className="stat-cards coll-stats">
         <div className="stat-card">
           <div className="value">{totals.cards}</div>
           <div className="label">Carte totali</div>
@@ -99,6 +116,10 @@ export default function CollectionPage() {
         </div>
       </div>
 
+      <CollectionTools />
+
+      <details className="coll-more">
+        <summary>Statistiche per colore e rarità</summary>
       <div className="chart">
         <h3>Per colore (copie)</h3>
         <div className="chips">
@@ -122,11 +143,12 @@ export default function CollectionPage() {
           ))}
         </div>
       </div>
+      </details>
 
-      <div className="row" style={{ margin: "14px 0 8px", gap: 8 }}>
+      <div className="row" style={{ margin: "14px 0 8px", gap: 8, flexWrap: "wrap" }}>
         <input
           className="deck-name-input"
-          style={{ margin: 0, flex: 1 }}
+          style={{ margin: 0, flex: "1 1 180px" }}
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           placeholder="Filtra per nome, tipo o edizione…"
@@ -143,6 +165,14 @@ export default function CollectionPage() {
           <option value="value">Valore</option>
           <option value="set">Edizione</option>
         </select>
+        <span className="view-toggle" role="group" aria-label="Vista">
+          <button type="button" aria-pressed={view === "grid"} onClick={() => setView("grid")}>
+            Griglia
+          </button>
+          <button type="button" aria-pressed={view === "list"} onClick={() => setView("list")}>
+            Lista
+          </button>
+        </span>
         <button
           type="button"
           className="ghost"
@@ -155,13 +185,69 @@ export default function CollectionPage() {
         </button>
       </div>
 
-      <div className="collection-list">
-        {filtered.map((e) => (
-          <CollectionRow key={e.id} entry={e} />
-        ))}
-      </div>
+      {view === "list" ? (
+        <div className="collection-list">
+          {filtered.map((e) => (
+            <CollectionRow key={e.id} entry={e} />
+          ))}
+        </div>
+      ) : (
+        <div className="coll-grid">
+          {filtered.map((e) => (
+            <button
+              key={e.id}
+              type="button"
+              className="coll-tile"
+              onClick={() => setDetail(entryToCard(e))}
+            >
+              <div className="ct-img">
+                {e.imageSmallUrl || e.imageUrl ? (
+                  <img src={e.imageUrl ?? e.imageSmallUrl} alt={e.name} loading="lazy" />
+                ) : (
+                  <div className="no-img small">{e.name}</div>
+                )}
+                <span className="ct-qty">×{e.qty + e.foilQty}</span>
+                {e.foilQty > 0 && <span className="ct-foil">FOIL</span>}
+              </div>
+              <span className="ct-name">{e.name}</span>
+              <span className="ct-meta">
+                <span>{(e.setCode ?? "").toUpperCase()}</span>
+                <strong>{lineValue(e) > 0 ? formatMoney(lineValue(e), "EUR") : "—"}</strong>
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+      {detail && <CardDetail card={detail} onClose={() => setDetail(null)} />}
     </div>
   );
+}
+
+/** Dati minimi per aprire la scheda di una carta della collezione. */
+function entryToCard(e: CollectionEntry): CardInfo {
+  return {
+    name: e.name,
+    cmc: e.cmc,
+    typeLine: e.typeLine,
+    categories: [],
+    colors: e.colors,
+    colorIdentity: e.colorIdentity,
+    isLand: e.isLand,
+    producedMana: [],
+    entersTapped: false,
+    manaCost: "",
+    pips: {},
+    generic: 0,
+    oracleText: "",
+    imageUrl: e.imageUrl,
+    imageSmallUrl: e.imageSmallUrl,
+    scryfallId: e.id,
+    rarity: e.rarity,
+    setCode: e.setCode,
+    setName: e.setName,
+    collectorNumber: e.collectorNumber,
+    prices: e.prices,
+  };
 }
 
 type SortKey = "recent" | "name" | "value" | "set";
