@@ -1,5 +1,6 @@
 // Shell dell'app: barra superiore + contenuto + navigazione inferiore a schede.
 
+import { useAuth } from "../auth";
 import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { applyTheme, getTheme, isDark, ThemeChoice } from "../theme";
@@ -48,6 +49,7 @@ export function Layout() {
           >
             {dark ? "☀" : "☾"}
           </button>
+          <AccountButton />
         </div>
       </header>
 
@@ -119,6 +121,34 @@ function IconCamera() {
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
       <circle cx="12" cy="13.5" r="3.5" />
+    </svg>
+  );
+}
+
+function AccountButton() {
+  const auth = useAuth();
+  if (auth.status === "disabled") return null;
+  const label =
+    auth.status === "in"
+      ? `Profilo: ${auth.user?.email ?? ""}${auth.syncError ? " (sincronizzazione non riuscita)" : ""}`
+      : "Accedi";
+  const initial = (auth.user?.email?.[0] ?? "").toUpperCase();
+  return (
+    <Link to="/account" className="icon-btn account-btn" aria-label={label} title={label}>
+      {auth.status === "in" ? (
+        <span className={`account-initial${auth.syncError ? " warn" : ""}`}>{initial || "✓"}</span>
+      ) : (
+        <IconUser />
+      )}
+    </Link>
+  );
+}
+
+function IconUser() {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
     </svg>
   );
 }
