@@ -7,6 +7,7 @@ import {
   EDHREC_URL,
   goldfishUrl,
   META,
+  META_SOURCE,
   META_UPDATED,
   mtgtop8Url,
 } from "../metagame";
@@ -63,9 +64,13 @@ export function MetaPanel({
             {list.map((a, i) => (
               <li key={i}>
                 <div className="meta-row">
-                  <div>
+                  <div style={{ minWidth: 0 }}>
                     <span className="meta-name">{a.name}</span>
+                    {a.share && <span className="meta-share">{a.share}</span>}
                     {a.note && <span className="muted small"> — {a.note}</span>}
+                    {a.source && (
+                      <div className="muted small meta-source">Lista: {a.source}</div>
+                    )}
                   </div>
                   {!a.name.startsWith("Vedi") && (
                     <button
@@ -73,7 +78,7 @@ export function MetaPanel({
                       className="ghost meta-create"
                       title={
                         a.deck
-                          ? "Crea un mazzo con le carte-firma dell'archetipo"
+                          ? "Crea un mazzo con questa lista (main + sideboard)"
                           : "Crea un mazzo vuoto con questo nome"
                       }
                       onClick={() => onCreateDeck(a.name, format, a.deck)}
@@ -102,11 +107,10 @@ export function MetaPanel({
           </div>
 
           <p className="muted small meta-disclaimer">
-            ⚠ Elenco <strong>indicativo</strong> (agg. {META_UPDATED}), non un
-            dato live: gli archetipi cambiano. <strong>+ Crea mazzo</strong>{" "}
-            genera una lista-<em>scheletro</em> con le carte-firma (da
-            completare/aggiornare); i nomi non trovati vengono scartati. Per il
-            metagame corrente usa i link qui sopra.
+            Fotografia del metagame al <strong>{META_UPDATED}</strong> (fonte:{" "}
+            {META_SOURCE[format]}), non un dato live. <strong>+ Crea mazzo</strong>{" "}
+            importa la lista completa giocata nel torneo indicato. Per il
+            metagame di oggi usa i link qui sopra.
           </p>
         </>
       )}
