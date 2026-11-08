@@ -2240,3 +2240,18 @@ button.ghost.active {
   padding: 7px 11px;
   font-size: 12.5px;
 }
+/* Quota di metagame e provenienza della lista nel pannello meta */
+.meta-share {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.meta-source {
+  margin-top: 2px;
+}
