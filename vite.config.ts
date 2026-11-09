@@ -13,8 +13,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.png", "apple-touch-icon.png"],
       manifest: {
-        name: "Prog Magic — Simulatore MTG",
-        short_name: "Prog Magic",
+        name: "Menga Magic — More Magic Together",
+        short_name: "Menga Magic",
         description:
           "Collezione, mazzi e simulazione di partite per Magic: The Gathering.",
         lang: "it",
