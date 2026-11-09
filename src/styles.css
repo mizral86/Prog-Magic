@@ -2623,6 +2623,11 @@ button.ghost.active {
   object-position: 50% 42%;
   display: block;
 }
+/* Nell'immagine chiara il planeswalker sta più in alto: si parte dal bordo
+   superiore così testa e corona cadono negli stessi punti della versione scura. */
+:root[data-mode="light"] .hero-banner img {
+  object-position: 50% 0%;
+}
 .hero-banner::after {
   /* la pergamena "assorbe" il fondo dell'immagine */
   content: "";
