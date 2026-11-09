@@ -29,3 +29,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     </BrowserRouter>
   </React.StrictMode>,
 );
+
+// Toglie l'animazione di apertura (index.html) quando l'app è pronta.
+(window as unknown as { __hideSplash?: () => void }).__hideSplash?.();
