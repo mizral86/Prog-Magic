@@ -34,7 +34,7 @@ export function Layout() {
     <div className="shell">
       <header className="topbar">
         <span className="brand">
-          <span className="brand-mark">✦</span> Prog Magic
+          <img className="brand-mark" src={`${import.meta.env.BASE_URL}logo-96.png`} alt="" /> Prog Magic
         </span>
         <div className="topbar-actions">
           <Link to="/scansiona" className="icon-btn" aria-label="Scansiona carte" title="Scansiona carte">
