@@ -2655,3 +2655,8 @@ button.ghost.active {
   border-radius: 22px;
   box-shadow: var(--sh-2);
 }
+/* L'immagine Menga Magic appartiene al tema chiaro: nel tema scuro non si vede. */
+:root:not([data-mode="light"]) .hero-banner,
+:root:not([data-mode="light"]) .account-cover {
+  display: none;
+}
