@@ -192,6 +192,11 @@ function SignInForm() {
 
   return (
     <div className="panel account-panel">
+      <img
+        className="account-cover"
+        src={`${import.meta.env.BASE_URL}menga-cover.webp`}
+        alt="Menga Magic"
+      />
       <p className="muted">
         Accedi per salvare collezione, mazzi, wishlist e impostazioni sul tuo profilo e
         ritrovarli su ogni dispositivo.

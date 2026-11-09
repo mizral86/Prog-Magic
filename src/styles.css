@@ -1,39 +1,42 @@
 :root {
-  /* Tema CHIARO — superfici dal fondo verso l'alto */
-  --bg: #f5f7fb;
-  --bg-2: #eef1f7;
-  --panel: #ffffff;
-  --panel-2: #f3f5fa;
-  --panel-3: #e8ecf4;
-  --border: #e4e8f0;
-  --border-strong: #cfd6e3;
-  --text: #131a26;
-  --muted: #59647a;
-  --faint: #8a94a6;
+  /* Tema CHIARO "Acquerello" — dall'immagine Menga Magic:
+     pergamena, inchiostro, oro e sfumature dei cinque colori. */
+  --bg: #f4ecdc;
+  --bg-2: #efe4cf;
+  --panel: #fffaf0;
+  --panel-2: #f7efdf;
+  --panel-3: #ecdfc5;
+  --border: #e4d5b6;
+  --border-strong: #cdb68b;
+  --text: #1d1a24;
+  --muted: #5d5464;
+  --faint: #8f8475;
   /* Superfici traslucide (barre) */
-  --glass: rgba(255, 255, 255, 0.72);
-  --glass-2: rgba(255, 255, 255, 0.85);
-  /* Accenti */
-  --accent: #7c3aed;
-  --accent-2: #0ea5e9;
-  --accent-soft: rgba(124, 58, 237, 0.12);
-  --grad: linear-gradient(135deg, #7c3aed 0%, #6366f1 45%, #0ea5e9 100%);
-  --good: #059669;
-  --warn: #d97706;
-  --bad: #dc2626;
-  /* Colori mana (leggermente più scuri per leggibilità su chiaro) */
-  --W: #d9c47e;
-  --U: #4f8fe0;
-  --B: #8a72a3;
-  --R: #e0674a;
-  --G: #4faa63;
-  /* Forme ed elevazioni (ombre morbide da tema chiaro) */
+  --glass: rgba(251, 245, 233, 0.8);
+  --glass-2: rgba(251, 245, 233, 0.9);
+  /* Accenti: viola e blu delle pennellate, oro del simbolo */
+  --accent: #6d3fb0;
+  --accent-2: #2a72c4;
+  --accent-soft: rgba(109, 63, 176, 0.12);
+  --gold: #b8862a;
+  --gold-soft: rgba(200, 150, 46, 0.18);
+  --grad: linear-gradient(120deg, #2f9152 0%, #2a74c9 48%, #7444c4 100%);
+  --good: #2f8a4c;
+  --warn: #b86d12;
+  --bad: #c2391f;
+  /* Colori mana */
+  --W: #c9a54a;
+  --U: #2f7fd0;
+  --B: #6a4d8c;
+  --R: #d9502f;
+  --G: #3a9a55;
+  /* Forme ed elevazioni (ombre calde) */
   --r-lg: 16px;
   --r-md: 12px;
   --r-sm: 9px;
-  --sh-1: 0 1px 2px rgba(16, 24, 40, 0.06);
-  --sh-2: 0 6px 20px rgba(16, 24, 40, 0.09);
-  --sh-3: 0 18px 44px rgba(16, 24, 40, 0.18);
+  --sh-1: 0 1px 2px rgba(74, 52, 20, 0.08);
+  --sh-2: 0 6px 20px rgba(74, 52, 20, 0.12);
+  --sh-3: 0 18px 44px rgba(74, 52, 20, 0.22);
 }
 
 /* Tema SCURO: segue il sistema, oppure la scelta fatta nell'app (data-theme). */
@@ -2488,4 +2491,172 @@ button.ghost.active {
 }
 .account-legal a {
   color: inherit;
+}
+
+/* =====================================================================
+   Tema chiaro "Acquerello" (Menga Magic): decorazioni solo in modalità
+   chiara. data-mode è impostato da theme.ts (chiaro/scuro effettivo).
+   ===================================================================== */
+:root[data-mode="light"] body {
+  background:
+    /* macchie ad acquerello dei cinque colori, agli angoli */
+    radial-gradient(420px 380px at -4% 22%, rgba(58, 154, 85, 0.26), transparent 70%),
+    radial-gradient(460px 420px at 104% 16%, rgba(47, 127, 208, 0.26), transparent 70%),
+    radial-gradient(440px 400px at -6% 86%, rgba(217, 80, 47, 0.22), transparent 70%),
+    radial-gradient(460px 420px at 106% 82%, rgba(122, 68, 196, 0.24), transparent 70%),
+    radial-gradient(700px 360px at 50% 50%, rgba(200, 150, 46, 0.07), transparent 70%),
+    /* grana della carta */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.35 0 0 0 0 0.2 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    var(--bg);
+  background-attachment: fixed;
+}
+
+/* Nome dell'app a pennello, titoli in maiuscoletto inciso */
+:root[data-mode="light"] .brand {
+  font-family: "Kaushan Script", "Brush Script MT", cursive;
+  font-weight: 400;
+  font-size: 22px;
+  letter-spacing: 0;
+}
+:root[data-mode="light"] .page-title {
+  font-family: "Cinzel", Georgia, serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding-bottom: 8px;
+  position: relative;
+}
+/* Filetto dorato sotto il titolo, con il rombo come nell'immagine */
+:root[data-mode="light"] .page-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 3px;
+  width: 132px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold) 18%, var(--gold) 82%, transparent);
+}
+:root[data-mode="light"] .page-title::before {
+  content: "";
+  position: absolute;
+  left: 62px;
+  bottom: 0;
+  width: 7px;
+  height: 7px;
+  background: var(--gold);
+  transform: rotate(45deg);
+}
+:root[data-mode="light"] .page-title-row .page-title {
+  margin-bottom: 12px;
+}
+:root[data-mode="light"] .panel h2,
+:root[data-mode="light"] .chart h3 {
+  font-family: "Cinzel", Georgia, serif;
+  letter-spacing: 0.03em;
+}
+
+/* Barre su pergamena, con filetto oro */
+:root[data-mode="light"] .topbar {
+  border-bottom: 1px solid var(--border-strong);
+  box-shadow: 0 1px 0 var(--gold-soft);
+}
+:root[data-mode="light"] .bottomnav {
+  border-top: 1px solid var(--border-strong);
+}
+:root[data-mode="light"] .navitem.active {
+  background: var(--gold-soft);
+  color: var(--text);
+}
+:root[data-mode="light"] .navitem.active svg {
+  color: var(--accent);
+}
+:root[data-mode="light"] .navitem.nav-scan {
+  border-color: var(--bg);
+  box-shadow: 0 8px 20px rgba(116, 68, 196, 0.35), 0 0 0 2px var(--gold-soft);
+}
+
+/* Pannelli e card come carta spessa con bordo dorato appena accennato */
+:root[data-mode="light"] .panel,
+:root[data-mode="light"] .stat-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), transparent 50%), var(--panel);
+  border-color: var(--border);
+  box-shadow: var(--sh-1), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+:root[data-mode="light"] .stat-card .value {
+  font-family: "Cinzel", Georgia, serif;
+}
+
+/* Pulsante principale: pennellata verde → blu → viola */
+:root[data-mode="light"] button.primary {
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.08), 0 4px 14px rgba(42, 116, 201, 0.25);
+}
+:root[data-mode="light"] button.primary:hover:not(:disabled) {
+  box-shadow: 0 6px 18px rgba(116, 68, 196, 0.32);
+}
+
+/* Link e selezione */
+:root[data-mode="light"] ::selection {
+  background: var(--gold-soft);
+}
+
+/* Banner con l'immagine Menga Magic in cima a Cerca */
+.hero-banner {
+  position: relative;
+  margin: 0 0 16px;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  aspect-ratio: 16 / 8;
+  max-height: 260px;
+  width: 100%;
+  box-shadow: var(--sh-2);
+  border: 1px solid var(--border-strong);
+}
+.hero-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 42%;
+  display: block;
+}
+.hero-banner::after {
+  /* la pergamena "assorbe" il fondo dell'immagine */
+  content: "";
+  position: absolute;
+  inset: 45% 0 0;
+  background: linear-gradient(180deg, transparent, rgba(244, 236, 220, 0.92));
+}
+.hero-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  color: #1d1a24;
+}
+.hero-title {
+  font-family: "Kaushan Script", "Brush Script MT", cursive;
+  font-size: clamp(26px, 8vw, 40px);
+  line-height: 1;
+}
+.hero-sub {
+  font-family: "Cinzel", Georgia, serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+.account-cover {
+  display: block;
+  width: min(100%, 220px);
+  aspect-ratio: 1;
+  margin: 0 auto 14px;
+  border-radius: 22px;
+  box-shadow: var(--sh-2);
+}
+/* L'immagine Menga Magic appartiene al tema chiaro: nel tema scuro non si vede. */
+:root:not([data-mode="light"]) .hero-banner,
+:root:not([data-mode="light"]) .account-cover {
+  display: none;
 }
