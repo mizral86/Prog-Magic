@@ -171,15 +171,10 @@ body {
   gap: 8px;
 }
 .brand-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  background: var(--grad);
-  color: #fff;
-  font-size: 14px;
-  box-shadow: var(--sh-1);
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
 }
 .content {
   flex: 1;
