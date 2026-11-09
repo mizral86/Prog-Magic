@@ -7,9 +7,94 @@
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <style>
+      /* Schermata di apertura animata (logo MMG). Inline per comparire subito. */
+      #splash {
+        position: fixed; inset: 0; z-index: 9999;
+        display: grid; place-items: center; align-content: center; gap: 18px;
+        background: radial-gradient(circle at 50% 45%, #2a1c10 0%, #0f1116 62%);
+        transition: opacity 0.45s ease, visibility 0.45s;
+        overflow: hidden;
+      }
+      #splash.hide { opacity: 0; visibility: hidden; }
+      #splash .sp-stage { position: relative; width: min(58vw, 260px); aspect-ratio: 1; }
+      #splash .sp-ring {
+        position: absolute; inset: -9%; border-radius: 50%;
+        background: conic-gradient(from 0deg, transparent 0 62%, rgba(255, 196, 92, 0.85) 75%, transparent 88%);
+        -webkit-mask: radial-gradient(circle, transparent 64%, #000 65%, #000 69%, transparent 70%);
+        mask: radial-gradient(circle, transparent 64%, #000 65%, #000 69%, transparent 70%);
+        opacity: 0; animation: sp-ring 1.6s 0.35s ease-out forwards, sp-spin 1.6s 0.35s linear forwards;
+      }
+      #splash .sp-logo {
+        position: absolute; inset: 0; width: 100%; height: 100%;
+        opacity: 0; transform: scale(0.72); filter: blur(6px) brightness(0.6);
+        animation: sp-in 0.9s 0.1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
+          sp-glow 1.4s 0.9s ease-in-out forwards;
+      }
+      #splash .sp-spark {
+        position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px;
+        border-radius: 50%; background: #ffd27a; box-shadow: 0 0 10px 3px rgba(255, 190, 90, 0.8);
+        opacity: 0; animation: sp-spark 1.3s 0.7s ease-out forwards;
+      }
+      #splash .sp-tag {
+        font: 600 13px/1 system-ui, sans-serif; letter-spacing: 0.32em; text-transform: uppercase;
+        color: #d9b77a; opacity: 0; transform: translateY(8px);
+        animation: sp-tag 0.6s 1.05s ease-out forwards;
+      }
+      @keyframes sp-in { to { opacity: 1; transform: scale(1); filter: blur(0) brightness(1); } }
+      @keyframes sp-glow {
+        0% { filter: drop-shadow(0 0 0 rgba(255, 170, 60, 0)); }
+        45% { filter: drop-shadow(0 0 28px rgba(255, 170, 60, 0.75)); }
+        100% { filter: drop-shadow(0 0 10px rgba(255, 170, 60, 0.35)); }
+      }
+      @keyframes sp-ring { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; } }
+      @keyframes sp-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      @keyframes sp-spark {
+        0% { opacity: 0; transform: rotate(var(--a)) translateY(0) scale(1); }
+        15% { opacity: 1; }
+        100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(-1 * var(--d))) scale(0.3); }
+      }
+      @keyframes sp-tag { to { opacity: 1; transform: none; } }
+      @media (prefers-reduced-motion: reduce) {
+        #splash *, #splash { animation-duration: 0.01s !important; animation-delay: 0s !important; }
+      }
+    </style>
     <title>Prog Magic — Simulatore MTG</title>
   </head>
   <body>
+    <div id="splash" aria-hidden="true">
+      <div class="sp-stage">
+        <div class="sp-ring"></div>
+        <img class="sp-logo" src="/logo-splash.webp" alt="" />
+        <i class="sp-spark" style="--a: 15deg; --d: 150px"></i>
+        <i class="sp-spark" style="--a: 75deg; --d: 175px"></i>
+        <i class="sp-spark" style="--a: 140deg; --d: 160px"></i>
+        <i class="sp-spark" style="--a: 205deg; --d: 180px"></i>
+        <i class="sp-spark" style="--a: 260deg; --d: 155px"></i>
+        <i class="sp-spark" style="--a: 320deg; --d: 170px"></i>
+      </div>
+      <div class="sp-tag">More Magic Together</div>
+    </div>
+    <script>
+      // Mostra l'animazione all'apertura dell'app; un tocco la salta.
+      (function () {
+        var el = document.getElementById("splash");
+        var start = Date.now();
+        var MIN = 2000;
+        var done = false;
+        function hide() {
+          if (done) return;
+          done = true;
+          el.classList.add("hide");
+          setTimeout(function () { el.remove(); }, 600);
+        }
+        el.addEventListener("click", hide);
+        window.__hideSplash = function () {
+          setTimeout(hide, Math.max(0, MIN - (Date.now() - start)));
+        };
+        setTimeout(hide, 6000); // sicurezza se l'app non parte
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

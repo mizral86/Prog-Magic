@@ -36,7 +36,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,png,svg,woff2}"],
+        globPatterns: ["**/*.{js,css,html,png,webp,svg,woff2}"],
         runtimeCaching: [
           {
             // Immagini delle carte Scryfall: cache di lunga durata.
