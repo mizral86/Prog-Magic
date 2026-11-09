@@ -18,6 +18,8 @@ export function applyTheme(choice: ThemeChoice): void {
   const root = document.documentElement;
   if (choice === "system") root.removeAttribute("data-theme");
   else root.setAttribute("data-theme", choice);
+  current = choice;
+  syncMode();
   try {
     if (choice === "system") localStorage.removeItem(KEY);
     else localStorage.setItem(KEY, choice);
@@ -31,4 +33,18 @@ export function isDark(choice: ThemeChoice): boolean {
   if (choice === "dark") return true;
   if (choice === "light") return false;
   return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
+}
+
+// data-mode = tema effettivo ("light" | "dark"), anche quando si segue il
+// sistema: serve al CSS per le decorazioni del tema chiaro "Acquerello".
+let current: ThemeChoice = "system";
+let listening = false;
+function syncMode() {
+  document.documentElement.setAttribute("data-mode", isDark(current) ? "dark" : "light");
+  if (!listening && window.matchMedia) {
+    listening = true;
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener?.("change", () => syncMode());
+  }
 }
