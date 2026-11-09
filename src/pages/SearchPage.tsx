@@ -172,6 +172,15 @@ export default function SearchPage() {
 
   return (
     <div className="page">
+      {results === null && !loading && (
+        <div className="hero-banner" aria-hidden="true">
+          <img src={`${import.meta.env.BASE_URL}menga-banner.webp`} alt="" />
+          <div className="hero-text">
+            <span className="hero-title">Menga Magic</span>
+            <span className="hero-sub">More Magic Together</span>
+          </div>
+        </div>
+      )}
       <h1 className="page-title">Cerca carte</h1>
       <form className="search-bar" onSubmit={doSearch}>
         <input
