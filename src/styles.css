@@ -39,65 +39,71 @@
   --sh-3: 0 18px 44px rgba(74, 52, 20, 0.22);
 }
 
-/* Tema SCURO: segue il sistema, oppure la scelta fatta nell'app (data-theme). */
+/* Tema SCURO "Notte arcana" (dall'immagine MMG Menga Magic): segue il sistema, oppure la scelta fatta nell'app (data-theme). */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f1116;
-    --bg-2: #13161d;
-    --panel: #181b23;
-    --panel-2: #1e222c;
-    --panel-3: #272c38;
-    --border: #2a2f3b;
-    --border-strong: #3a4150;
-    --text: #e8ebf2;
-    --muted: #a3abbd;
-    --faint: #737c90;
-    --glass: rgba(15, 17, 22, 0.78);
-    --glass-2: rgba(19, 22, 29, 0.9);
-    --accent: #a78bfa;
-    --accent-2: #38bdf8;
-    --accent-soft: rgba(167, 139, 250, 0.16);
-    --good: #34d399;
-    --warn: #fbbf24;
-    --bad: #f87171;
-    --W: #e8d9a0;
-    --U: #6aa6f0;
-    --B: #a58fc0;
-    --R: #f08566;
-    --G: #66c27b;
-    --sh-1: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --sh-2: 0 6px 20px rgba(0, 0, 0, 0.45);
-    --sh-3: 0 18px 44px rgba(0, 0, 0, 0.6);
+    --bg: #090e1c;
+    --bg-2: #0d1426;
+    --panel: #111a30;
+    --panel-2: #16213b;
+    --panel-3: #1e2b4a;
+    --border: #24304f;
+    --border-strong: #3b4870;
+    --text: #efe8d6;
+    --muted: #aeaabd;
+    --faint: #767d98;
+    --glass: rgba(9, 14, 28, 0.8);
+    --glass-2: rgba(11, 17, 33, 0.92);
+    --accent: #e8b64e;
+    --accent-2: #5fb2ff;
+    --accent-soft: rgba(232, 182, 78, 0.16);
+    --good: #3ccf7e;
+    --warn: #f5b53d;
+    --bad: #ff6b5a;
+    --W: #f1d98a;
+    --U: #4fa6ff;
+    --B: #b58ae8;
+    --R: #ff6a4a;
+    --G: #45d26e;
+    --sh-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --sh-2: 0 6px 20px rgba(0, 0, 0, 0.55);
+    --sh-3: 0 18px 44px rgba(0, 0, 0, 0.7);
+    --gold: #e0ad4a;
+    --gold-soft: rgba(224, 173, 74, 0.18);
+    --grad: linear-gradient(120deg, #1f9d55 0%, #2b7fe6 48%, #8b45e0 100%);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0f1116;
-  --bg-2: #13161d;
-  --panel: #181b23;
-  --panel-2: #1e222c;
-  --panel-3: #272c38;
-  --border: #2a2f3b;
-  --border-strong: #3a4150;
-  --text: #e8ebf2;
-  --muted: #a3abbd;
-  --faint: #737c90;
-  --glass: rgba(15, 17, 22, 0.78);
-  --glass-2: rgba(19, 22, 29, 0.9);
-  --accent: #a78bfa;
-  --accent-2: #38bdf8;
-  --accent-soft: rgba(167, 139, 250, 0.16);
-  --good: #34d399;
-  --warn: #fbbf24;
-  --bad: #f87171;
-  --W: #e8d9a0;
-  --U: #6aa6f0;
-  --B: #a58fc0;
-  --R: #f08566;
-  --G: #66c27b;
-  --sh-1: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --sh-2: 0 6px 20px rgba(0, 0, 0, 0.45);
-  --sh-3: 0 18px 44px rgba(0, 0, 0, 0.6);
+  --bg: #090e1c;
+  --bg-2: #0d1426;
+  --panel: #111a30;
+  --panel-2: #16213b;
+  --panel-3: #1e2b4a;
+  --border: #24304f;
+  --border-strong: #3b4870;
+  --text: #efe8d6;
+  --muted: #aeaabd;
+  --faint: #767d98;
+  --glass: rgba(9, 14, 28, 0.8);
+  --glass-2: rgba(11, 17, 33, 0.92);
+  --accent: #e8b64e;
+  --accent-2: #5fb2ff;
+  --accent-soft: rgba(232, 182, 78, 0.16);
+  --good: #3ccf7e;
+  --warn: #f5b53d;
+  --bad: #ff6b5a;
+  --W: #f1d98a;
+  --U: #4fa6ff;
+  --B: #b58ae8;
+  --R: #ff6a4a;
+  --G: #45d26e;
+  --sh-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --sh-2: 0 6px 20px rgba(0, 0, 0, 0.55);
+  --sh-3: 0 18px 44px rgba(0, 0, 0, 0.7);
+  --gold: #e0ad4a;
+  --gold-soft: rgba(224, 173, 74, 0.18);
+  --grad: linear-gradient(120deg, #1f9d55 0%, #2b7fe6 48%, #8b45e0 100%);
   color-scheme: dark;
 }
 
@@ -2622,7 +2628,7 @@ button.ghost.active {
   content: "";
   position: absolute;
   inset: 45% 0 0;
-  background: linear-gradient(180deg, transparent, rgba(244, 236, 220, 0.92));
+  background: linear-gradient(180deg, transparent, var(--hero-fade, rgba(244, 236, 220, 0.92)));
 }
 .hero-text {
   position: absolute;
@@ -2655,8 +2661,141 @@ button.ghost.active {
   border-radius: 22px;
   box-shadow: var(--sh-2);
 }
-/* L'immagine Menga Magic appartiene al tema chiaro: nel tema scuro non si vede. */
-:root:not([data-mode="light"]) .hero-banner,
-:root:not([data-mode="light"]) .account-cover {
+/* Ogni tema ha la sua immagine: Menga Magic nel chiaro, MMG nel scuro. */
+:root:not([data-mode="light"]) .only-light,
+:root[data-mode="light"] .only-dark {
   display: none;
+}
+
+/* =====================================================================
+   Tema scuro "Notte arcana" (MMG Menga Magic): blu notte stellato, oro
+   inciso, bagliori dei cinque colori. Solo con data-mode="dark".
+   ===================================================================== */
+:root[data-mode="dark"] {
+  --hero-fade: rgba(9, 14, 28, 0.94);
+}
+:root[data-mode="dark"] body {
+  background:
+    /* bagliori dei cinque colori come le scie di mana */
+    radial-gradient(520px 360px at 50% -6%, rgba(240, 190, 90, 0.2), transparent 70%),
+    radial-gradient(420px 380px at -6% 20%, rgba(69, 210, 110, 0.14), transparent 70%),
+    radial-gradient(460px 420px at 106% 18%, rgba(79, 166, 255, 0.16), transparent 70%),
+    radial-gradient(440px 420px at -8% 84%, rgba(255, 106, 74, 0.12), transparent 70%),
+    radial-gradient(480px 440px at 108% 82%, rgba(139, 69, 224, 0.18), transparent 70%),
+    /* stelle */
+    radial-gradient(1px 1px at 20px 30px, rgba(255, 245, 220, 0.7), transparent 2px),
+    radial-gradient(1px 1px at 120px 90px, rgba(255, 245, 220, 0.5), transparent 2px),
+    radial-gradient(1.5px 1.5px at 200px 160px, rgba(255, 230, 180, 0.6), transparent 2px),
+    radial-gradient(1px 1px at 60px 210px, rgba(200, 220, 255, 0.5), transparent 2px),
+    radial-gradient(1px 1px at 260px 40px, rgba(255, 245, 220, 0.4), transparent 2px),
+    var(--bg);
+  background-size: auto, auto, auto, auto, auto, 300px 260px, 300px 260px, 300px 260px, 300px 260px, 300px 260px, auto;
+  background-attachment: fixed;
+}
+
+/* Nome e titoli in oro inciso, come "MMG Menga Magic" */
+:root[data-mode="dark"] .brand {
+  font-family: "Cinzel", Georgia, serif;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-size: 17px;
+  background: linear-gradient(180deg, #fbe3a1 0%, #e0ad4a 55%, #a8731f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+:root[data-mode="dark"] .page-title {
+  font-family: "Cinzel", Georgia, serif;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding-bottom: 8px;
+  position: relative;
+  background: linear-gradient(180deg, #fbe3a1 0%, #e0ad4a 60%, #b07a22 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 18px rgba(224, 173, 74, 0.25);
+}
+:root[data-mode="dark"] .page-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 3px;
+  width: 132px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold) 18%, var(--gold) 82%, transparent);
+}
+:root[data-mode="dark"] .page-title::before {
+  content: "";
+  position: absolute;
+  left: 62px;
+  bottom: 0;
+  width: 7px;
+  height: 7px;
+  background: var(--gold);
+  transform: rotate(45deg);
+  box-shadow: 0 0 8px rgba(224, 173, 74, 0.8);
+}
+:root[data-mode="dark"] .panel h2,
+:root[data-mode="dark"] .chart h3 {
+  font-family: "Cinzel", Georgia, serif;
+  letter-spacing: 0.03em;
+  color: #f1d58f;
+}
+
+/* Barre e pannelli con cornice dorata come la cornice dell'immagine */
+:root[data-mode="dark"] .topbar {
+  border-bottom: 1px solid rgba(224, 173, 74, 0.35);
+  box-shadow: 0 1px 12px rgba(224, 173, 74, 0.08);
+}
+:root[data-mode="dark"] .bottomnav {
+  border-top: 1px solid rgba(224, 173, 74, 0.35);
+}
+:root[data-mode="dark"] .navitem.active {
+  background: var(--gold-soft);
+  color: #f6e2b0;
+}
+:root[data-mode="dark"] .navitem.active svg {
+  color: var(--gold);
+}
+:root[data-mode="dark"] .navitem.nav-scan {
+  box-shadow: 0 8px 22px rgba(139, 69, 224, 0.45), 0 0 0 2px rgba(224, 173, 74, 0.55);
+}
+:root[data-mode="dark"] .panel,
+:root[data-mode="dark"] .stat-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 45%), var(--panel);
+  border-color: rgba(224, 173, 74, 0.22);
+  box-shadow: var(--sh-1), inset 0 1px 0 rgba(255, 230, 170, 0.06);
+}
+:root[data-mode="dark"] .stat-card .value {
+  font-family: "Cinzel", Georgia, serif;
+  color: #f1d58f;
+}
+:root[data-mode="dark"] button.primary {
+  box-shadow: 0 0 0 1px rgba(224, 173, 74, 0.35), 0 4px 16px rgba(43, 127, 230, 0.35);
+}
+:root[data-mode="dark"] button.primary:hover:not(:disabled) {
+  box-shadow: 0 0 0 1px rgba(224, 173, 74, 0.6), 0 6px 20px rgba(139, 69, 224, 0.45);
+}
+:root[data-mode="dark"] .hero-banner,
+:root[data-mode="dark"] .account-cover {
+  border-color: rgba(224, 173, 74, 0.55);
+  box-shadow: 0 0 0 1px rgba(224, 173, 74, 0.25), 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 26px rgba(224, 173, 74, 0.12);
+}
+:root[data-mode="dark"] .hero-text {
+  color: #f1d58f;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+:root[data-mode="dark"] .hero-title {
+  font-family: "Cinzel", Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(22px, 6.5vw, 32px);
+  letter-spacing: 0.06em;
+  background: linear-gradient(180deg, #fbe3a1 0%, #e0ad4a 60%, #b07a22 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+:root[data-mode="dark"] ::selection {
+  background: var(--gold-soft);
 }

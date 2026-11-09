@@ -193,9 +193,16 @@ function SignInForm() {
   return (
     <div className="panel account-panel">
       <img
-        className="account-cover"
+        className="account-cover only-light"
+        loading="lazy"
         src={`${import.meta.env.BASE_URL}menga-cover.webp`}
         alt="Menga Magic"
+      />
+      <img
+        className="account-cover only-dark"
+        loading="lazy"
+        src={`${import.meta.env.BASE_URL}mmg-cover.webp`}
+        alt="MMG Menga Magic"
       />
       <p className="muted">
         Accedi per salvare collezione, mazzi, wishlist e impostazioni sul tuo profilo e
