@@ -1,4 +1,4 @@
-# Prog Magic — Simulatore MTG (consistenza & goldfish)
+# Menga Magic — Collezione, mazzi e simulatore MTG (ex Prog Magic)
 
 App web per simulare mazzi di **Magic: The Gathering** (formato 60 carte) e
 confrontarne due. Incolli due liste, l'app risolve le carte su

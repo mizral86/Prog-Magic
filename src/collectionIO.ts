@@ -214,7 +214,7 @@ export function restoreBackup(text: string): void {
     typeof data.collection !== "object" ||
     typeof data.decks !== "object"
   ) {
-    throw new Error("Il file non è un backup di Prog Magic.");
+    throw new Error("Il file non è un backup di Menga Magic.");
   }
   localStorage.setItem(COLLECTION_KEY, JSON.stringify(data.collection ?? {}));
   localStorage.setItem(DECKS_KEY, JSON.stringify(data.decks ?? {}));
