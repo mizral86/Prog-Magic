@@ -174,7 +174,8 @@ export default function SearchPage() {
     <div className="page">
       {results === null && !loading && (
         <div className="hero-banner" aria-hidden="true">
-          <img src={`${import.meta.env.BASE_URL}menga-banner.webp`} alt="" />
+          <img className="only-light" loading="lazy" src={`${import.meta.env.BASE_URL}menga-banner.webp`} alt="" />
+          <img className="only-dark" loading="lazy" src={`${import.meta.env.BASE_URL}mmg-banner.webp`} alt="" />
           <div className="hero-text">
             <span className="hero-title">Menga Magic</span>
             <span className="hero-sub">More Magic Together</span>
