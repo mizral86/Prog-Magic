@@ -3486,3 +3486,58 @@ label.primary-file {
   color: #fff;
   font-weight: 800;
 }
+.free-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+.free-overlay .fb {
+  cursor: pointer;
+}
+.free-overlay .fb polygon {
+  fill: rgba(251, 191, 36, 0.12);
+  stroke: #fbbf24;
+}
+.free-overlay .fb.reading polygon {
+  fill: rgba(251, 191, 36, 0.35);
+}
+.free-overlay .fb.ok polygon {
+  fill: rgba(47, 138, 76, 0.3);
+  stroke: #3fbf6a;
+}
+.free-overlay .fb.miss polygon {
+  fill: rgba(194, 57, 31, 0.32);
+  stroke: #e0553a;
+}
+.free-overlay .fb circle {
+  fill: rgba(0, 0, 0, 0.6);
+}
+.free-overlay .fb text {
+  fill: #fff;
+  font-weight: 700;
+  pointer-events: none;
+}
+.free-overlay .fb .fb-top {
+  stroke: #fbbf24;
+}
+.free-overlay .fb.sel polygon {
+  stroke: #fff;
+  fill: rgba(255, 255, 255, 0.18);
+}
+.free-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+.free-tools button.ghost {
+  padding: 7px 12px;
+  min-width: 40px;
+}
+.free-tools button.danger {
+  color: var(--bad);
+}

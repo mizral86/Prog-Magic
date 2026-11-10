@@ -3,10 +3,19 @@
 // letta con l'OCR e alla fine si sceglie quante copie (e foil) aggiungere per
 // ogni carta, anche quelle nascoste dietro nella tasca.
 
-import { FormEvent, PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from "react";
 import { useCollection } from "../collection";
 import { formatMoney, formatPrice } from "../prices";
-import { Area, cellThumb, gridCells, recognizeInCell, warmUpScanner } from "../scanner";
+import { CardBox, boxCorners, detectCards, uprightCard } from "../cardDetect";
+import {
+  Area,
+  CARD_RATIO,
+  ScanResult,
+  cellThumb,
+  gridCells,
+  recognizeInCell,
+  warmUpScanner,
+} from "../scanner";
 import { getPrintings, searchCards } from "../scryfall";
 import { CardInfo } from "../types";
 
@@ -35,6 +44,16 @@ const PRESETS: { label: string; rows: number; cols: number }[] = [
 const DEFAULT_AREA: Area = { x: 0.02, y: 0.02, w: 0.96, h: 0.96 };
 const MAX_SIDE = 3200;
 
+type Layout = "free" | "grid";
+
+function loadLayout(): Layout {
+  try {
+    return localStorage.getItem("pm.scanLayout") === "grid" ? "grid" : "free";
+  } catch {
+    return "free";
+  }
+}
+
 function loadGrid(): { rows: number; cols: number } {
   try {
     const g = JSON.parse(localStorage.getItem("pm.scanGrid") ?? "null");
@@ -55,6 +74,8 @@ export function MultiScan() {
   const [preview, setPreview] = useState<string | null>(null);
   const [grid, setGridState] = useState(loadGrid);
   const [area, setArea] = useState<Area>(DEFAULT_AREA);
+  const [layout, setLayoutState] = useState<Layout>(loadLayout);
+  const [boxes, setBoxes] = useState<CardBox[]>([]);
   const [items, setItems] = useState<Item[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,9 +99,27 @@ export function MultiScan() {
     }
   }
 
+  function setLayout(l: Layout) {
+    setLayoutState(l);
+    setItems(null);
+    if (l === "free" && frame) setBoxes(detectCards(frame));
+    try {
+      localStorage.setItem("pm.scanLayout", l);
+    } catch {
+      /* ignora */
+    }
+  }
+
   function showFrame(c: HTMLCanvasElement) {
     setFrame(c);
     setPreview(c.toDataURL("image/jpeg", 0.8));
+    // La ricerca delle carte è veloce (foto rimpicciolita): la facciamo sempre,
+    // così passando a "Carte sparse" sono già pronte.
+    try {
+      setBoxes(detectCards(c));
+    } catch {
+      setBoxes([]);
+    }
   }
 
   async function loadPhoto(file: File | undefined) {
@@ -122,11 +161,31 @@ export function MultiScan() {
     setBusy(true);
     setError(null);
     setAdded(null);
-    const cells = gridCells(frame.width, frame.height, area, grid.rows, grid.cols);
+    const jobs: { thumb: string; run: () => Promise<ScanResult> }[] =
+      layout === "grid"
+        ? gridCells(frame.width, frame.height, area, grid.rows, grid.cols).map((cell) => ({
+            thumb: cellThumb(frame, cell),
+            run: () => recognizeInCell(frame, cell),
+          }))
+        : boxes.map((bx) => {
+            const up = uprightCard(frame, bx);
+            return {
+              thumb: cellThumb(up, new DOMRect(0, 0, up.width, up.height)),
+              run: async () => {
+                // La carta può essere capovolta: se non la leggo, la giro.
+                const whole = (c: HTMLCanvasElement) => new DOMRect(0, 0, c.width, c.height);
+                const a = await recognizeInCell(up, whole(up), [0.98, 0.92]);
+                if (a.card) return a;
+                const down = uprightCard(frame, bx, true);
+                const b = await recognizeInCell(down, whole(down), [0.98, 0.92]);
+                return b.card || b.readName.length > a.readName.length ? b : a;
+              },
+            };
+          });
     const base = Date.now();
-    const list: Item[] = cells.map((cell, i) => ({
+    const list: Item[] = jobs.map((job, i) => ({
       key: base + i,
-      thumb: cellThumb(frame, cell),
+      thumb: job.thumb,
       card: null,
       read: "",
       qty: 1,
@@ -137,10 +196,10 @@ export function MultiScan() {
     const patch = (i: number, p: Partial<Item>) =>
       setItems((cur) => cur && cur.map((it, j) => (j === i ? { ...it, ...p } : it)));
     try {
-      for (let i = 0; i < cells.length; i++) {
+      for (let i = 0; i < jobs.length; i++) {
         if (cancelRef.current) break;
         patch(i, { state: "reading" });
-        const r = await recognizeInCell(frame, cells[i]);
+        const r = await jobs[i].run();
         patch(i, {
           state: "done",
           card: r.card,
@@ -228,9 +287,10 @@ export function MultiScan() {
         <div className="scan-view multi-empty">
           <div className="scan-placeholder">
             <p>
-              Fotografa una <strong>pagina intera</strong> del raccoglitore (o più carte
-              affiancate), dritta e senza riflessi. Riconosco tutte le carte e poi scegli
-              quante copie hai di ognuna, anche quelle nascoste dietro nella tasca.
+              Fotografa più carte insieme: sparse su un tavolo (meglio su una
+              superficie liscia e senza che si sovrappongano) o una{" "}
+              <strong>pagina del raccoglitore</strong>. Riconosco tutte le carte e poi
+              scegli quante copie hai di ognuna, anche quelle nascoste nella tasca.
             </p>
             <div className="row" style={{ gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
               <label className="primary-file">
@@ -265,50 +325,105 @@ export function MultiScan() {
 
       {preview && frame && (
         <>
-          <div className="multi-grid-opts">
-            <div className="chips">
-              {PRESETS.map((p) => (
-                <button
-                  key={p.label}
-                  type="button"
-                  className={`chip toggle${grid.rows === p.rows && grid.cols === p.cols ? " on" : ""}`}
-                  onClick={() => setGrid(p.rows, p.cols)}
-                  disabled={busy}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-            <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
-              <NumStep label="Righe" value={grid.rows} onChange={(v) => setGrid(v, grid.cols)} />
-              <NumStep label="Colonne" value={grid.cols} onChange={(v) => setGrid(grid.rows, v)} />
-              <button type="button" className="ghost" onClick={rotate} disabled={busy}>
-                ↻ Ruota
+          <div className="scan-mode">
+            <div className="segmented">
+              <button
+                type="button"
+                className={layout === "free" ? "on" : ""}
+                aria-pressed={layout === "free"}
+                onClick={() => setLayout("free")}
+                disabled={busy}
+              >
+                Carte sparse
+              </button>
+              <button
+                type="button"
+                className={layout === "grid" ? "on" : ""}
+                aria-pressed={layout === "grid"}
+                onClick={() => setLayout("grid")}
+                disabled={busy}
+              >
+                Pagina a griglia
               </button>
             </div>
           </div>
-          <p className="muted small" style={{ margin: "4px 0 8px" }}>
-            Trascina i quattro angoli sui bordi delle carte: ogni casella della griglia
-            deve contenere una carta.
-          </p>
-          <GridEditor
-            src={preview}
-            ratio={frame.width / frame.height}
-            area={area}
-            onChange={setArea}
-            rows={grid.rows}
-            cols={grid.cols}
-            items={items}
-            disabled={busy}
-          />
+          {layout === "grid" ? (
+            <>
+              <div className="multi-grid-opts">
+                <div className="chips">
+                  {PRESETS.map((p) => (
+                    <button
+                      key={p.label}
+                      type="button"
+                      className={`chip toggle${grid.rows === p.rows && grid.cols === p.cols ? " on" : ""}`}
+                      onClick={() => setGrid(p.rows, p.cols)}
+                      disabled={busy}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+                  <NumStep label="Righe" value={grid.rows} onChange={(v) => setGrid(v, grid.cols)} />
+                  <NumStep label="Colonne" value={grid.cols} onChange={(v) => setGrid(grid.rows, v)} />
+                  <button type="button" className="ghost" onClick={rotate} disabled={busy}>
+                    ↻ Ruota
+                  </button>
+                </div>
+              </div>
+              <p className="muted small" style={{ margin: "4px 0 8px" }}>
+                Trascina i quattro angoli sui bordi delle carte: ogni casella della griglia
+                deve contenere una carta.
+              </p>
+              <GridEditor
+                src={preview}
+                ratio={frame.width / frame.height}
+                area={area}
+                onChange={setArea}
+                rows={grid.rows}
+                cols={grid.cols}
+                items={items}
+                disabled={busy}
+              />
+            </>
+          ) : (
+            <>
+              <p className="muted small" style={{ margin: "4px 0 8px" }}>
+                {boxes.length === 0
+                  ? "Non ho trovato carte da solo. "
+                  : `Carte segnate: ${boxes.length}. `}
+                Tocca una carta senza riquadro per aggiungerla; tocca un riquadro per
+                spostarlo, girarlo, cambiarne la misura o toglierlo.
+              </p>
+              <FreeEditor
+                src={preview}
+                width={frame.width}
+                height={frame.height}
+                boxes={boxes}
+                onChange={(b) => {
+                  setBoxes(b);
+                  setItems(null);
+                }}
+                items={items}
+                disabled={busy}
+              />
+            </>
+          )}
           <div className="scan-controls">
             {busy ? (
               <button type="button" className="ghost" onClick={() => (cancelRef.current = true)}>
                 Ferma ({done}/{items?.length ?? 0})
               </button>
             ) : (
-              <button type="button" className="primary" onClick={readAll}>
-                {items ? "Rileggi la foto" : `Riconosci ${grid.rows * grid.cols} carte`}
+              <button
+                type="button"
+                className="primary"
+                onClick={readAll}
+                disabled={layout === "free" && boxes.length === 0}
+              >
+                {items
+                  ? "Rileggi la foto"
+                  : `Riconosci ${layout === "grid" ? grid.rows * grid.cols : boxes.length} carte`}
               </button>
             )}
             <button
@@ -501,6 +616,183 @@ function GridEditor({
   );
 }
 
+// --- Foto con le carte sparse ----------------------------------------------
+
+function FreeEditor({
+  src,
+  width,
+  height,
+  boxes,
+  onChange,
+  items,
+  disabled,
+}: {
+  src: string;
+  width: number;
+  height: number;
+  boxes: CardBox[];
+  onChange: (b: CardBox[]) => void;
+  items: Item[] | null;
+  disabled: boolean;
+}) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [sel, setSel] = useState<number | null>(null);
+  const drag = useRef<{ i: number; dx: number; dy: number; moved: boolean } | null>(null);
+
+  useEffect(() => {
+    if (sel !== null && sel >= boxes.length) setSel(null);
+  }, [boxes.length, sel]);
+
+  function toImage(e: { clientX: number; clientY: number }): [number, number] {
+    const r = svgRef.current!.getBoundingClientRect();
+    return [((e.clientX - r.left) / r.width) * width, ((e.clientY - r.top) / r.height) * height];
+  }
+
+  function addAt(e: ReactMouseEvent<SVGSVGElement>) {
+    if (disabled) return;
+    if (sel !== null) {
+      // Il primo tocco fuori deseleziona soltanto.
+      setSel(null);
+      return;
+    }
+    const [x, y] = toImage(e);
+    // Nuovo riquadro grande come le carte già trovate (o un terzo della foto).
+    const ref = boxes.length
+      ? [...boxes].sort((p, q) => p.w * p.h - q.w * q.h)[Math.floor(boxes.length / 2)]
+      : null;
+    const h = ref ? ref.h : Math.min(height, width / CARD_RATIO) * 0.35;
+    const w = ref ? ref.w : h * CARD_RATIO;
+    onChange([...boxes, { cx: x, cy: y, w, h, angle: Math.PI / 2 }]);
+    setSel(boxes.length);
+  }
+
+  function onDown(i: number, e: ReactPointerEvent) {
+    e.stopPropagation();
+    if (disabled) return;
+    const [x, y] = toImage(e);
+    drag.current = { i, dx: x - boxes[i].cx, dy: y - boxes[i].cy, moved: false };
+    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    setSel(i);
+  }
+
+  function onMove(e: ReactPointerEvent) {
+    const d = drag.current;
+    if (!d) return;
+    const [x, y] = toImage(e);
+    const b = boxes[d.i];
+    const nx = x - d.dx;
+    const ny = y - d.dy;
+    if (!d.moved && Math.hypot(nx - b.cx, ny - b.cy) < b.w * 0.03) return;
+    d.moved = true;
+    onChange(boxes.map((bx, j) => (j === d.i ? { ...bx, cx: nx, cy: ny } : bx)));
+  }
+
+  function onUp() {
+    drag.current = null;
+  }
+
+  function edit(p: (b: CardBox) => CardBox | null) {
+    if (sel === null) return;
+    const out: CardBox[] = [];
+    boxes.forEach((b, j) => {
+      const nb = j === sel ? p(b) : b;
+      if (nb) out.push(nb);
+    });
+    onChange(out);
+    if (out.length < boxes.length) setSel(null);
+  }
+
+  const stroke = Math.max(width, height) / 220;
+  return (
+    <>
+      <div className="grid-editor-wrap">
+        <div className="grid-editor" style={{ aspectRatio: `${width} / ${height}` }}>
+          <img src={src} alt="Foto da scansionare" draggable={false} />
+          <svg
+            ref={svgRef}
+            className="free-overlay"
+            viewBox={`0 0 ${width} ${height}`}
+            preserveAspectRatio="none"
+            onClick={addAt}
+            onPointerMove={onMove}
+            onPointerUp={onUp}
+            onPointerCancel={onUp}
+          >
+            {boxes.map((bx, i) => {
+              const it = items?.[i];
+              const cls = !it
+                ? ""
+                : it.state === "reading"
+                  ? "reading"
+                  : it.state === "done"
+                    ? it.card
+                      ? "ok"
+                      : "miss"
+                    : "";
+              const pts = boxCorners(bx)
+                .map(([x, y]) => `${x},${y}`)
+                .join(" ");
+              // Lato del titolo (in alto sulla carta raddrizzata): una lineetta.
+              const [c0, c1] = boxCorners(bx);
+              return (
+                <g
+                  key={i}
+                  className={`fb ${cls}${sel === i ? " sel" : ""}`}
+                  onPointerDown={(e) => onDown(i, e)}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <polygon points={pts} strokeWidth={stroke} />
+                  <line
+                    x1={c0[0]}
+                    y1={c0[1]}
+                    x2={c1[0]}
+                    y2={c1[1]}
+                    strokeWidth={stroke * 2.2}
+                    className="fb-top"
+                  />
+                  <circle cx={bx.cx} cy={bx.cy} r={stroke * 5} />
+                  <text
+                    x={bx.cx}
+                    y={bx.cy}
+                    fontSize={stroke * 6}
+                    dominantBaseline="central"
+                    textAnchor="middle"
+                  >
+                    {i + 1}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+      </div>
+      {sel !== null && boxes[sel] && !disabled && (
+        <div className="free-tools">
+          <span className="muted small">Riquadro {sel + 1}:</span>
+          <button type="button" className="ghost" onClick={() => edit((b) => ({ ...b, angle: b.angle - Math.PI / 36 }))} aria-label="Ruota a sinistra">
+            ↺
+          </button>
+          <button type="button" className="ghost" onClick={() => edit((b) => ({ ...b, angle: b.angle + Math.PI / 36 }))} aria-label="Ruota a destra">
+            ↻
+          </button>
+          <button type="button" className="ghost" onClick={() => edit((b) => ({ ...b, angle: b.angle + Math.PI / 2 }))}>
+            90°
+          </button>
+          <button type="button" className="ghost" onClick={() => edit((b) => ({ ...b, w: b.w * 0.94, h: b.h * 0.94 }))} aria-label="Rimpicciolisci">
+            −
+          </button>
+          <button type="button" className="ghost" onClick={() => edit((b) => ({ ...b, w: b.w * 1.06, h: b.h * 1.06 }))} aria-label="Ingrandisci">
+            +
+          </button>
+          <button type="button" className="ghost danger" onClick={() => edit(() => null)}>
+            Togli
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
 // --- Una riga dei risultati --------------------------------------------------
 
 function MultiRow({
@@ -535,11 +827,11 @@ function MultiRow({
   return (
     <div className={`multi-row${card ? "" : " missing"}${item.qty + item.foil === 0 ? " skipped" : ""}`}>
       <div className="mr-imgs">
-        <img className="mr-photo" src={item.thumb} alt={`Casella ${n} della foto`} />
+        <img className="mr-photo" src={item.thumb} alt={`Carta ${n} nella foto`} />
         {card?.imageSmallUrl && <img className="mr-card" src={card.imageSmallUrl} alt="" loading="lazy" />}
       </div>
       <div className="mr-main">
-        <div className="muted small">Casella {n}</div>
+        <div className="muted small">Carta {n}</div>
         {item.state !== "done" ? (
           <div className="muted">{item.state === "reading" ? "Leggo…" : "In attesa"}</div>
         ) : card ? (
