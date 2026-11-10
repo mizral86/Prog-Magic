@@ -3048,3 +3048,32 @@ button.ghost.active {
   white-space: nowrap;
   pointer-events: none;
 }
+
+/* ---- Carte simili nella scheda ---- */
+.detail-back {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+.similar-btn {
+  width: 100%;
+}
+.similar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.similar-list {
+  max-height: 340px;
+  overflow-y: auto;
+}
+.search-row.compact {
+  padding: 4px 8px 4px 4px;
+}
+.search-row.compact > img,
+.search-row.compact > .sr-img {
+  width: 34px;
+}
+.search-row.compact .sr-name {
+  font-size: 13px;
+}

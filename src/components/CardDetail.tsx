@@ -7,17 +7,64 @@ import { bestPrice, formatMoney, formatPrice } from "../prices";
 import { useCollection } from "../collection";
 import { useWishlist } from "../wishlist";
 import { ManaCost } from "./ManaSymbol";
+import { findSimilar, SimilarResult } from "../similar";
 
 interface CardDetailProps {
   card: CardInfo;
   onClose: () => void;
 }
 
+/**
+ * Scheda carta. Tiene una piccola cronologia: aprendo una carta suggerita si
+ * può tornare indietro a quella di partenza.
+ */
 export function CardDetail({ card, onClose }: CardDetailProps) {
+  const [stack, setStack] = useState<CardInfo[]>([card]);
+  useEffect(() => {
+    setStack([card]);
+  }, [card]);
+  const current = stack[stack.length - 1];
+  const previous = stack.length > 1 ? stack[stack.length - 2] : undefined;
+  return (
+    <CardDetailView
+      key={`${stack.length}:${current.scryfallId ?? current.name}`}
+      card={current}
+      onClose={onClose}
+      onOpenCard={(c) => setStack((s) => [...s, c])}
+      back={
+        previous
+          ? { name: previous.printedName ?? previous.name, go: () => setStack((s) => s.slice(0, -1)) }
+          : undefined
+      }
+    />
+  );
+}
+
+interface CardDetailViewProps extends CardDetailProps {
+  onOpenCard: (c: CardInfo) => void;
+  back?: { name: string; go: () => void };
+}
+
+function CardDetailView({ card, onClose, onOpenCard, back }: CardDetailViewProps) {
   const [shown, setShown] = useState<CardInfo>(card);
   const [printings, setPrintings] = useState<CardInfo[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [zoomOpen, setZoomOpen] = useState(false);
+  const [similar, setSimilar] = useState<SimilarResult | null>(null);
+  const [similarLoading, setSimilarLoading] = useState(false);
+  const [similarError, setSimilarError] = useState<string | null>(null);
+
+  async function loadSimilar() {
+    setSimilarLoading(true);
+    setSimilarError(null);
+    try {
+      setSimilar(await findSimilar(shown));
+    } catch (err) {
+      setSimilarError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSimilarLoading(false);
+    }
+  }
   const collection = useCollection();
   const owned = shown.scryfallId ? collection.get(shown.scryfallId) : undefined;
   const wishlist = useWishlist();
@@ -58,6 +105,11 @@ export function CardDetail({ card, onClose }: CardDetailProps) {
         >
           ✕
         </button>
+        {back && (
+          <button type="button" className="link-btn detail-back" onClick={back.go}>
+            ← Torna a {back.name}
+          </button>
+        )}
         <div className="detail">
           <div className="detail-img">
             {shown.imageUrl ? (
@@ -170,6 +222,55 @@ export function CardDetail({ card, onClose }: CardDetailProps) {
                   ))}
                 </select>
               </label>
+            )}
+
+            <h3 className="mini-title">Carte simili</h3>
+            {!similar && (
+              <button
+                type="button"
+                className="ghost similar-btn"
+                onClick={loadSimilar}
+                disabled={similarLoading}
+              >
+                {similarLoading ? "Cerco…" : "💡 Suggerisci carte che fanno la stessa cosa"}
+              </button>
+            )}
+            {similarError && <div className="status-line error">{similarError}</div>}
+            {similar && (
+              <div className="similar">
+                <div className="muted small">
+                  {similar.reasons.length
+                    ? `Cercate in tutti i colori: ${similar.reasons.join(" + ")}.`
+                    : "Non riesco a capire cosa fa questa carta dal suo testo."}
+                  {similar.reasons.length > 0 && similar.cards.length === 0 && " Nessuna carta trovata."}
+                </div>
+                {similar.cards.length > 0 && (
+                  <div className="search-list similar-list">
+                    {similar.cards.map((c) => (
+                      <button
+                        key={c.scryfallId ?? c.name}
+                        type="button"
+                        className="search-row compact"
+                        onClick={() => onOpenCard(c)}
+                      >
+                        {c.imageSmallUrl ? (
+                          <img src={c.imageSmallUrl} alt="" loading="lazy" />
+                        ) : (
+                          <div className="no-img small sr-img">{c.name}</div>
+                        )}
+                        <span className="sr-main">
+                          <span className="sr-top">
+                            <span className="sr-name">{c.name}</span>
+                            {c.manaCost && <ManaCost cost={c.manaCost} size={14} />}
+                          </span>
+                          <span className="sr-type">{c.typeLine}</span>
+                        </span>
+                        <span className="sr-price">{formatPrice(c)}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
 
             <h3 className="mini-title">Stampe / edizioni</h3>
