@@ -15,6 +15,7 @@ import { Color, COLORS } from "../types";
 import { formatMoney } from "../prices";
 import { CollectionTools } from "../components/CollectionTools";
 import { Shelf, ShelfBar, WishlistView } from "../components/Shelves";
+import { PriceMoves } from "../components/PriceMoves";
 
 const COLOR_NAMES: Record<Color, string> = {
   W: "Bianco",
@@ -156,6 +157,8 @@ export default function CollectionPage() {
       </div>
 
       <CollectionTools />
+
+      <PriceMoves entries={entries} onOpen={(e) => setDetail(entryToCard(e))} />
 
       <details className="coll-more">
         <summary>Statistiche per colore e rarità</summary>
