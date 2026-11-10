@@ -1,7 +1,7 @@
 // "Carte simili": dal testo regole (oracle, in inglese) di una carta ricava
 // cosa fa (es. "infligge danno a qualsiasi bersaglio", "distrugge una
 // creatura") e cerca su Scryfall altre carte con lo stesso effetto, in tutti i
-// colori, con tipo e costo vicini. Le più giocate prima (ordine EDHREC).
+// colori, con costo uguale o minore. Le più giocate prima (ordine EDHREC).
 
 import { CardInfo } from "./types";
 import { searchCards } from "./scryfall";
@@ -13,11 +13,37 @@ interface Effect {
   q: string;
   /** Descrizione in italiano mostrata all'utente. */
   label: string;
+  /** Se presente, costruisce query ed etichetta dal testo trovato (es. quale abilità). */
+  build?: (m: RegExpMatchArray) => { q: string; label: string };
 }
+
+// Abilità che una carta può conferire, con il nome italiano.
+const GRANTABLE: Record<string, string> = {
+  flying: "volare",
+  "first strike": "attacco improvviso",
+  "double strike": "doppio attacco",
+  trample: "travolgere",
+  haste: "rapidità",
+  lifelink: "legame vitale",
+  deathtouch: "tocco letale",
+  hexproof: "anti-malocchio",
+  indestructible: "indistruttibile",
+  vigilance: "cautela",
+  menace: "minaccia",
+  shroud: "velo",
+};
+const GRANT_RE = new RegExp(
+  `target creature[^.]*? gains? (${Object.keys(GRANTABLE).join("|")})[^.]*? until end of turn`,
+);
 
 // In ordine di importanza: si usano i primi effetti riconosciuti.
 const EFFECTS: Effect[] = [
-  // Rimozione
+  // Rimozione "alla Pacifismo": la creatura resta ma non può attaccare/bloccare.
+  {
+    re: /enchanted creature can't attack or block|enchanted creature doesn't untap|enchanted creature can't attack, block/,
+    q: "o:/enchanted creature (can't attack|doesn't untap)/",
+    label: "blocca una creatura (tipo Pacifismo)",
+  },
   { re: /destroy all creatures|destroy all (other )?nonland permanents/, q: 'o:"destroy all"', label: "distrugge tutte le creature" },
   { re: /damage to each creature/, q: 'o:"damage to each creature"', label: "danni a tutte le creature" },
   { re: /exile all creatures/, q: 'o:"exile all"', label: "esilia tutte le creature" },
@@ -49,7 +75,17 @@ const EFFECTS: Effect[] = [
   { re: /\+1\/\+1 counter/, q: 'o:"+1/+1 counter"', label: "segnalini +1/+1" },
   { re: /creatures you control get \+\d+\/\+\d+/, q: 'o:"creatures you control get +"', label: "potenzia le tue creature" },
   { re: /target creature gets \+\d+\/\+\d+/, q: 'o:"target creature gets +"', label: "potenzia una creatura" },
-  { re: /target creature (gains|gets [^.]* and gains) (flying|first strike|double strike|trample|haste|lifelink|deathtouch|hexproof|indestructible|vigilance|menace)/, q: 'o:/target creature (gains|gets [^.]* and gains) (flying|first strike|double strike|trample|haste|lifelink|deathtouch|hexproof|indestructible|vigilance|menace)/', label: "dà un'abilità a una creatura" },
+  // Dà un'abilità precisa fino a fine turno (es. Guardian of Solitude: volare):
+  // si cerca la STESSA abilità, non una qualsiasi (Boros Charm dà doppio attacco).
+  {
+    re: GRANT_RE,
+    q: "",
+    label: "",
+    build: (m) => ({
+      q: `o:/target creature[^.]* gains? ${m[1]}[^.]* until end of turn/`,
+      label: `dà ${GRANTABLE[m[1]]} a una creatura fino a fine turno`,
+    }),
+  },
   { re: /tap target (creature|permanent)|doesn't untap/, q: "o:/tap target|doesn't untap/", label: "tappa / blocca" },
   // Solo se sei TU a guadagnare: "its controller gains life" (Swords, Solitude)
   // è uno svantaggio, non lo scopo della carta.
@@ -78,7 +114,10 @@ export function detectEffects(card: CardInfo): Effect[] {
   }
   const found: Effect[] = [];
   for (const e of EFFECTS) {
-    if (e.re.test(text) && !found.some((f) => f.q === e.q)) found.push(e);
+    const m = text.match(e.re);
+    if (!m) continue;
+    const eff = e.build ? { ...e, ...e.build(m) } : e;
+    if (!found.some((f) => f.q === eff.q)) found.push(eff);
     if (found.length >= 2) break;
   }
   return found;
@@ -98,11 +137,11 @@ export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
   const exclude = `-!"${card.name.replace(/"/g, "")}"`;
   const cmc = Math.round(card.cmc);
   const alt = hasAltCost(card);
-  const minCmc = alt ? 0 : Math.max(0, cmc - 1);
-  const cmcRange = `cmc>=${minCmc} cmc<=${cmc + 1}`;
+  // Costo uguale o minore: un'alternativa più cara serve a poco.
+  const cmcRange = `cmc<=${cmc}`;
   const costNote = alt
-    ? `costo fino a ${cmc + 1} (ha un costo alternativo, quindi anche più basso)`
-    : `costo ${minCmc}–${cmc + 1}`;
+    ? `costo ${cmc} o meno (ha anche un costo alternativo)`
+    : `costo ${cmc} o meno`;
   // Conta solo cosa fa la carta, non il tipo né le statistiche: una creatura
   // che esilia entrando (Solitude) va confrontata anche con istantanei che esiliano.
   const base = [exclude, "game:paper"];
@@ -114,7 +153,7 @@ export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
     const labels = effects.map((e) => e.label);
     attempts.push({ q: [...all, ...base, cmcRange].join(" "), reasons: [...labels, costNote] });
     attempts.push({ q: [effects[0].q, ...base, cmcRange].join(" "), reasons: [labels[0], costNote] });
-    attempts.push({ q: [effects[0].q, ...base].join(" "), reasons: [labels[0]] });
+    attempts.push({ q: [effects[0].q, ...base].join(" "), reasons: [labels[0], "qualsiasi costo (nessuna carta più economica)"] });
   } else {
     // Nessun effetto riconosciuto: si usano solo le abilità chiave (volare,
     // tocco letale…), mai forza/costituzione o altre statistiche.
