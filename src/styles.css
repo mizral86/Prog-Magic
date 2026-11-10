@@ -3205,3 +3205,67 @@ button.ghost.active {
 .pm-note {
   margin-top: 10px;
 }
+
+/* --- Aggiungi carta (Collezione) --- */
+.add-card-form {
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+.add-card-form input {
+  flex: 1;
+  min-width: 0;
+}
+.add-card-ok {
+  margin-top: 8px;
+  color: var(--good);
+  font-weight: 600;
+}
+.add-card-results {
+  margin-top: 8px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+.add-card-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.add-card-row .ghost {
+  flex: none;
+  padding: 6px 10px;
+}
+.acr-open {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.acr-open img,
+.acr-noimg {
+  width: 34px;
+  height: 47px;
+  object-fit: cover;
+  border-radius: 3px;
+  flex: none;
+  background: rgba(127, 127, 127, 0.15);
+}
+.acr-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.acr-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
