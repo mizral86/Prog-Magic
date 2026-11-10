@@ -1,6 +1,7 @@
 // Sezione "Cerca": ricerca carte su Scryfall con prezzi, filtri avanzati e dettaglio.
 
 import { FormEvent, useMemo, useState } from "react";
+import { ManaCost } from "../components/ManaSymbol";
 import { searchCards, SortOrder } from "../scryfall";
 import { CardInfo, Color, COLORS } from "../types";
 import { formatPrice } from "../prices";
@@ -160,6 +161,22 @@ export default function SearchPage() {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<CardInfo | null>(null);
   const [lastQuery, setLastQuery] = useState("");
+  // Vista dei risultati: lista (predefinita) o griglia di immagini.
+  const [view, setViewState] = useState<"list" | "grid">(() => {
+    try {
+      return localStorage.getItem("pm.searchView") === "grid" ? "grid" : "list";
+    } catch {
+      return "list";
+    }
+  });
+  const setView = (v: "list" | "grid") => {
+    setViewState(v);
+    try {
+      localStorage.setItem("pm.searchView", v);
+    } catch {
+      /* ignora */
+    }
+  };
 
   const composed = useMemo(
     () => (advanced ? buildQuery(query, filters) : query.trim()),
@@ -507,28 +524,66 @@ export default function SearchPage() {
       )}
 
       {results && (
-        <div className="muted small" style={{ margin: "14px 0 6px" }}>
-          {results.length} risultati
+        <div className="results-head">
+          <span className="muted small">{results.length} risultati</span>
+          {results.length > 0 && (
+            <span className="view-toggle" role="group" aria-label="Vista">
+              <button type="button" aria-pressed={view === "list"} onClick={() => setView("list")}>
+                Lista
+              </button>
+              <button type="button" aria-pressed={view === "grid"} onClick={() => setView("grid")}>
+                Griglia
+              </button>
+            </span>
+          )}
         </div>
       )}
 
-      <div className="card-grid">
-        {results?.map((c) => (
-          <button
-            key={c.scryfallId ?? c.name}
-            type="button"
-            className="card-cell"
-            onClick={() => setSelected(c)}
-          >
-            {c.imageSmallUrl ? (
-              <img src={c.imageSmallUrl} alt={c.name} loading="lazy" />
-            ) : (
-              <div className="no-img small">{c.name}</div>
-            )}
-            <span className="card-cell-price">{formatPrice(c)}</span>
-          </button>
-        ))}
-      </div>
+      {view === "list" ? (
+        <div className="search-list">
+          {results?.map((c) => (
+            <button
+              key={c.scryfallId ?? c.name}
+              type="button"
+              className="search-row"
+              onClick={() => setSelected(c)}
+            >
+              {c.imageSmallUrl ? (
+                <img src={c.imageSmallUrl} alt="" loading="lazy" />
+              ) : (
+                <div className="no-img small sr-img">{c.name}</div>
+              )}
+              <span className="sr-main">
+                <span className="sr-top">
+                  <span className="sr-name">{c.printedName ?? c.name}</span>
+                  {c.manaCost && <ManaCost cost={c.manaCost} size={16} />}
+                </span>
+                {c.printedName && <span className="sr-sub">{c.name}</span>}
+                <span className="sr-type">{c.typeLine}</span>
+              </span>
+              <span className="sr-price">{formatPrice(c)}</span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="card-grid">
+          {results?.map((c) => (
+            <button
+              key={c.scryfallId ?? c.name}
+              type="button"
+              className="card-cell"
+              onClick={() => setSelected(c)}
+            >
+              {c.imageSmallUrl ? (
+                <img src={c.imageSmallUrl} alt={c.name} loading="lazy" />
+              ) : (
+                <div className="no-img small">{c.name}</div>
+              )}
+              <span className="card-cell-price">{formatPrice(c)}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {results && results.length === 0 && !loading && (
         <div className="muted" style={{ marginTop: 16 }}>

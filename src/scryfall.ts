@@ -199,6 +199,10 @@ function toCardInfo(card: ScryCard): CardInfo {
 
   return {
     name: card.name,
+    printedName:
+      card.printed_name && card.printed_name !== card.name
+        ? card.printed_name
+        : undefined,
     cmc: card.cmc ?? 0,
     typeLine,
     categories: categoriesFromTypeLine(typeLine),

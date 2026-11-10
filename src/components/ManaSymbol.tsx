@@ -55,3 +55,21 @@ export function ManaSymbol({ sym, size = 22, title }: Props) {
     </svg>
   );
 }
+
+/** Costo di mana completo, es. "{2}{R}{R}" o "{1}{U} // {3}{U}{U}". */
+export function ManaCost({ cost, size = 16 }: { cost: string; size?: number }) {
+  const parts = cost.split("//").map((p) => p.match(/\{([^}]+)\}/g) ?? []);
+  return (
+    <span className="mana-cost-inline" aria-label={cost}>
+      {parts.map((tokens, i) => (
+        <span key={i} className="mci-part">
+          {i > 0 && <span className="mci-sep">//</span>}
+          {tokens.map((t, j) => {
+            const sym = t.slice(1, -1).replace("/P", "").replace(/\//g, "");
+            return <ManaSymbol key={j} sym={sym.length <= 2 ? sym : t.slice(1, -1)} size={size} title={t} />;
+          })}
+        </span>
+      ))}
+    </span>
+  );
+}
