@@ -7,6 +7,17 @@ import { cardRectIn, recognize, warmUpScanner } from "../scanner";
 import { CardInfo } from "../types";
 import { formatMoney, formatPrice } from "../prices";
 import { CardDetail } from "../components/CardDetail";
+import { MultiScan } from "../components/MultiScan";
+
+type Mode = "single" | "multi";
+
+function loadMode(): Mode {
+  try {
+    return localStorage.getItem("pm.scanMode") === "multi" ? "multi" : "single";
+  } catch {
+    return "single";
+  }
+}
 
 interface Scanned {
   key: number;
@@ -37,6 +48,7 @@ export default function ScanPage() {
   const [foil, setFoil] = useState(false);
   const [scanned, setScanned] = useState<Scanned[]>([]);
   const [detail, setDetail] = useState<CardInfo | null>(null);
+  const [mode, setModeState] = useState<Mode>(loadMode);
 
   const stop = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -186,8 +198,18 @@ export default function ScanPage() {
   );
   const last = scanned[0];
 
-  return (
-    <div className="page scan-page">
+  function setMode(m: Mode) {
+    if (m === "multi") stop();
+    setModeState(m);
+    try {
+      localStorage.setItem("pm.scanMode", m);
+    } catch {
+      /* ignora */
+    }
+  }
+
+  const head = (
+    <>
       <div className="scan-head">
         <h1 className="page-title" style={{ margin: 0 }}>
           Scansiona
@@ -196,6 +218,41 @@ export default function ScanPage() {
           Vai alla collezione →
         </Link>
       </div>
+      <div className="scan-mode">
+        <div className="segmented" role="tablist">
+          <button
+            type="button"
+            className={mode === "single" ? "on" : ""}
+            aria-pressed={mode === "single"}
+            onClick={() => setMode("single")}
+          >
+            Una carta alla volta
+          </button>
+          <button
+            type="button"
+            className={mode === "multi" ? "on" : ""}
+            aria-pressed={mode === "multi"}
+            onClick={() => setMode("multi")}
+          >
+            Più carte da una foto
+          </button>
+        </div>
+      </div>
+    </>
+  );
+
+  if (mode === "multi") {
+    return (
+      <div className="page scan-page">
+        {head}
+        <MultiScan />
+      </div>
+    );
+  }
+
+  return (
+    <div className="page scan-page">
+      {head}
 
       <div className="scan-view" ref={boxRef}>
         <video ref={videoRef} playsInline muted className={camera === "on" ? "" : "hidden-video"} />

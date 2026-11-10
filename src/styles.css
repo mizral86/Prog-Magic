@@ -3269,3 +3269,220 @@ button.ghost.active {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ---- Scansione di più carte da una foto ---- */
+.scan-mode {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 12px;
+}
+.scan-mode button {
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+label.primary-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--grad);
+  color: #fff;
+  border-radius: var(--r-sm);
+  padding: 11px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--sh-1);
+}
+.multi-empty {
+  aspect-ratio: 4 / 3;
+}
+.multi-grid-opts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.multi-grid-opts .chip.toggle {
+  font-size: 12.5px;
+  padding: 5px 11px;
+}
+.grid-editor-wrap {
+  display: flex;
+  justify-content: center;
+}
+.grid-editor {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: 70vh;
+  touch-action: none;
+  user-select: none;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: #0b0d12;
+}
+.grid-editor img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.ge-area {
+  position: absolute;
+  display: grid;
+  border: 2px solid #fbbf24;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+}
+.ge-cell {
+  border: 1px dashed rgba(251, 191, 36, 0.75);
+  position: relative;
+}
+.ge-cell span {
+  position: absolute;
+  left: 4px;
+  top: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 6px;
+  padding: 0 5px;
+}
+.ge-cell.reading {
+  background: rgba(251, 191, 36, 0.25);
+}
+.ge-cell.ok {
+  background: rgba(47, 138, 76, 0.28);
+}
+.ge-cell.miss {
+  background: rgba(194, 57, 31, 0.3);
+}
+.ge-handle {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border-radius: 50%;
+  background: #fbbf24;
+  border: 3px solid #fff;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+  cursor: grab;
+  touch-action: none;
+  z-index: 2;
+}
+.ge-handle.tl { left: 0; top: 0; }
+.ge-handle.tr { left: 100%; top: 0; }
+.ge-handle.bl { left: 0; top: 100%; }
+.ge-handle.br { left: 100%; top: 100%; }
+.multi-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 8px;
+}
+.multi-row.missing {
+  border-style: dashed;
+}
+.multi-row.skipped {
+  opacity: 0.6;
+}
+.mr-imgs {
+  display: flex;
+  gap: 4px;
+}
+.mr-imgs img {
+  width: 52px;
+  border-radius: 4px;
+  display: block;
+}
+.mr-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.mr-miss {
+  font-weight: 700;
+  color: var(--bad);
+}
+.mr-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.mr-steps .stepper button {
+  width: 30px;
+  height: 30px;
+}
+.mr-actions {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.mr-prints {
+  max-width: 100%;
+  margin-top: 4px;
+  font-size: 13px;
+}
+.mr-fix {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mr-fix input {
+  flex: 1;
+  min-width: 0;
+}
+.mr-fix-results {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mr-fix-results button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 4px;
+  color: var(--text);
+  cursor: pointer;
+}
+.mr-fix-results img {
+  width: 34px;
+  border-radius: 3px;
+}
+.multi-footer {
+  position: sticky;
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+}
+.multi-footer button {
+  width: 100%;
+  max-width: 420px;
+}
+.multi-added {
+  grid-template-columns: 40px minmax(0, 1fr);
+  border-color: var(--good);
+}
+.ma-check {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--good);
+  color: #fff;
+  font-weight: 800;
+}

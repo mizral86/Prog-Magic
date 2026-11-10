@@ -177,3 +177,63 @@ export function cardRectIn(width: number, height: number, fill = 0.82): DOMRect 
   }
   return new DOMRect((width - w) / 2, (height - h) / 2, w, h);
 }
+
+// --- Più carte da una sola foto (es. pagina di un raccoglitore) --------------
+
+/** Area in frazioni dell'immagine (0..1). */
+export interface Area {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/** Divide l'area (in pixel) in una griglia di celle, riga per riga. */
+export function gridCells(
+  width: number,
+  height: number,
+  area: Area,
+  rows: number,
+  cols: number,
+): DOMRect[] {
+  const ax = area.x * width;
+  const ay = area.y * height;
+  const cw = (area.w * width) / cols;
+  const ch = (area.h * height) / rows;
+  const out: DOMRect[] = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      out.push(new DOMRect(ax + c * cw, ay + r * ch, cw, ch));
+    }
+  }
+  return out;
+}
+
+/**
+ * Riconosce la carta dentro una cella della griglia. Nelle tasche di un
+ * raccoglitore la carta non riempie sempre la cella nello stesso modo: si
+ * prova con cornici di misura diversa finché il nome non viene trovato.
+ */
+export async function recognizeInCell(
+  frame: HTMLCanvasElement,
+  cell: DOMRect,
+): Promise<ScanResult> {
+  let best: ScanResult | null = null;
+  for (const fill of [0.94, 0.86, 1]) {
+    const r = cardRectIn(cell.width, cell.height, fill);
+    const rect = new DOMRect(cell.x + r.x, cell.y + r.y, r.width, r.height);
+    const res = await recognize(frame, rect);
+    if (res.card) return res;
+    if (!best || res.readName.length > best.readName.length) best = res;
+  }
+  return best ?? { card: null, readName: "", readInfo: "" };
+}
+
+/** Miniatura di una cella della foto (per far capire quale carta è). */
+export function cellThumb(frame: HTMLCanvasElement, cell: DOMRect, width = 140): string {
+  const c = document.createElement("canvas");
+  c.width = width;
+  c.height = Math.round((cell.height / cell.width) * width);
+  c.getContext("2d")!.drawImage(frame, cell.x, cell.y, cell.width, cell.height, 0, 0, c.width, c.height);
+  return c.toDataURL("image/jpeg", 0.75);
+}
