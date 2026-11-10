@@ -217,9 +217,10 @@ export function gridCells(
 export async function recognizeInCell(
   frame: HTMLCanvasElement,
   cell: DOMRect,
+  fills: number[] = [0.94, 0.86, 1],
 ): Promise<ScanResult> {
   let best: ScanResult | null = null;
-  for (const fill of [0.94, 0.86, 1]) {
+  for (const fill of fills) {
     const r = cardRectIn(cell.width, cell.height, fill);
     const rect = new DOMRect(cell.x + r.x, cell.y + r.y, r.width, r.height);
     const res = await recognize(frame, rect);
