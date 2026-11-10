@@ -59,6 +59,8 @@ export interface CardInfo {
   imageUrl?: string;
   /** URL immagine piccola (miniatura per il replay). */
   imageSmallUrl?: string;
+  /** Immagine ad alta risoluzione per lo zoom. */
+  imageLargeUrl?: string;
   /** ID Scryfall della stampa (utile come chiave). */
   scryfallId?: string;
   rarity?: string;

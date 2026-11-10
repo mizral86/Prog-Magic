@@ -6,6 +6,7 @@ import { getPrintings } from "../scryfall";
 import { bestPrice, formatMoney, formatPrice } from "../prices";
 import { useCollection } from "../collection";
 import { useWishlist } from "../wishlist";
+import { ManaCost } from "./ManaSymbol";
 
 interface CardDetailProps {
   card: CardInfo;
@@ -16,6 +17,7 @@ export function CardDetail({ card, onClose }: CardDetailProps) {
   const [shown, setShown] = useState<CardInfo>(card);
   const [printings, setPrintings] = useState<CardInfo[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [zoomOpen, setZoomOpen] = useState(false);
   const collection = useCollection();
   const owned = shown.scryfallId ? collection.get(shown.scryfallId) : undefined;
   const wishlist = useWishlist();
@@ -59,7 +61,16 @@ export function CardDetail({ card, onClose }: CardDetailProps) {
         <div className="detail">
           <div className="detail-img">
             {shown.imageUrl ? (
-              <img src={shown.imageUrl} alt={shown.name} />
+              <button
+                type="button"
+                className="detail-zoom-btn"
+                onClick={() => setZoomOpen(true)}
+                aria-label="Ingrandisci la carta"
+                title="Tocca per ingrandire"
+              >
+                <img src={shown.imageUrl} alt={shown.name} />
+                <span className="zoom-hint" aria-hidden="true">⤢ Ingrandisci</span>
+              </button>
             ) : (
               <div className="no-img">{shown.name}</div>
             )}
@@ -67,7 +78,11 @@ export function CardDetail({ card, onClose }: CardDetailProps) {
           <div className="detail-body">
             <h2 style={{ margin: "0 0 2px" }}>{shown.name}</h2>
             <div className="muted small">
-              {shown.manaCost && <span className="mono">{shown.manaCost} · </span>}
+              {shown.manaCost && (
+                <>
+                  <ManaCost cost={shown.manaCost} size={16} />{" "}·{" "}
+                </>
+              )}
               {shown.typeLine}
             </div>
             {shown.oracleText && (
@@ -190,6 +205,13 @@ export function CardDetail({ card, onClose }: CardDetailProps) {
           </div>
         </div>
       </div>
+      {zoomOpen && shown.imageUrl && (
+        <CardZoom
+          src={shown.imageLargeUrl ?? shown.imageUrl}
+          alt={shown.name}
+          onClose={() => setZoomOpen(false)}
+        />
+      )}
     </div>
   );
 }
@@ -200,5 +222,79 @@ function PriceTag({ label, card }: { label: string; card: CardInfo }) {
       <span className="muted small">{label}</span>
       <strong>{formatPrice(card)}</strong>
     </span>
+  );
+}
+
+
+/**
+ * Carta a tutto schermo. Tocca per ingrandire il punto toccato (e di nuovo per
+ * tornare a vista intera); da ingrandita si scorre col dito per leggere i
+ * dettagli. Sul telefono funziona anche il pizzico con due dita.
+ */
+function CardZoom({
+  src,
+  alt,
+  onClose,
+}: {
+  src: string;
+  alt: string;
+  onClose: () => void;
+}) {
+  const [zoomed, setZoomed] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  function toggle(e: React.MouseEvent<HTMLImageElement>) {
+    e.stopPropagation();
+    const img = e.currentTarget;
+    const box = img.parentElement as HTMLElement;
+    const rect = img.getBoundingClientRect();
+    const fx = (e.clientX - rect.left) / rect.width;
+    const fy = (e.clientY - rect.top) / rect.height;
+    const next = !zoomed;
+    setZoomed(next);
+    if (next) {
+      // Dopo il render ingrandito, porta in vista il punto toccato.
+      requestAnimationFrame(() => {
+        box.scrollLeft = fx * img.offsetWidth - box.clientWidth / 2;
+        box.scrollTop = fy * img.offsetHeight - box.clientHeight / 2;
+      });
+    }
+  }
+
+  return (
+    <div
+      className="card-zoom"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClose();
+      }}
+      role="dialog"
+      aria-label={`${alt} ingrandita`}
+    >
+      <div className={`card-zoom-box${zoomed ? " zoomed" : ""}`}>
+        <img src={src} alt={alt} onClick={toggle} draggable={false} />
+      </div>
+      <button
+        type="button"
+        className="card-zoom-close"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
+        aria-label="Chiudi"
+      >
+        ✕
+      </button>
+      <div className="card-zoom-hint">
+        {zoomed ? "Scorri per muoverti · tocca per rimpicciolire" : "Tocca la carta per ingrandire"}
+      </div>
+    </div>
   );
 }
