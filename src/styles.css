@@ -1604,6 +1604,8 @@ table.factors .fav-b {
   display: block;
   border-radius: 50%;
   user-select: none;
+  /* bordo sottile: il bianco resta visibile anche sul tema chiaro */
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
 }
 .color-tog {
   display: inline-flex;

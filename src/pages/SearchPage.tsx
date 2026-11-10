@@ -89,6 +89,19 @@ const COST_SYMS: { sym: string; label: string }[] = [
   { sym: "C", label: "Incolore" },
   { sym: "X", label: "X" },
 ];
+// Ibridi: prima i colori alleati, poi i nemici (notazione Scryfall {W/U}…).
+const HYBRID_SYMS: { sym: string; label: string }[] = [
+  { sym: "W/U", label: "Bianco/Blu" },
+  { sym: "U/B", label: "Blu/Nero" },
+  { sym: "B/R", label: "Nero/Rosso" },
+  { sym: "R/G", label: "Rosso/Verde" },
+  { sym: "G/W", label: "Verde/Bianco" },
+  { sym: "W/B", label: "Bianco/Nero" },
+  { sym: "U/R", label: "Blu/Rosso" },
+  { sym: "B/G", label: "Nero/Verde" },
+  { sym: "R/W", label: "Rosso/Bianco" },
+  { sym: "G/U", label: "Verde/Blu" },
+];
 const GENERIC_MAX = 9;
 
 const EMPTY: Filters = {
@@ -108,7 +121,7 @@ const EMPTY: Filters = {
 // Costo di mana in notazione Scryfall, es. {2}{R}{R}. X va per primo come
 // sulle carte, poi il generico, poi i colori nell'ordine WUBRG.
 function costString(f: Filters): string {
-  const order = ["X", "W", "U", "B", "R", "G", "C"];
+  const order = ["X", ...HYBRID_SYMS.map((h) => h.sym), "W", "U", "B", "R", "G", "C"];
   const syms = [...f.costSyms].sort((a, b) => order.indexOf(a) - order.indexOf(b));
   const xs = syms.filter((s) => s === "X");
   const rest = syms.filter((s) => s !== "X");
@@ -365,6 +378,23 @@ export default function SearchPage() {
                   +
                 </button>
               </span>
+            </div>
+          </div>
+          <div className="adv-row">
+            <span className="adv-label">Ibridi</span>
+            <div className="mana-palette">
+              {HYBRID_SYMS.map(({ sym, label }) => (
+                <button
+                  key={sym}
+                  type="button"
+                  className="mana-btn"
+                  onClick={() => addCostSym(sym)}
+                  title={`Aggiungi ${label}`}
+                  aria-label={`Aggiungi ${label}`}
+                >
+                  <ManaSymbol sym={sym} size={24} title={label} />
+                </button>
+              ))}
             </div>
           </div>
           <div className="adv-row">
