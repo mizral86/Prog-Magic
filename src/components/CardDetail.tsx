@@ -1,6 +1,6 @@
 // Dettaglio carta: immagine grande, testo, prezzi e stampe/edizioni.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CardInfo } from "../types";
 import { getPrintings } from "../scryfall";
 import { bestPrice, formatMoney, formatPrice } from "../prices";
@@ -14,26 +14,46 @@ interface CardDetailProps {
   onClose: () => void;
 }
 
+interface StackEntry {
+  card: CardInfo;
+  /** Suggerimenti già calcolati: restano visibili tornando indietro. */
+  similar?: SimilarResult;
+  /** True quando si torna a questa scheda da una carta suggerita. */
+  returned?: boolean;
+}
+
 /**
- * Scheda carta. Tiene una piccola cronologia: aprendo una carta suggerita si
- * può tornare indietro a quella di partenza.
+ * Scheda carta. Tiene una piccola cronologia: aprendo una carta suggerita,
+ * "Chiudi" (o "← Torna a…") riporta alla scheda di partenza con i
+ * suggerimenti ancora aperti; solo dalla prima scheda si chiude davvero.
  */
 export function CardDetail({ card, onClose }: CardDetailProps) {
-  const [stack, setStack] = useState<CardInfo[]>([card]);
+  const [stack, setStack] = useState<StackEntry[]>([{ card }]);
   useEffect(() => {
-    setStack([card]);
+    setStack([{ card }]);
   }, [card]);
-  const current = stack[stack.length - 1];
+  const top = stack[stack.length - 1];
   const previous = stack.length > 1 ? stack[stack.length - 2] : undefined;
+  const goBack = () =>
+    setStack((s) => {
+      const rest = s.slice(0, -1);
+      rest[rest.length - 1] = { ...rest[rest.length - 1], returned: true };
+      return rest;
+    });
   return (
     <CardDetailView
-      key={`${stack.length}:${current.scryfallId ?? current.name}`}
-      card={current}
-      onClose={onClose}
-      onOpenCard={(c) => setStack((s) => [...s, c])}
+      key={`${stack.length}:${top.card.scryfallId ?? top.card.name}`}
+      card={top.card}
+      similar={top.similar}
+      returned={top.returned}
+      onSimilar={(r) =>
+        setStack((s) => s.map((e, i) => (i === s.length - 1 ? { ...e, similar: r } : e)))
+      }
+      onClose={previous ? goBack : onClose}
+      onOpenCard={(c) => setStack((s) => [...s, { card: c }])}
       back={
         previous
-          ? { name: previous.printedName ?? previous.name, go: () => setStack((s) => s.slice(0, -1)) }
+          ? { name: previous.card.printedName ?? previous.card.name, go: goBack }
           : undefined
       }
     />
@@ -43,22 +63,38 @@ export function CardDetail({ card, onClose }: CardDetailProps) {
 interface CardDetailViewProps extends CardDetailProps {
   onOpenCard: (c: CardInfo) => void;
   back?: { name: string; go: () => void };
+  similar?: SimilarResult;
+  onSimilar: (r: SimilarResult) => void;
+  returned?: boolean;
 }
 
-function CardDetailView({ card, onClose, onOpenCard, back }: CardDetailViewProps) {
+function CardDetailView({
+  card,
+  onClose,
+  onOpenCard,
+  back,
+  similar,
+  onSimilar,
+  returned,
+}: CardDetailViewProps) {
   const [shown, setShown] = useState<CardInfo>(card);
   const [printings, setPrintings] = useState<CardInfo[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [zoomOpen, setZoomOpen] = useState(false);
-  const [similar, setSimilar] = useState<SimilarResult | null>(null);
   const [similarLoading, setSimilarLoading] = useState(false);
   const [similarError, setSimilarError] = useState<string | null>(null);
+  const similarRef = useRef<HTMLDivElement>(null);
+
+  // Tornando da una carta suggerita, riporta in vista l'elenco dei suggerimenti.
+  useEffect(() => {
+    if (returned) similarRef.current?.scrollIntoView({ block: "start" });
+  }, [returned]);
 
   async function loadSimilar() {
     setSimilarLoading(true);
     setSimilarError(null);
     try {
-      setSimilar(await findSimilar(shown));
+      onSimilar(await findSimilar(shown));
     } catch (err) {
       setSimilarError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -101,7 +137,7 @@ function CardDetailView({ card, onClose, onOpenCard, back }: CardDetailViewProps
           type="button"
           className="modal-close"
           onClick={onClose}
-          aria-label="Chiudi"
+          aria-label={back ? `Torna a ${back.name}` : "Chiudi"}
         >
           ✕
         </button>
@@ -224,7 +260,7 @@ function CardDetailView({ card, onClose, onOpenCard, back }: CardDetailViewProps
               </label>
             )}
 
-            <h3 className="mini-title">Carte simili</h3>
+            <h3 className="mini-title" ref={similarRef}>Carte simili</h3>
             {!similar && (
               <button
                 type="button"
