@@ -49,7 +49,19 @@ const EFFECTS: Effect[] = [
   { re: /exile all creatures/, q: 'o:"exile all"', label: "esilia tutte le creature" },
   { re: /(gets|get) -\d+\/-\d+ until end of turn/, q: 'o:/gets? -[0-9X]+\\/-[0-9X]+/', label: "dà -N/-N" },
   // "exile up to one other target creature", "destroy target nonblack creature"…
-  { re: /exile (up to \w+ )?(another |other )?target ([\w-]+ )?(creature|permanent)/, q: 'o:/exile (up to [a-z]+ )?(another |other )?target ([a-z-]+ )?(creature|permanent)/', label: "esilia una creatura" },
+  // Blink: esilia una TUA creatura e la rimette in campo (Ephemerate, Conjurer's
+  // Closet). Va prima della rimozione, che invece colpisce di solito l'avversario.
+  {
+    re: /exile (up to \w+ )?(another )?target [^.]*you (control|own)[^.]*(then )?return/,
+    q: "o:/exile [^.]*target [^.]*you control[^.]*return/",
+    label: "fa uscire e rientrare una tua creatura (blink)",
+  },
+  {
+    re: /exile (up to \w+ )?(another |other )?target ([\w-]+ )?(creature|permanent)(?! you control)/,
+    // Esclude i blink ("target creature you control"), che sono un'altra cosa.
+    q: "o:/exile (up to [a-z]+ )?(another |other )?target ([a-z-]+ )?(creature|permanent)/ -o:/exile [^.]*target [^.]*you control/",
+    label: "esilia una creatura",
+  },
   { re: /destroy (up to \w+ )?(another |other )?target ([\w-]+ )?(creature|permanent)/, q: 'o:/destroy (up to [a-z]+ )?(another |other )?target ([a-z-]+ )?(creature|permanent)/', label: "distrugge una creatura" },
   { re: /damage to any target/, q: 'o:"damage to any target"', label: "danni a qualsiasi bersaglio" },
   { re: /damage to target (creature|planeswalker|player)/, q: 'o:/damage to (any target|target (creature|player))/', label: "danni a un bersaglio" },
@@ -132,6 +144,19 @@ export function hasAltCost(card: CardInfo): boolean {
   return ALT_COST.test((card.oracleText ?? "").toLowerCase());
 }
 
+/** Forma della carta, per confrontare prima carte dello stesso tipo. */
+function kindOf(card: CardInfo): { q: string; label: string } | null {
+  const c = card.categories;
+  if (c.includes("creature")) return { q: "t:creature", label: "creature" };
+  if (c.includes("instant") || c.includes("sorcery"))
+    return { q: "(t:instant or t:sorcery)", label: "istantanei e stregonerie" };
+  if (c.includes("planeswalker")) return { q: "t:planeswalker", label: "planeswalker" };
+  if (c.includes("enchantment")) return { q: "t:enchantment", label: "incantesimi" };
+  if (c.includes("artifact")) return { q: "t:artifact", label: "artefatti" };
+  if (c.includes("land")) return { q: "t:land", label: "terre" };
+  return null;
+}
+
 export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
   const effects = detectEffects(card);
   const exclude = `-!"${card.name.replace(/"/g, "")}"`;
@@ -142,18 +167,23 @@ export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
   const costNote = alt
     ? `costo ${cmc} o meno (ha anche un costo alternativo)`
     : `costo ${cmc} o meno`;
-  // Conta solo cosa fa la carta, non il tipo né le statistiche: una creatura
-  // che esilia entrando (Solitude) va confrontata anche con istantanei che esiliano.
   const base = [exclude, "game:paper"];
+  // Prima carte della stessa forma (creatura con creatura, magia istantanea con
+  // magia…): una creatura che dà volare per un turno va confrontata con altre
+  // creature, non con istantanei. Poi, se servono, anche le altre.
+  const kind = kindOf(card);
 
-  // Tentativi dal più preciso al più largo: ci si ferma al primo che trova carte.
   const attempts: { q: string; reasons: string[] }[] = [];
   if (effects.length) {
     const all = effects.map((e) => e.q);
     const labels = effects.map((e) => e.label);
+    if (kind) {
+      attempts.push({ q: [...all, kind.q, ...base, cmcRange].join(" "), reasons: [...labels, kind.label, costNote] });
+      attempts.push({ q: [effects[0].q, kind.q, ...base, cmcRange].join(" "), reasons: [labels[0], kind.label, costNote] });
+    }
     attempts.push({ q: [...all, ...base, cmcRange].join(" "), reasons: [...labels, costNote] });
     attempts.push({ q: [effects[0].q, ...base, cmcRange].join(" "), reasons: [labels[0], costNote] });
-    attempts.push({ q: [effects[0].q, ...base].join(" "), reasons: [labels[0], "qualsiasi costo (nessuna carta più economica)"] });
+    attempts.push({ q: [effects[0].q, ...base].join(" "), reasons: [labels[0], "qualsiasi costo"] });
   } else {
     // Nessun effetto riconosciuto: si usano solo le abilità chiave (volare,
     // tocco letale…), mai forza/costituzione o altre statistiche.
@@ -162,14 +192,39 @@ export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
     if (kws.length) {
       const kq = kws.map((k) => `keyword:"${k}"`).join(" ");
       const labels = kws.map((k) => `abilità ${k}`);
-      attempts.push({ q: [kq, exclude, "game:paper", cmcRange].join(" "), reasons: [...labels, costNote] });
-      attempts.push({ q: [kq, exclude, "game:paper"].join(" "), reasons: labels });
+      if (kind) attempts.push({ q: [kq, kind.q, ...base, cmcRange].join(" "), reasons: [...labels, kind.label, costNote] });
+      attempts.push({ q: [kq, ...base, cmcRange].join(" "), reasons: [...labels, costNote] });
+      attempts.push({ q: [kq, ...base].join(" "), reasons: [...labels, "qualsiasi costo"] });
     }
   }
 
+  // Si raccolgono risultati dal tentativo più preciso al più largo, finché
+  // non se ne hanno abbastanza: prima quelli più somiglianti.
+  const out: CardInfo[] = [];
+  const seen = new Set<string>();
+  let reasons: string[] | null = null;
+  let widened = false;
+  const tried = new Set<string>();
   for (const a of attempts) {
+    if (out.length >= 12) break;
+    if (tried.has(a.q)) continue; // con un solo effetto alcuni tentativi coincidono
+    tried.add(a.q);
     const cards = await searchCards(a.q, { order: "edhrec", dir: "asc" });
-    if (cards.length) return { cards: cards.slice(0, 30), reasons: a.reasons };
+    let added = 0;
+    for (const c of cards) {
+      if (seen.has(c.name) || out.length >= 30) continue;
+      seen.add(c.name);
+      out.push(c);
+      added++;
+    }
+    if (added && !reasons) reasons = a.reasons;
+    else if (added) widened = true;
+  }
+  if (reasons) {
+    return {
+      cards: out,
+      reasons: widened ? [...reasons, "poi altre carte con lo stesso effetto"] : reasons,
+    };
   }
   return { cards: [], reasons: effects.map((e) => e.label) };
 }
