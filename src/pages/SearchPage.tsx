@@ -5,6 +5,7 @@ import { searchCards, SortOrder } from "../scryfall";
 import { CardInfo, Color, COLORS } from "../types";
 import { formatPrice } from "../prices";
 import { CardDetail } from "../components/CardDetail";
+import { ManaSymbol } from "../components/ManaSymbol";
 
 // --- Opzioni dei filtri avanzati -------------------------------------------
 
@@ -52,6 +53,7 @@ const FORMATS: { key: string; label: string }[] = [
 ];
 
 const SORTS: { key: SortOrder; label: string }[] = [
+  { key: "relevance", label: "Pertinenza" },
   { key: "name", label: "Nome" },
   { key: "cmc", label: "Costo (CMC)" },
   { key: "rarity", label: "Rarità" },
@@ -68,7 +70,25 @@ interface Filters {
   rarity: string;
   format: string;
   oracle: string;
+  // Costo di mana composto con i simboli: generico + simboli colorati/speciali.
+  costGeneric: number;
+  costSyms: string[];
+  costMode: CostMode;
 }
+
+type CostMode = ">=" | "=";
+
+// Simboli disponibili per comporre il costo di mana.
+const COST_SYMS: { sym: string; label: string }[] = [
+  { sym: "W", label: "Bianco" },
+  { sym: "U", label: "Blu" },
+  { sym: "B", label: "Nero" },
+  { sym: "R", label: "Rosso" },
+  { sym: "G", label: "Verde" },
+  { sym: "C", label: "Incolore" },
+  { sym: "X", label: "X" },
+];
+const GENERIC_MAX = 9;
 
 const EMPTY: Filters = {
   colors: new Set(),
@@ -79,7 +99,21 @@ const EMPTY: Filters = {
   rarity: "",
   format: "",
   oracle: "",
+  costGeneric: 0,
+  costSyms: [],
+  costMode: ">=",
 };
+
+// Costo di mana in notazione Scryfall, es. {2}{R}{R}. X va per primo come
+// sulle carte, poi il generico, poi i colori nell'ordine WUBRG.
+function costString(f: Filters): string {
+  const order = ["X", "W", "U", "B", "R", "G", "C"];
+  const syms = [...f.costSyms].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+  const xs = syms.filter((s) => s === "X");
+  const rest = syms.filter((s) => s !== "X");
+  const generic = f.costGeneric > 0 ? [String(f.costGeneric)] : [];
+  return [...xs, ...generic, ...rest].map((s) => `{${s}}`).join("");
+}
 
 // Compone la query Scryfall a partire dal testo libero + i filtri avanzati.
 function buildQuery(text: string, f: Filters): string {
@@ -103,6 +137,9 @@ function buildQuery(text: string, f: Filters): string {
     parts.push(`cmc${f.cmcOp}${f.cmc.trim()}`);
   }
 
+  const cost = costString(f);
+  if (cost) parts.push(`m${f.costMode === "=" ? "=" : ">="}${cost}`);
+
   if (f.rarity) parts.push(`r:${f.rarity}`);
   if (f.format) parts.push(`f:${f.format}`);
 
@@ -116,7 +153,7 @@ export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [advanced, setAdvanced] = useState(false);
   const [filters, setFilters] = useState<Filters>(EMPTY);
-  const [order, setOrder] = useState<SortOrder>("name");
+  const [order, setOrder] = useState<SortOrder>("relevance");
 
   const [results, setResults] = useState<CardInfo[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -149,7 +186,13 @@ export default function SearchPage() {
     });
   }
   function resetFilters() {
-    setFilters({ ...EMPTY, colors: new Set(), types: new Set() });
+    setFilters({ ...EMPTY, colors: new Set(), types: new Set(), costSyms: [] });
+  }
+  function addCostSym(sym: string) {
+    setFilters((f) => ({ ...f, costSyms: [...f.costSyms, sym] }));
+  }
+  function removeCostSym(idx: number) {
+    setFilters((f) => ({ ...f, costSyms: f.costSyms.filter((_, i) => i !== idx) }));
   }
 
   async function doSearch(e?: FormEvent) {
@@ -188,7 +231,7 @@ export default function SearchPage() {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Nome carta (es. Lightning Bolt) o sintassi Scryfall (es. t:dragon c:r)"
+          placeholder="Nome carta (es. Fulmine o Lightning Bolt)"
           autoFocus
         />
         <button className="primary" type="submit" disabled={loading}>
@@ -232,8 +275,10 @@ export default function SearchPage() {
                   className={`color-tog c-${c}${filters.colors.has(c) ? " on" : ""}`}
                   onClick={() => toggleColor(c)}
                   title={COLOR_LABELS[c]}
+                  aria-label={COLOR_LABELS[c]}
+                  aria-pressed={filters.colors.has(c)}
                 >
-                  {c}
+                  <ManaSymbol sym={c} size={26} title={COLOR_LABELS[c]} />
                 </button>
               ))}
             </div>
@@ -250,6 +295,113 @@ export default function SearchPage() {
                   type="button"
                   className={filters.colorMode === m ? "on" : ""}
                   onClick={() => patch({ colorMode: m })}
+                >
+                  {lab}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="adv-row">
+            <span className="adv-label">Costo</span>
+            <div className="mana-palette">
+              {COST_SYMS.map(({ sym, label }) => (
+                <button
+                  key={sym}
+                  type="button"
+                  className="mana-btn"
+                  onClick={() => addCostSym(sym)}
+                  title={`Aggiungi ${label}`}
+                  aria-label={`Aggiungi ${label}`}
+                >
+                  <ManaSymbol sym={sym} size={24} title={label} />
+                </button>
+              ))}
+              <span className="mana-generic">
+                <button
+                  type="button"
+                  className="mana-btn small"
+                  onClick={() =>
+                    patch({ costGeneric: Math.max(0, filters.costGeneric - 1) })
+                  }
+                  disabled={filters.costGeneric === 0}
+                  aria-label="Meno mana generico"
+                >
+                  −
+                </button>
+                <ManaSymbol
+                  sym={String(filters.costGeneric)}
+                  size={24}
+                  title="Mana generico"
+                />
+                <button
+                  type="button"
+                  className="mana-btn small"
+                  onClick={() =>
+                    patch({
+                      costGeneric: Math.min(GENERIC_MAX, filters.costGeneric + 1),
+                    })
+                  }
+                  disabled={filters.costGeneric >= GENERIC_MAX}
+                  aria-label="Più mana generico"
+                >
+                  +
+                </button>
+              </span>
+            </div>
+          </div>
+          <div className="adv-row">
+            <span className="adv-label" />
+            <div className="mana-cost">
+              {filters.costGeneric === 0 && filters.costSyms.length === 0 ? (
+                <span className="muted small">
+                  Tocca i simboli per comporre il costo (es. 2 + rosso + rosso)
+                </span>
+              ) : (
+                <>
+                  {filters.costGeneric > 0 && (
+                    <button
+                      type="button"
+                      className="mana-btn"
+                      onClick={() => patch({ costGeneric: 0 })}
+                      title="Togli il mana generico"
+                    >
+                      <ManaSymbol sym={String(filters.costGeneric)} size={24} />
+                    </button>
+                  )}
+                  {filters.costSyms.map((sym, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className="mana-btn"
+                      onClick={() => removeCostSym(i)}
+                      title="Togli questo simbolo"
+                    >
+                      <ManaSymbol sym={sym} size={24} />
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className="link-btn small"
+                    onClick={() => patch({ costGeneric: 0, costSyms: [] })}
+                  >
+                    svuota
+                  </button>
+                </>
+              )}
+            </div>
+            <div className="segmented">
+              {(
+                [
+                  [">=", "contiene"],
+                  ["=", "esatto"],
+                ] as [CostMode, string][]
+              ).map(([m, lab]) => (
+                <button
+                  key={m}
+                  type="button"
+                  className={filters.costMode === m ? "on" : ""}
+                  onClick={() => patch({ costMode: m })}
                 >
                   {lab}
                 </button>
@@ -345,20 +497,6 @@ export default function SearchPage() {
             Query:{" "}
             <span className="mono">{composed || "(vuota)"}</span>
           </div>
-        </div>
-      )}
-
-      {!advanced && (
-        <div className="muted small" style={{ marginTop: 4 }}>
-          Suggerimento: puoi usare la{" "}
-          <a
-            href="https://scryfall.com/docs/syntax"
-            target="_blank"
-            rel="noreferrer"
-          >
-            sintassi di Scryfall
-          </a>{" "}
-          (es. <span className="mono">c:u cmc=2 t:instant</span>).
         </div>
       )}
 

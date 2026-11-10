@@ -23,6 +23,8 @@ interface ScryCardFace {
 interface ScryCard {
   id?: string;
   name: string;
+  printed_name?: string; // nome stampato nelle carte non inglesi
+  lang?: string;
   cmc?: number;
   mana_cost?: string;
   type_line?: string;
@@ -298,6 +300,7 @@ const SEARCH_URL = "https://api.scryfall.com/cards/search";
 
 // Criteri di ordinamento supportati dalla ricerca (sottoinsieme di Scryfall).
 export type SortOrder =
+  | "relevance"
   | "name"
   | "cmc"
   | "rarity"
@@ -309,20 +312,67 @@ export interface SearchOptions {
   dir?: "asc" | "desc";
 }
 
+// Normalizza per i confronti: minuscolo, senza accenti né punteggiatura.
+function norm(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+// True se la query è solo testo libero (un nome), senza sintassi di ricerca.
+export function isPlainNameQuery(q: string): boolean {
+  return !/[:=<>!"()]/.test(q) && !/(^|\s)-\S/.test(q);
+}
+
+// Punteggio di pertinenza di un nome rispetto al testo cercato (più alto = meglio).
+function nameScore(name: string, q: string): number {
+  const n = norm(name);
+  if (!n || !q) return 0;
+  if (n === q) return 100; // nome identico
+  const words = n.split(" ");
+  const qWords = q.split(" ");
+  if (n.startsWith(q + " ")) return 80; // il nome inizia con la parola cercata
+  // Tutte le parole cercate presenti come parole intere nel nome.
+  if (qWords.every((w) => words.includes(w))) return 60;
+  if (n.startsWith(q)) return 40; // "fulmine" → "Fulminea…"
+  if (qWords.every((w) => words.some((x) => x.startsWith(w)))) return 30;
+  if (n.includes(q)) return 20;
+  return 0;
+}
+
+function relevance(c: ScryCard, q: string): number {
+  const names = [c.name, c.printed_name ?? ""];
+  // Le carte bifronte hanno il nome "A // B": contano anche le singole facce.
+  for (const full of [c.name, c.printed_name ?? ""]) {
+    if (full.includes("//")) names.push(...full.split("//"));
+  }
+  return Math.max(...names.map((n) => nameScore(n, q)));
+}
+
 // Ricerca carte per query (nome o sintassi Scryfall). Prima pagina di risultati.
 // include_multilingual=true fa matchare anche i nomi in italiano (e altre
 // lingue), così si può cercare sia "Lightning Bolt" sia "Fulmine".
+//
+// Scryfall però cerca il testo come *parte* del nome, in tutte le lingue: con
+// "fulmine" arrivano anche carte come "Mangusta Fulminea" (Blurrer Mongoose),
+// e con l'ordine alfabetico inglese finiscono prima di "Lightning Bolt". Con
+// l'ordinamento "relevance" (predefinito) per le ricerche per nome mettiamo in
+// cima le corrispondenze esatte, poi quelle a parola intera, poi le parziali.
 export async function searchCards(
   query: string,
   opts: SearchOptions = {},
 ): Promise<CardInfo[]> {
   const q = query.trim();
   if (!q) return [];
-  const order = opts.order ?? "name";
-  const dir = opts.dir ?? (order === "name" ? "asc" : "desc");
+  const order = opts.order ?? "relevance";
+  const apiOrder = order === "relevance" ? "name" : order;
+  const dir = opts.dir ?? (apiOrder === "name" ? "asc" : "desc");
   const url =
     `${SEARCH_URL}?q=${encodeURIComponent(q)}` +
-    `&unique=cards&order=${order}&dir=${dir}&include_multilingual=true`;
+    `&unique=cards&order=${apiOrder}&dir=${dir}&include_multilingual=true`;
   const res = await fetch(url, { headers: { Accept: "application/json" } });
   if (res.status === 404) return []; // nessun risultato
   if (!res.ok) {
@@ -332,14 +382,21 @@ export async function searchCards(
   // Con il multilingua possono arrivare doppioni per nome (stessa carta in più
   // lingue): li riduciamo a una voce per carta (oracle_id o nome).
   const seen = new Set<string>();
-  const out: CardInfo[] = [];
+  let cards: ScryCard[] = [];
   for (const c of json.data) {
     const key = (c.name || "").toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-    out.push(toCardInfo(c));
+    cards.push(c);
   }
-  return out;
+  if (order === "relevance" && isPlainNameQuery(q)) {
+    const nq = norm(q);
+    cards = cards
+      .map((c, i) => ({ c, i, s: relevance(c, nq) }))
+      .sort((a, b) => b.s - a.s || a.i - b.i) // stabile: a parità, alfabetico
+      .map((x) => x.c);
+  }
+  return cards.map(toCardInfo);
 }
 
 // --- Set / espansioni --------------------------------------------------------

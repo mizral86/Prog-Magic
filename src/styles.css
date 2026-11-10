@@ -1599,6 +1599,71 @@ table.factors .fav-b {
 .color-tog.c-G.on { background: var(--G); }
 .color-tog.c-C.on { background: var(--faint); }
 
+/* Simboli di mana (filtri colore e costo) */
+.mana-sym {
+  display: block;
+  border-radius: 50%;
+  user-select: none;
+}
+.color-tog {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.color-tog .mana-sym {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+  transition: opacity 0.12s ease, filter 0.12s ease;
+}
+.color-tog.on .mana-sym {
+  opacity: 1;
+  filter: none;
+}
+.mana-palette,
+.mana-cost {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.mana-cost {
+  min-height: 32px;
+  flex: 1;
+}
+.mana-generic {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+}
+.mana-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.08s ease, border-color 0.12s ease;
+}
+.mana-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+}
+.mana-btn.small {
+  width: 26px;
+  height: 26px;
+  border-color: var(--border);
+  color: var(--text);
+  font-weight: 700;
+}
+.mana-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 .chip.toggle {
   cursor: pointer;
   background: var(--panel-3);
