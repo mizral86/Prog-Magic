@@ -3091,3 +3091,117 @@ button.ghost.active {
 .search-row.compact .sr-name {
   font-size: 13px;
 }
+
+/* --- Spike e cali di prezzo (Collezione) --- */
+.price-moves > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pm-badges {
+  display: inline-flex;
+  gap: 4px;
+}
+.pm-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+.pm-badge.up,
+.pm-pct.up {
+  color: var(--good);
+}
+.pm-badge.down,
+.pm-pct.down {
+  color: var(--bad);
+}
+.pm-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 8px;
+}
+.pm-n {
+  margin-left: 5px;
+  font-size: 11px;
+  opacity: 0.75;
+}
+.pm-threshold {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.pm-total {
+  margin-bottom: 8px;
+}
+.pm-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+.pm-list h3 {
+  font-size: 14px;
+  margin: 4px 0 6px;
+}
+.pm-list.up h3 {
+  color: var(--good);
+}
+.pm-list.down h3 {
+  color: var(--bad);
+}
+.pm-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--border, rgba(127, 127, 127, 0.2));
+  padding: 6px 2px;
+  color: inherit;
+  cursor: pointer;
+}
+.pm-row img,
+.pm-noimg {
+  width: 34px;
+  height: 47px;
+  object-fit: cover;
+  border-radius: 3px;
+  flex: none;
+  background: rgba(127, 127, 127, 0.15);
+}
+.pm-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.pm-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pm-foil {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #f6d365, #a1c4fd);
+  color: #222;
+}
+.pm-pct {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.pm-note {
+  margin-top: 10px;
+}

@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import { CardInfo, Color } from "./types";
+import { PricePoint, recordPoint } from "./priceHistory";
 
 export interface CollectionEntry {
   id: string; // scryfallId (stampa specifica)
@@ -26,6 +27,15 @@ export interface CollectionEntry {
   typeLine: string;
   isLand: boolean;
   prices?: CardInfo["prices"];
+  /** Storico prezzi EUR (un punto al giorno, poi uno al mese). */
+  priceHistory?: PricePoint[];
+  /** Prezzi al momento dell'inserimento in collezione. */
+  addedPrices?: { eur?: number; eurFoil?: number };
+  /**
+   * true se la carta era già in collezione prima che l'app salvasse lo
+   * storico: `addedPrices` è allora il primo prezzo noto, non quello esatto.
+   */
+  addedPriceApprox?: boolean;
   qty: number; // copie non-foil
   foilQty: number; // copie foil
   addedAt: number;
@@ -57,10 +67,28 @@ function load(): EntryMap {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return {};
-    return JSON.parse(raw) as EntryMap;
+    return migrate(JSON.parse(raw) as EntryMap);
   } catch {
     return {};
   }
+}
+
+/**
+ * Carte salvate prima dello storico prezzi: il prezzo che hanno in memoria
+ * diventa il primo punto dello storico e il prezzo "di inserimento"
+ * (segnato come approssimato).
+ */
+function migrate(map: EntryMap): EntryMap {
+  for (const [id, e] of Object.entries(map)) {
+    if (e.addedPrices || !e.prices) continue;
+    map[id] = {
+      ...e,
+      addedPrices: { eur: e.prices.eur, eurFoil: e.prices.eurFoil },
+      addedPriceApprox: true,
+      priceHistory: e.priceHistory?.length ? e.priceHistory : recordPoint([], e.prices),
+    };
+  }
+  return map;
 }
 
 function save(map: EntryMap): void {
@@ -128,6 +156,8 @@ export function CollectionProvider({ children }: { children: ReactNode }) {
               ...existing,
               qty: existing.qty + (foil ? 0 : n),
               foilQty: existing.foilQty + (foil ? n : 0),
+              prices: card.prices ?? existing.prices,
+              priceHistory: recordPoint(existing.priceHistory, card.prices),
             };
           } else {
             next[id] = {
@@ -145,6 +175,10 @@ export function CollectionProvider({ children }: { children: ReactNode }) {
               typeLine: card.typeLine,
               isLand: card.isLand,
               prices: card.prices,
+              priceHistory: recordPoint([], card.prices),
+              addedPrices: card.prices
+                ? { eur: card.prices.eur, eurFoil: card.prices.eurFoil }
+                : undefined,
               qty: foil ? 0 : n,
               foilQty: foil ? n : 0,
               addedAt: Date.now(),
@@ -209,6 +243,14 @@ export function CollectionProvider({ children }: { children: ReactNode }) {
             next[id] = {
               ...next[id],
               prices: c.prices,
+              priceHistory: recordPoint(next[id].priceHistory, c.prices),
+              // Carta aggiunta senza prezzo: il primo prezzo letto fa da riferimento.
+              ...(next[id].addedPrices || !c.prices
+                ? {}
+                : {
+                    addedPrices: { eur: c.prices.eur, eurFoil: c.prices.eurFoil },
+                    addedPriceApprox: true,
+                  }),
               imageUrl: c.imageUrl ?? next[id].imageUrl,
               imageSmallUrl: c.imageSmallUrl ?? next[id].imageSmallUrl,
             };

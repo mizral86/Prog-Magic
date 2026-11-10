@@ -21,6 +21,9 @@ import { useCollection } from "../collection";
 import { useWishlist } from "../wishlist";
 import { formatPrice } from "../prices";
 import { CardDetail } from "./CardDetail";
+import { dayKey } from "../priceHistory";
+
+const AUTO_KEY = "pm.prices.lastAuto";
 
 export function CollectionTools() {
   const [importOpen, setImportOpen] = useState(false);
@@ -31,10 +34,30 @@ export function CollectionTools() {
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMsg, setRefreshMsg] = useState<string | null>(null);
 
-  async function refreshPrices() {
+  // Una volta al giorno i prezzi si aggiornano da soli all'apertura della
+  // Collezione, così lo storico per spike e cali si riempie senza pensarci.
+  useEffect(() => {
+    if (collection.entries.length === 0) return;
+    let last: string | null = null;
+    try {
+      last = localStorage.getItem(AUTO_KEY);
+    } catch {
+      /* ignora */
+    }
+    if (last === dayKey()) return;
+    try {
+      localStorage.setItem(AUTO_KEY, dayKey());
+    } catch {
+      /* ignora */
+    }
+    void refreshPrices(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function refreshPrices(auto = false) {
     const ids = collection.entries.map((e) => ({ id: e.id }));
     if (ids.length === 0) {
-      setRefreshMsg("La collezione è vuota.");
+      if (!auto) setRefreshMsg("La collezione è vuota.");
       return;
     }
     setRefreshing(true);
@@ -44,9 +67,16 @@ export function CollectionTools() {
         setRefreshMsg(`Aggiorno i prezzi: ${done} di ${total}…`),
       );
       collection.refreshCards(cards);
-      setRefreshMsg(`Prezzi aggiornati (${cards.length} stampe).`);
+      setRefreshMsg(
+        auto
+          ? `Prezzi di oggi aggiornati in automatico (${cards.length} stampe).`
+          : `Prezzi aggiornati (${cards.length} stampe).`,
+      );
     } catch (err) {
-      setRefreshMsg(err instanceof Error ? err.message : String(err));
+      setRefreshMsg(
+        (auto ? "Aggiornamento automatico dei prezzi non riuscito: " : "") +
+          (err instanceof Error ? err.message : String(err)),
+      );
     } finally {
       setRefreshing(false);
     }
@@ -100,7 +130,7 @@ export function CollectionTools() {
         <button
           type="button"
           className="ghost"
-          onClick={refreshPrices}
+          onClick={() => refreshPrices()}
           disabled={refreshing}
         >
           {refreshing ? "Aggiorno…" : "↻ Aggiorna prezzi"}
