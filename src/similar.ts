@@ -49,6 +49,7 @@ const EFFECTS: Effect[] = [
   { re: /\+1\/\+1 counter/, q: 'o:"+1/+1 counter"', label: "segnalini +1/+1" },
   { re: /creatures you control get \+\d+\/\+\d+/, q: 'o:"creatures you control get +"', label: "potenzia le tue creature" },
   { re: /target creature gets \+\d+\/\+\d+/, q: 'o:"target creature gets +"', label: "potenzia una creatura" },
+  { re: /target creature (gains|gets [^.]* and gains) (flying|first strike|double strike|trample|haste|lifelink|deathtouch|hexproof|indestructible|vigilance|menace)/, q: 'o:/target creature (gains|gets [^.]* and gains) (flying|first strike|double strike|trample|haste|lifelink|deathtouch|hexproof|indestructible|vigilance|menace)/', label: "dà un'abilità a una creatura" },
   { re: /tap target (creature|permanent)|doesn't untap/, q: "o:/tap target|doesn't untap/", label: "tappa / blocca" },
   // Solo se sei TU a guadagnare: "its controller gains life" (Swords, Solitude)
   // è uno svantaggio, non lo scopo della carta.
@@ -66,17 +67,6 @@ export interface SimilarResult {
   cards: CardInfo[];
   /** Cosa abbiamo cercato, in italiano (es. "danni a qualsiasi bersaglio"). */
   reasons: string[];
-}
-
-function typeClause(card: CardInfo): string {
-  const c = card.categories;
-  if (c.includes("instant") || c.includes("sorcery")) return "(t:instant or t:sorcery)";
-  if (c.includes("creature")) return "t:creature";
-  if (c.includes("planeswalker")) return "t:planeswalker";
-  if (c.includes("land")) return "t:land";
-  if (c.includes("artifact")) return "t:artifact";
-  if (c.includes("enchantment")) return "t:enchantment";
-  return "";
 }
 
 /** Trova gli effetti principali della carta (al massimo due). */
@@ -113,10 +103,9 @@ export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
   const costNote = alt
     ? `costo fino a ${cmc + 1} (ha un costo alternativo, quindi anche più basso)`
     : `costo ${minCmc}–${cmc + 1}`;
-  // Con un effetto riconosciuto conta cosa fa, non il tipo: una creatura che
-  // esilia entrando (Solitude) va confrontata anche con istantanei che esiliano.
-  const type = effects.length ? "" : typeClause(card);
-  const base = [type, exclude, "game:paper"].filter(Boolean);
+  // Conta solo cosa fa la carta, non il tipo né le statistiche: una creatura
+  // che esilia entrando (Solitude) va confrontata anche con istantanei che esiliano.
+  const base = [exclude, "game:paper"];
 
   // Tentativi dal più preciso al più largo: ci si ferma al primo che trova carte.
   const attempts: { q: string; reasons: string[] }[] = [];
@@ -126,21 +115,16 @@ export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
     attempts.push({ q: [...all, ...base, cmcRange].join(" "), reasons: [...labels, costNote] });
     attempts.push({ q: [effects[0].q, ...base, cmcRange].join(" "), reasons: [labels[0], costNote] });
     attempts.push({ q: [effects[0].q, ...base].join(" "), reasons: [labels[0]] });
-  } else if (card.categories.includes("creature")) {
+  } else {
+    // Nessun effetto riconosciuto: si usano solo le abilità chiave (volare,
+    // tocco letale…), mai forza/costituzione o altre statistiche.
     const text = (card.oracleText ?? "").toLowerCase();
     const kws = KEYWORDS.filter((k) => new RegExp(`(^|\\n|, )${k}\\b`).test(text)).slice(0, 2);
     if (kws.length) {
       const kq = kws.map((k) => `keyword:"${k}"`).join(" ");
-      attempts.push({
-        q: [kq, ...base, cmcRange].join(" "),
-        reasons: [...kws.map((k) => `creatura con ${k}`), costNote],
-      });
-    }
-    if (card.power != null && card.toughness != null) {
-      attempts.push({
-        q: [...base, `cmc=${cmc}`, `pow=${card.power}`, `tou=${card.toughness}`].join(" "),
-        reasons: [`creatura ${card.power}/${card.toughness} di costo ${cmc}`],
-      });
+      const labels = kws.map((k) => `abilità ${k}`);
+      attempts.push({ q: [kq, exclude, "game:paper", cmcRange].join(" "), reasons: [...labels, costNote] });
+      attempts.push({ q: [kq, exclude, "game:paper"].join(" "), reasons: labels });
     }
   }
 
