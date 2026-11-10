@@ -73,6 +73,12 @@ const EFFECTS: Effect[] = [
   { re: /return target (creature|nonland permanent|permanent)[^.]* to its owner's hand/, q: "o:\"to its owner's hand\"", label: "fa tornare in mano" },
   { re: /target player sacrifices|each opponent sacrifices/, q: 'o:/(player|opponent) sacrifices/', label: "fa sacrificare" },
   // Interazione con le magie
+  // Blocca le magie dell'avversario nel tuo turno (City of Solitude, Voice of Victory).
+  {
+    re: /can't cast spells during your turn|only during (their|your) own turns?|can cast spells only during their own turns/,
+    q: "o:/can't cast spells during your turn|only during (their|your) own turns?/",
+    label: "impedisce agli avversari di giocare magie nel tuo turno",
+  },
   { re: /counter target (spell|creature spell|noncreature spell|instant|activated)/, q: 'o:"counter target"', label: "neutralizza una magia" },
   { re: /target (player|opponent) discards|each opponent discards|reveals? (their|his or her) hand/, q: 'o:/discards?|reveals (their|his or her) hand/', label: "fa scartare" },
   // Vantaggio carte e ricerca
@@ -81,6 +87,13 @@ const EFFECTS: Effect[] = [
   { re: /search your library for an? (card|creature|instant|sorcery|artifact|enchantment)/, q: 'o:/search your library for an? (card|creature|instant|sorcery|artifact|enchantment)/', label: "cerca una carta nel mazzo" },
   { re: /return target [^.]*card from your graveyard to (the battlefield|your hand)/, q: 'o:/from your graveyard to (the battlefield|your hand)/', label: "recupera dal cimitero" },
   { re: /draw (two|three|four|x) cards/, q: 'o:/draw (two|three|four|x) cards/', label: "pesca più carte" },
+  // Pesca "d'impulso": esilia dalla cima e puoi giocarle (Tempered in
+  // Solitude, Wrenn's Resolve).
+  {
+    re: /exile the top (\w+ )?cards? of your library[^]*?you may (play|cast) (that card|those cards|them|it|cards exiled)/,
+    q: "o:/exile the top [^.]*of your library/ o:/you may (play|cast) (that card|those cards|them|it|cards exiled)/",
+    label: "esilia le prime carte e puoi giocarle (pesca d'impulso)",
+  },
   { re: /look at the top \w+ cards of your library/, q: 'o:/look at the top \\w+ cards of your library/', label: "guarda le prime carte del mazzo" },
   { re: /whenever [^.]* draw a card|draw a card/, q: 'o:"draw a card"', label: "pesca una carta" },
   { re: /\bscry \d/, q: "o:scry", label: "profetizza" },
@@ -176,13 +189,14 @@ export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
   // creature, non con istantanei. Poi, se servono, anche le altre.
   const kind = kindOf(card);
 
-  const attempts: { q: string; reasons: string[] }[] = [];
+  // "typed": tentativo ristretto allo stesso tipo di carta.
+  const attempts: { q: string; reasons: string[]; typed?: boolean }[] = [];
   if (effects.length) {
     const all = effects.map((e) => e.q);
     const labels = effects.map((e) => e.label);
     if (kind) {
-      attempts.push({ q: [...all, kind.q, ...base, cmcRange].join(" "), reasons: [...labels, kind.label, costNote] });
-      attempts.push({ q: [effects[0].q, kind.q, ...base, cmcRange].join(" "), reasons: [labels[0], kind.label, costNote] });
+      attempts.push({ q: [...all, kind.q, ...base, cmcRange].join(" "), reasons: [...labels, kind.label, costNote], typed: true });
+      attempts.push({ q: [effects[0].q, kind.q, ...base, cmcRange].join(" "), reasons: [labels[0], kind.label, costNote], typed: true });
     }
     attempts.push({ q: [...all, ...base, cmcRange].join(" "), reasons: [...labels, costNote] });
     attempts.push({ q: [effects[0].q, ...base, cmcRange].join(" "), reasons: [labels[0], costNote] });
@@ -195,27 +209,32 @@ export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
     if (kws.length) {
       const kq = kws.map((k) => `keyword:"${k}"`).join(" ");
       const labels = kws.map((k) => `abilità ${k}`);
-      if (kind) attempts.push({ q: [kq, kind.q, ...base, cmcRange].join(" "), reasons: [...labels, kind.label, costNote] });
+      if (kind) attempts.push({ q: [kq, kind.q, ...base, cmcRange].join(" "), reasons: [...labels, kind.label, costNote], typed: true });
       attempts.push({ q: [kq, ...base, cmcRange].join(" "), reasons: [...labels, costNote] });
       attempts.push({ q: [kq, ...base].join(" "), reasons: [...labels, "qualsiasi costo"] });
     }
   }
 
-  // Si raccolgono risultati dal tentativo più preciso al più largo, finché
-  // non se ne hanno abbastanza: prima quelli più somiglianti.
+  // Si raccolgono risultati dal tentativo più preciso al più largo. Le carte
+  // dello stesso tipo vanno in cima ma sono al massimo TYPED_MAX, così restano
+  // posto per le migliori degli altri tipi (Solitude → Skyclave Apparition, ma
+  // anche Swords to Plowshares e Path to Exile).
+  const TYPED_MAX = 8;
+  const TOTAL = 20;
   const out: CardInfo[] = [];
   const seen = new Set<string>();
   let reasons: string[] | null = null;
   let widened = false;
   const tried = new Set<string>();
   for (const a of attempts) {
-    if (out.length >= 12) break;
+    if (out.length >= TOTAL) break;
     if (tried.has(a.q)) continue; // con un solo effetto alcuni tentativi coincidono
     tried.add(a.q);
     const cards = await searchCards(a.q, { order: "edhrec", dir: "asc" });
     let added = 0;
+    const limit = a.typed ? Math.min(TOTAL, TYPED_MAX) : TOTAL;
     for (const c of cards) {
-      if (seen.has(c.name) || out.length >= 30) continue;
+      if (seen.has(c.name) || out.length >= limit) continue;
       seen.add(c.name);
       out.push(c);
       added++;
@@ -226,7 +245,7 @@ export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
   if (reasons) {
     return {
       cards: out,
-      reasons: widened ? [...reasons, "poi altre carte con lo stesso effetto"] : reasons,
+      reasons: widened ? [...reasons, "poi carte di ogni tipo con lo stesso effetto"] : reasons,
     };
   }
   return { cards: [], reasons: effects.map((e) => e.label) };
