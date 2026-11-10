@@ -22,7 +22,9 @@ const EFFECTS: Effect[] = [
   { re: /damage to each creature/, q: 'o:"damage to each creature"', label: "danni a tutte le creature" },
   { re: /exile all creatures/, q: 'o:"exile all"', label: "esilia tutte le creature" },
   { re: /(gets|get) -\d+\/-\d+ until end of turn/, q: 'o:/gets? -[0-9X]+\\/-[0-9X]+/', label: "dà -N/-N" },
-  { re: /(destroy|exile) target ([\w-]+ )?(creature|permanent)/, q: 'o:/(destroy|exile) target ([a-z-]+ )?(creature|permanent)/', label: "rimuove una creatura" },
+  // "exile up to one other target creature", "destroy target nonblack creature"…
+  { re: /exile (up to \w+ )?(another |other )?target ([\w-]+ )?(creature|permanent)/, q: 'o:/exile (up to [a-z]+ )?(another |other )?target ([a-z-]+ )?(creature|permanent)/', label: "esilia una creatura" },
+  { re: /destroy (up to \w+ )?(another |other )?target ([\w-]+ )?(creature|permanent)/, q: 'o:/destroy (up to [a-z]+ )?(another |other )?target ([a-z-]+ )?(creature|permanent)/', label: "distrugge una creatura" },
   { re: /damage to any target/, q: 'o:"damage to any target"', label: "danni a qualsiasi bersaglio" },
   { re: /damage to target (creature|planeswalker|player)/, q: 'o:/damage to (any target|target (creature|player))/', label: "danni a un bersaglio" },
   { re: /fights? (another )?target creature|deals damage equal to its power to/, q: 'o:/fights? (another )?target|damage equal to its power to/', label: "lotta / morso" },
@@ -48,7 +50,9 @@ const EFFECTS: Effect[] = [
   { re: /creatures you control get \+\d+\/\+\d+/, q: 'o:"creatures you control get +"', label: "potenzia le tue creature" },
   { re: /target creature gets \+\d+\/\+\d+/, q: 'o:"target creature gets +"', label: "potenzia una creatura" },
   { re: /tap target (creature|permanent)|doesn't untap/, q: "o:/tap target|doesn't untap/", label: "tappa / blocca" },
-  { re: /you gain \d+ life|gain life equal/, q: 'o:/you gain (\\d+|x) life|gain life equal/', label: "fa guadagnare punti vita" },
+  // Solo se sei TU a guadagnare: "its controller gains life" (Swords, Solitude)
+  // è uno svantaggio, non lo scopo della carta.
+  { re: /you gain (\d+|x) life|you gain life equal/, q: 'o:/you gain (\\d+|x) life|you gain life equal/', label: "fa guadagnare punti vita" },
   { re: /each opponent loses \d+ life|target player loses \d+ life/, q: 'o:/(opponent|player) loses (\\d+|x) life/', label: "fa perdere punti vita" },
 ];
 
@@ -90,12 +94,28 @@ export function detectEffects(card: CardInfo): Effect[] {
   return found;
 }
 
+// Costi alternativi che permettono di giocare la carta a meno del suo costo
+// (es. Solitude con evoke): in quel caso si accettano anche carte economiche.
+const ALT_COST =
+  /\b(evoke|foretell|suspend|prototype|disguise|blitz|dash|emerge|delve|convoke|improvise|affinity for|spectacle|surge|madness|miracle|ninjutsu)\b|rather than pay this spell's mana cost|without paying its mana cost/;
+
+export function hasAltCost(card: CardInfo): boolean {
+  return ALT_COST.test((card.oracleText ?? "").toLowerCase());
+}
+
 export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
   const effects = detectEffects(card);
-  const type = typeClause(card);
   const exclude = `-!"${card.name.replace(/"/g, "")}"`;
   const cmc = Math.round(card.cmc);
-  const cmcRange = `cmc>=${Math.max(0, cmc - 1)} cmc<=${cmc + 1}`;
+  const alt = hasAltCost(card);
+  const minCmc = alt ? 0 : Math.max(0, cmc - 1);
+  const cmcRange = `cmc>=${minCmc} cmc<=${cmc + 1}`;
+  const costNote = alt
+    ? `costo fino a ${cmc + 1} (ha un costo alternativo, quindi anche più basso)`
+    : `costo ${minCmc}–${cmc + 1}`;
+  // Con un effetto riconosciuto conta cosa fa, non il tipo: una creatura che
+  // esilia entrando (Solitude) va confrontata anche con istantanei che esiliano.
+  const type = effects.length ? "" : typeClause(card);
   const base = [type, exclude, "game:paper"].filter(Boolean);
 
   // Tentativi dal più preciso al più largo: ci si ferma al primo che trova carte.
@@ -103,15 +123,18 @@ export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
   if (effects.length) {
     const all = effects.map((e) => e.q);
     const labels = effects.map((e) => e.label);
-    attempts.push({ q: [...all, ...base, cmcRange].join(" "), reasons: labels });
-    attempts.push({ q: [effects[0].q, ...base, cmcRange].join(" "), reasons: [labels[0]] });
+    attempts.push({ q: [...all, ...base, cmcRange].join(" "), reasons: [...labels, costNote] });
+    attempts.push({ q: [effects[0].q, ...base, cmcRange].join(" "), reasons: [labels[0], costNote] });
     attempts.push({ q: [effects[0].q, ...base].join(" "), reasons: [labels[0]] });
   } else if (card.categories.includes("creature")) {
     const text = (card.oracleText ?? "").toLowerCase();
     const kws = KEYWORDS.filter((k) => new RegExp(`(^|\\n|, )${k}\\b`).test(text)).slice(0, 2);
     if (kws.length) {
       const kq = kws.map((k) => `keyword:"${k}"`).join(" ");
-      attempts.push({ q: [kq, ...base, cmcRange].join(" "), reasons: kws.map((k) => `creatura con ${k}`) });
+      attempts.push({
+        q: [kq, ...base, cmcRange].join(" "),
+        reasons: [...kws.map((k) => `creatura con ${k}`), costNote],
+      });
     }
     if (card.power != null && card.toughness != null) {
       attempts.push({
