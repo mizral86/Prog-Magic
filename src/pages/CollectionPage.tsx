@@ -112,6 +112,10 @@ export default function CollectionPage() {
         </Link>
       </div>
         {shelfBar}
+        {/* Segnaposto delle statistiche: tiene <CollectionTools /> nella stessa
+            posizione della vista piena, così aggiungendo la prima carta il
+            pannello di ricerca non si chiude. */}
+        {null}
         <CollectionTools />
         <div className="coming-soon">
           <div className="cs-emoji">📚</div>

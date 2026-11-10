@@ -1,11 +1,12 @@
 // Strumenti della Collezione: import di liste (decklist) e browser dei Set.
 
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { parseDecklist } from "../deckParser";
 import {
   getSetCards,
   getSets,
   resolveCards,
+  searchCards,
   resolveIdentifiers,
   SetInfo,
 } from "../scryfall";
@@ -26,11 +27,13 @@ import { dayKey } from "../priceHistory";
 const AUTO_KEY = "pm.prices.lastAuto";
 
 export function CollectionTools() {
+  const collection = useCollection();
+  // Con la collezione vuota la ricerca è già aperta: è il primo passo.
+  const [searchOpen, setSearchOpen] = useState(() => collection.entries.length === 0);
   const [importOpen, setImportOpen] = useState(false);
   const [setsOpen, setSetsOpen] = useState(false);
   const [csvOpen, setCsvOpen] = useState(false);
   const [backupOpen, setBackupOpen] = useState(false);
-  const collection = useCollection();
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMsg, setRefreshMsg] = useState<string | null>(null);
 
@@ -85,6 +88,13 @@ export function CollectionTools() {
   return (
     <div className="coll-tools">
       <div className="coll-tool-bar">
+        <button
+          type="button"
+          className={`ghost${searchOpen ? " active" : ""}`}
+          onClick={() => setSearchOpen((v) => !v)}
+        >
+          🔍 Aggiungi carta
+        </button>
         <button
           type="button"
           className={`ghost${importOpen ? " active" : ""}`}
@@ -142,10 +152,109 @@ export function CollectionTools() {
         </div>
       )}
 
+      {searchOpen && <AddCardPanel />}
       {csvOpen && <CsvPanel />}
       {backupOpen && <BackupPanel />}
       {importOpen && <ImportPanel />}
       {setsOpen && <SetBrowser />}
+    </div>
+  );
+}
+
+// --- Aggiunta di carte singole con una ricerca ------------------------------
+
+function AddCardPanel() {
+  const collection = useCollection();
+  const [q, setQ] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [results, setResults] = useState<CardInfo[] | null>(null);
+  const [selected, setSelected] = useState<CardInfo | null>(null);
+  const [lastAdded, setLastAdded] = useState<string | null>(null);
+
+  async function search(e?: FormEvent) {
+    e?.preventDefault();
+    const query = q.trim();
+    if (!query) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await searchCards(query);
+      setResults(r.slice(0, 30));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setResults(null);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function add(card: CardInfo, foil: boolean) {
+    collection.add(card, { foil });
+    setLastAdded(`${card.printedName ?? card.name}${foil ? " (foil)" : ""}`);
+  }
+
+  return (
+    <div className="tool-panel add-card-panel">
+      <form className="row add-card-form" onSubmit={search}>
+        <input
+          autoFocus
+          className="deck-name-input"
+          style={{ margin: 0 }}
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Nome della carta, anche in italiano…"
+          aria-label="Cerca una carta da aggiungere"
+        />
+        <button type="submit" className="primary" disabled={busy || !q.trim()}>
+          {busy ? "Cerco…" : "Cerca"}
+        </button>
+      </form>
+      <p className="muted small" style={{ margin: "6px 0 0" }}>
+        <strong>+1</strong> aggiunge la stampa mostrata. Tocca la carta per scegliere
+        un'altra edizione.
+      </p>
+      {error && <div className="status-line error" style={{ marginTop: 8 }}>{error}</div>}
+      {lastAdded && <div className="add-card-ok small">✓ Aggiunta: {lastAdded}</div>}
+      {results && results.length === 0 && (
+        <div className="muted small" style={{ marginTop: 8 }}>
+          Nessuna carta trovata.
+        </div>
+      )}
+      {results && results.length > 0 && (
+        <div className="add-card-results">
+          {results.map((c) => {
+            const owned = c.scryfallId ? collection.get(c.scryfallId) : undefined;
+            const n = owned ? owned.qty + owned.foilQty : 0;
+            return (
+              <div key={c.scryfallId ?? c.name} className="add-card-row">
+                <button type="button" className="acr-open" onClick={() => setSelected(c)}>
+                  {c.imageSmallUrl ? (
+                    <img src={c.imageSmallUrl} alt="" loading="lazy" />
+                  ) : (
+                    <span className="acr-noimg" />
+                  )}
+                  <span className="acr-main">
+                    <span className="acr-name">{c.printedName ?? c.name}</span>
+                    <span className="muted small">
+                      {(c.setCode ?? "").toUpperCase()}
+                      {c.collectorNumber ? ` #${c.collectorNumber}` : ""} · {formatPrice(c)}
+                      {n > 0 && ` · ne hai ${n}`}
+                    </span>
+                  </span>
+                </button>
+                <button type="button" className="ghost" onClick={() => add(c, false)}>
+                  +1
+                </button>
+                <button type="button" className="ghost" onClick={() => add(c, true)}>
+                  +Foil
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {selected && <CardDetail card={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 }
