@@ -29,6 +29,8 @@ export type CardCategory =
 /** Informazioni su una carta, distillate da Scryfall in ciò che serve al goldfish. */
 export interface CardInfo {
   name: string;
+  /** Nome stampato (es. italiano) quando la ricerca ha trovato una stampa non inglese. */
+  printedName?: string;
   cmc: number;
   typeLine: string;
   categories: CardCategory[];
@@ -57,6 +59,8 @@ export interface CardInfo {
   imageUrl?: string;
   /** URL immagine piccola (miniatura per il replay). */
   imageSmallUrl?: string;
+  /** Immagine ad alta risoluzione per lo zoom. */
+  imageLargeUrl?: string;
   /** ID Scryfall della stampa (utile come chiave). */
   scryfallId?: string;
   rarity?: string;

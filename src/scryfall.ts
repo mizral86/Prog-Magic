@@ -18,7 +18,7 @@ interface ScryCardFace {
   power?: string;
   toughness?: string;
   loyalty?: string;
-  image_uris?: { normal?: string; small?: string };
+  image_uris?: { normal?: string; small?: string; large?: string; png?: string };
 }
 interface ScryCard {
   id?: string;
@@ -32,7 +32,7 @@ interface ScryCard {
   colors?: string[];
   color_identity?: string[];
   produced_mana?: string[];
-  image_uris?: { normal?: string; small?: string };
+  image_uris?: { normal?: string; small?: string; large?: string; png?: string };
   card_faces?: ScryCardFace[];
   rarity?: string;
   set?: string;
@@ -190,6 +190,12 @@ function toCardInfo(card: ScryCard): CardInfo {
   const colors = asColors(card.colors ?? front?.colors);
   const imageUrl =
     card.image_uris?.normal ?? front?.image_uris?.normal ?? undefined;
+  const imageLargeUrl =
+    card.image_uris?.large ??
+    card.image_uris?.png ??
+    front?.image_uris?.large ??
+    front?.image_uris?.png ??
+    undefined;
   const imageSmallUrl =
     card.image_uris?.small ?? front?.image_uris?.small ?? undefined;
   const oracleText =
@@ -199,6 +205,10 @@ function toCardInfo(card: ScryCard): CardInfo {
 
   return {
     name: card.name,
+    printedName:
+      card.printed_name && card.printed_name !== card.name
+        ? card.printed_name
+        : undefined,
     cmc: card.cmc ?? 0,
     typeLine,
     categories: categoriesFromTypeLine(typeLine),
@@ -219,6 +229,7 @@ function toCardInfo(card: ScryCard): CardInfo {
     ),
     imageUrl,
     imageSmallUrl,
+    imageLargeUrl,
     scryfallId: card.id,
     rarity: card.rarity,
     setCode: card.set,

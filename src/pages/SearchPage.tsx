@@ -1,6 +1,7 @@
 // Sezione "Cerca": ricerca carte su Scryfall con prezzi, filtri avanzati e dettaglio.
 
 import { FormEvent, useMemo, useState } from "react";
+import { ManaCost } from "../components/ManaSymbol";
 import { searchCards, SortOrder } from "../scryfall";
 import { CardInfo, Color, COLORS } from "../types";
 import { formatPrice } from "../prices";
@@ -88,6 +89,19 @@ const COST_SYMS: { sym: string; label: string }[] = [
   { sym: "C", label: "Incolore" },
   { sym: "X", label: "X" },
 ];
+// Ibridi: prima i colori alleati, poi i nemici (notazione Scryfall {W/U}…).
+const HYBRID_SYMS: { sym: string; label: string }[] = [
+  { sym: "W/U", label: "Bianco/Blu" },
+  { sym: "U/B", label: "Blu/Nero" },
+  { sym: "B/R", label: "Nero/Rosso" },
+  { sym: "R/G", label: "Rosso/Verde" },
+  { sym: "G/W", label: "Verde/Bianco" },
+  { sym: "W/B", label: "Bianco/Nero" },
+  { sym: "U/R", label: "Blu/Rosso" },
+  { sym: "B/G", label: "Nero/Verde" },
+  { sym: "R/W", label: "Rosso/Bianco" },
+  { sym: "G/U", label: "Verde/Blu" },
+];
 const GENERIC_MAX = 9;
 
 const EMPTY: Filters = {
@@ -107,7 +121,7 @@ const EMPTY: Filters = {
 // Costo di mana in notazione Scryfall, es. {2}{R}{R}. X va per primo come
 // sulle carte, poi il generico, poi i colori nell'ordine WUBRG.
 function costString(f: Filters): string {
-  const order = ["X", "W", "U", "B", "R", "G", "C"];
+  const order = ["X", ...HYBRID_SYMS.map((h) => h.sym), "W", "U", "B", "R", "G", "C"];
   const syms = [...f.costSyms].sort((a, b) => order.indexOf(a) - order.indexOf(b));
   const xs = syms.filter((s) => s === "X");
   const rest = syms.filter((s) => s !== "X");
@@ -160,6 +174,22 @@ export default function SearchPage() {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<CardInfo | null>(null);
   const [lastQuery, setLastQuery] = useState("");
+  // Vista dei risultati: lista (predefinita) o griglia di immagini.
+  const [view, setViewState] = useState<"list" | "grid">(() => {
+    try {
+      return localStorage.getItem("pm.searchView") === "grid" ? "grid" : "list";
+    } catch {
+      return "list";
+    }
+  });
+  const setView = (v: "list" | "grid") => {
+    setViewState(v);
+    try {
+      localStorage.setItem("pm.searchView", v);
+    } catch {
+      /* ignora */
+    }
+  };
 
   const composed = useMemo(
     () => (advanced ? buildQuery(query, filters) : query.trim()),
@@ -351,6 +381,23 @@ export default function SearchPage() {
             </div>
           </div>
           <div className="adv-row">
+            <span className="adv-label">Ibridi</span>
+            <div className="mana-palette">
+              {HYBRID_SYMS.map(({ sym, label }) => (
+                <button
+                  key={sym}
+                  type="button"
+                  className="mana-btn"
+                  onClick={() => addCostSym(sym)}
+                  title={`Aggiungi ${label}`}
+                  aria-label={`Aggiungi ${label}`}
+                >
+                  <ManaSymbol sym={sym} size={24} title={label} />
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="adv-row">
             <span className="adv-label" />
             <div className="mana-cost">
               {filters.costGeneric === 0 && filters.costSyms.length === 0 ? (
@@ -507,28 +554,66 @@ export default function SearchPage() {
       )}
 
       {results && (
-        <div className="muted small" style={{ margin: "14px 0 6px" }}>
-          {results.length} risultati
+        <div className="results-head">
+          <span className="muted small">{results.length} risultati</span>
+          {results.length > 0 && (
+            <span className="view-toggle" role="group" aria-label="Vista">
+              <button type="button" aria-pressed={view === "list"} onClick={() => setView("list")}>
+                Lista
+              </button>
+              <button type="button" aria-pressed={view === "grid"} onClick={() => setView("grid")}>
+                Griglia
+              </button>
+            </span>
+          )}
         </div>
       )}
 
-      <div className="card-grid">
-        {results?.map((c) => (
-          <button
-            key={c.scryfallId ?? c.name}
-            type="button"
-            className="card-cell"
-            onClick={() => setSelected(c)}
-          >
-            {c.imageSmallUrl ? (
-              <img src={c.imageSmallUrl} alt={c.name} loading="lazy" />
-            ) : (
-              <div className="no-img small">{c.name}</div>
-            )}
-            <span className="card-cell-price">{formatPrice(c)}</span>
-          </button>
-        ))}
-      </div>
+      {view === "list" ? (
+        <div className="search-list">
+          {results?.map((c) => (
+            <button
+              key={c.scryfallId ?? c.name}
+              type="button"
+              className="search-row"
+              onClick={() => setSelected(c)}
+            >
+              {c.imageSmallUrl ? (
+                <img src={c.imageSmallUrl} alt="" loading="lazy" />
+              ) : (
+                <div className="no-img small sr-img">{c.name}</div>
+              )}
+              <span className="sr-main">
+                <span className="sr-top">
+                  <span className="sr-name">{c.printedName ?? c.name}</span>
+                  {c.manaCost && <ManaCost cost={c.manaCost} size={16} />}
+                </span>
+                {c.printedName && <span className="sr-sub">{c.name}</span>}
+                <span className="sr-type">{c.typeLine}</span>
+              </span>
+              <span className="sr-price">{formatPrice(c)}</span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="card-grid">
+          {results?.map((c) => (
+            <button
+              key={c.scryfallId ?? c.name}
+              type="button"
+              className="card-cell"
+              onClick={() => setSelected(c)}
+            >
+              {c.imageSmallUrl ? (
+                <img src={c.imageSmallUrl} alt={c.name} loading="lazy" />
+              ) : (
+                <div className="no-img small">{c.name}</div>
+              )}
+              <span className="card-cell-price">{formatPrice(c)}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {results && results.length === 0 && !loading && (
         <div className="muted" style={{ marginTop: 16 }}>
