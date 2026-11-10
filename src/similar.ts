@@ -57,9 +57,12 @@ const EFFECTS: Effect[] = [
     label: "fa uscire e rientrare una tua creatura (blink)",
   },
   {
-    re: /exile (up to \w+ )?(another |other )?target ([\w-]+ )?(creature|permanent)(?! you control)/,
+    // "(?! card)": "exile target creature CARD from a graveyard" (Deathrite
+    // Shaman) è odio per il cimitero, non rimozione di una creatura in campo.
+    re: /exile (up to \w+ )?(another |other )?target ([\w-]+ )?(creature|permanent)(?! you control)(?! cards?\b)/,
     // Esclude i blink ("target creature you control"), che sono un'altra cosa.
-    q: "o:/exile (up to [a-z]+ )?(another |other )?target ([a-z-]+ )?(creature|permanent)/ -o:/exile [^.]*target [^.]*you control/",
+    // Dopo "creature/permanent" non deve venire "card" (carte nel cimitero).
+    q: "o:/exile (up to [a-z]+ )?(another |other )?target ([a-z-]+ )?(creature|permanent)([.,]| [^c]| c[^a]| ca[^r])/ -o:/exile [^.]*target [^.]*you control/",
     label: "esilia una creatura",
   },
   { re: /destroy (up to \w+ )?(another |other )?target ([\w-]+ )?(creature|permanent)/, q: 'o:/destroy (up to [a-z]+ )?(another |other )?target ([a-z-]+ )?(creature|permanent)/', label: "distrugge una creatura" },
