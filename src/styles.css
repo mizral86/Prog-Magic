@@ -351,17 +351,30 @@ body {
 }
 .detail {
   display: grid;
-  grid-template-columns: 300px 1fr;
+  /* minmax(0, …): un testo lungo non deve allargare la colonna (e l'immagine) */
+  grid-template-columns: 300px minmax(0, 1fr);
   gap: 16px;
   padding: 16px;
 }
 @media (max-width: 680px) {
   .detail {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
+.detail > * {
+  min-width: 0;
+}
+.detail-body {
+  overflow-wrap: anywhere;
+}
+.detail-img {
+  max-width: 100%;
+}
 .detail-img img {
+  display: block;
   width: 100%;
+  max-width: 100%;
+  height: auto;
   border-radius: 12px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
 }
@@ -1514,6 +1527,7 @@ table.factors .fav-b {
 }
 .badge {
   display: inline-block;
+  max-width: 100%;
   font-size: 11px;
   padding: 1px 8px;
   border-radius: 10px;
