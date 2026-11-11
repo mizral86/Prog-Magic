@@ -563,15 +563,14 @@ export function cardByFuzzyName(name: string): Promise<CardInfo | null> {
   return getCard(`/cards/named?fuzzy=${encodeURIComponent(name)}`);
 }
 
-/** Carta dal nome stampato in qualsiasi lingua (es. il nome italiano). */
-export async function cardByPrintedName(name: string): Promise<CardInfo | null> {
-  const q = `${name} lang:any`;
+/** Carte il cui nome stampato (in qualsiasi lingua, es. italiano) contiene le parole date. */
+export async function cardsByPrintedName(words: string): Promise<CardInfo[]> {
+  const q = `${words} lang:any`;
   const res = await fetch(
     `${API}/cards/search?q=${encodeURIComponent(q)}&include_multilingual=true&unique=cards`,
     { headers: { Accept: "application/json" } },
   );
-  if (!res.ok) return null;
+  if (!res.ok) return [];
   const json = (await res.json()) as { data?: ScryCard[] };
-  const first = json.data?.[0];
-  return first ? toCardInfo(first) : null;
+  return (json.data ?? []).slice(0, 40).map(toCardInfo);
 }

@@ -3541,3 +3541,7 @@ label.primary-file {
 .free-tools button.danger {
   color: var(--bad);
 }
+/* Con due pagine le zone scure si sommerebbero: niente ombra esterna. */
+.ge-area.multi {
+  box-shadow: none;
+}
