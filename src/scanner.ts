@@ -6,7 +6,7 @@
 import type { Worker } from "tesseract.js";
 import {
   cardByFuzzyName,
-  cardByPrintedName,
+  cardsByPrintedName,
   cardBySetNumber,
 } from "./scryfall";
 import { CardInfo } from "./types";
@@ -145,26 +145,91 @@ export async function recognize(frame: HTMLCanvasElement, card: DOMRect): Promis
   const readInfo = info.data.text.replace(/\s+/g, " ").trim();
   const { set, number, lang } = parseInfo(readInfo);
 
-  // 1) Stampa esatta da set + numero, se il nome letto la conferma.
+  // 1) Stampa esatta da set + numero, solo se il nome letto la conferma
+  //    (l'OCR della riga in basso sbaglia spesso set o numero).
   if (set && number) {
     try {
       const c = await cardBySetNumber(set, number, lang);
-      if (c && (readName.length < 3 || similarity(readName, c.name) > 0.5 || lang && lang !== "en")) {
+      if (c && (readName.length < 3 ? lang === "en" || !lang : nameMatch(readName, c) >= MATCH_OK)) {
         return { card: c, readName, readInfo };
       }
     } catch {
       /* passa al nome */
     }
   }
-  if (readName.length < 3) return { card: null, readName, readInfo };
+  if (readName.replace(/[^A-Za-zÀ-ÿ]/g, "").length < 4) return { card: null, readName, readInfo };
 
-  // 2) Nome inglese approssimato, 3) nome stampato in un'altra lingua.
-  // In automatico la stessa carta viene letta più volte: teniamo i risultati.
+  // 2) Nome. In automatico la stessa carta viene letta più volte: teniamo i risultati.
   const key = readName.toLowerCase();
-  if (!nameCache.has(key)) {
-    nameCache.set(key, (await cardByFuzzyName(readName)) ?? (await cardByPrintedName(readName)));
-  }
+  if (!nameCache.has(key)) nameCache.set(key, await findByName(readName));
   return { card: nameCache.get(key) ?? null, readName, readInfo };
+}
+
+/** Quanto il nome letto somiglia al nome della carta (inglese o stampato). */
+export function nameMatch(read: string, card: CardInfo): number {
+  const r = normName(read);
+  let best = 0;
+  for (const n of [card.name, card.printedName ?? ""]) {
+    if (!n) continue;
+    // Le carte doppie hanno "Nome // Altro nome": basta una delle due facce.
+    for (const part of [n, ...n.split(" // ")]) {
+      best = Math.max(best, similarity(r, normName(part)));
+    }
+  }
+  return best;
+}
+
+const MATCH_OK = 0.62;
+
+function normName(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Cerca la carta dal nome letto, in inglese o in un'altra lingua, e la
+ * accetta solo se il nome somiglia davvero a quello letto: meglio "non
+ * riconosciuta" che una carta sbagliata.
+ */
+async function findByName(readName: string): Promise<CardInfo | null> {
+  let best: CardInfo | null = null;
+  let bestScore = 0;
+  const consider = (c: CardInfo | null | undefined) => {
+    if (!c) return;
+    const s = nameMatch(readName, c);
+    if (s > bestScore) {
+      best = c;
+      bestScore = s;
+    }
+  };
+  // Nome inglese con qualche errore.
+  try {
+    consider(await cardByFuzzyName(readName));
+  } catch {
+    /* continua */
+  }
+  if (bestScore >= 0.85) return best;
+  // Nome stampato in altre lingue (italiano…): prima tutte le parole, poi le
+  // parole più lunghe una alla volta (l'OCR ne sbaglia spesso qualcuna).
+  const words = normName(readName)
+    .split(" ")
+    .filter((w) => w.length >= 4)
+    .sort((a, b) => b.length - a.length);
+  const queries = [readName, ...words.slice(0, 2)];
+  for (const q of queries) {
+    try {
+      for (const c of await cardsByPrintedName(q)) consider(c);
+    } catch {
+      /* continua */
+    }
+    if (bestScore >= 0.85) break;
+  }
+  return bestScore >= MATCH_OK ? best : null;
 }
 
 /** Rettangolo della carta (in pixel del fotogramma) per una cornice centrata. */

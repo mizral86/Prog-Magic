@@ -41,7 +41,12 @@ const PRESETS: { label: string; rows: number; cols: number }[] = [
   { label: "2×2 · da 4", rows: 2, cols: 2 },
 ];
 
-const DEFAULT_AREA: Area = { x: 0.02, y: 0.02, w: 0.96, h: 0.96 };
+const ONE_PAGE: Area[] = [{ x: 0.02, y: 0.02, w: 0.96, h: 0.96 }];
+// Raccoglitore aperto: due pagine affiancate, con gli anelli in mezzo.
+const TWO_PAGES: Area[] = [
+  { x: 0.03, y: 0.08, w: 0.44, h: 0.84 },
+  { x: 0.53, y: 0.08, w: 0.44, h: 0.84 },
+];
 const MAX_SIDE = 3200;
 
 type Layout = "free" | "grid";
@@ -73,7 +78,7 @@ export function MultiScan() {
   const [frame, setFrame] = useState<HTMLCanvasElement | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [grid, setGridState] = useState(loadGrid);
-  const [area, setArea] = useState<Area>(DEFAULT_AREA);
+  const [areas, setAreas] = useState<Area[]>(ONE_PAGE);
   const [layout, setLayoutState] = useState<Layout>(loadLayout);
   const [boxes, setBoxes] = useState<CardBox[]>([]);
   const [items, setItems] = useState<Item[] | null>(null);
@@ -134,7 +139,7 @@ export function MultiScan() {
       c.width = Math.round(bmp.width * k);
       c.height = Math.round(bmp.height * k);
       c.getContext("2d")!.drawImage(bmp, 0, 0, c.width, c.height);
-      setArea(DEFAULT_AREA);
+      setAreas(areas.length === 2 ? TWO_PAGES : ONE_PAGE);
       showFrame(c);
     } catch {
       setError("Non riesco ad aprire questa immagine. Prova con un'altra foto.");
@@ -150,7 +155,7 @@ export function MultiScan() {
     ctx.translate(c.width, 0);
     ctx.rotate(Math.PI / 2);
     ctx.drawImage(frame, 0, 0);
-    setArea(DEFAULT_AREA);
+    setAreas(areas.length === 2 ? TWO_PAGES : ONE_PAGE);
     setItems(null);
     showFrame(c);
   }
@@ -163,7 +168,7 @@ export function MultiScan() {
     setAdded(null);
     const jobs: { thumb: string; run: () => Promise<ScanResult> }[] =
       layout === "grid"
-        ? gridCells(frame.width, frame.height, area, grid.rows, grid.cols).map((cell) => ({
+        ? areas.flatMap((area) => gridCells(frame.width, frame.height, area, grid.rows, grid.cols)).map((cell) => ({
             thumb: cellThumb(frame, cell),
             run: () => recognizeInCell(frame, cell),
           }))
@@ -366,6 +371,30 @@ export function MultiScan() {
                 <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
                   <NumStep label="Righe" value={grid.rows} onChange={(v) => setGrid(v, grid.cols)} />
                   <NumStep label="Colonne" value={grid.cols} onChange={(v) => setGrid(grid.rows, v)} />
+                  <div className="segmented" aria-label="Pagine nella foto">
+                    <button
+                      type="button"
+                      className={areas.length === 1 ? "on" : ""}
+                      onClick={() => {
+                        setAreas(ONE_PAGE);
+                        setItems(null);
+                      }}
+                      disabled={busy}
+                    >
+                      1 pagina
+                    </button>
+                    <button
+                      type="button"
+                      className={areas.length === 2 ? "on" : ""}
+                      onClick={() => {
+                        setAreas(TWO_PAGES);
+                        setItems(null);
+                      }}
+                      disabled={busy}
+                    >
+                      2 pagine
+                    </button>
+                  </div>
                   <button type="button" className="ghost" onClick={rotate} disabled={busy}>
                     ↻ Ruota
                   </button>
@@ -378,8 +407,8 @@ export function MultiScan() {
               <GridEditor
                 src={preview}
                 ratio={frame.width / frame.height}
-                area={area}
-                onChange={setArea}
+                areas={areas}
+                onChange={(i, a) => setAreas((cur) => cur.map((x, j) => (j === i ? a : x)))}
                 rows={grid.rows}
                 cols={grid.cols}
                 items={items}
@@ -393,7 +422,8 @@ export function MultiScan() {
                   ? "Non ho trovato carte da solo. "
                   : `Carte segnate: ${boxes.length}. `}
                 Tocca una carta senza riquadro per aggiungerla; tocca un riquadro per
-                spostarlo, girarlo, cambiarne la misura o toglierlo.
+                spostarlo, girarlo, cambiarne la misura o toglierlo. Per le pagine del raccoglitore
+                funziona meglio <strong>Pagina a griglia</strong>.
               </p>
               <FreeEditor
                 src={preview}
@@ -423,7 +453,7 @@ export function MultiScan() {
               >
                 {items
                   ? "Rileggi la foto"
-                  : `Riconosci ${layout === "grid" ? grid.rows * grid.cols : boxes.length} carte`}
+                  : `Riconosci ${layout === "grid" ? grid.rows * grid.cols * areas.length : boxes.length} carte`}
               </button>
             )}
             <button
@@ -511,7 +541,7 @@ type Corner = "tl" | "tr" | "bl" | "br";
 function GridEditor({
   src,
   ratio,
-  area,
+  areas,
   onChange,
   rows,
   cols,
@@ -520,27 +550,29 @@ function GridEditor({
 }: {
   src: string;
   ratio: number;
-  area: Area;
-  onChange: (a: Area) => void;
+  areas: Area[];
+  onChange: (page: number, a: Area) => void;
   rows: number;
   cols: number;
   items: Item[] | null;
   disabled: boolean;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
-  const drag = useRef<Corner | null>(null);
+  const drag = useRef<{ page: number; corner: Corner } | null>(null);
 
-  function onDown(corner: Corner, e: ReactPointerEvent) {
+  function onDown(page: number, corner: Corner, e: ReactPointerEvent) {
     if (disabled) return;
-    drag.current = corner;
+    drag.current = { page, corner };
     (e.target as Element).setPointerCapture(e.pointerId);
     e.preventDefault();
   }
 
   function onMove(e: ReactPointerEvent) {
-    const corner = drag.current;
+    const d = drag.current;
     const box = boxRef.current;
-    if (!corner || !box) return;
+    if (!d || !box) return;
+    const area = areas[d.page];
+    const corner = d.corner;
     const r = box.getBoundingClientRect();
     const px = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
     const py = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
@@ -553,16 +585,14 @@ function GridEditor({
     else x2 = Math.max(px, x1 + MIN);
     if (corner === "tl" || corner === "tr") y1 = Math.min(py, y2 - MIN);
     else y2 = Math.max(py, y1 + MIN);
-    onChange({ x: x1, y: y1, w: x2 - x1, h: y2 - y1 });
+    onChange(d.page, { x: x1, y: y1, w: x2 - x1, h: y2 - y1 });
   }
 
   function onUp() {
     drag.current = null;
   }
 
-  const cells: { r: number; c: number; i: number }[] = [];
-  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) cells.push({ r, c, i: r * cols + c });
-
+  const per = rows * cols;
   return (
     <div className="grid-editor-wrap">
       <div
@@ -574,43 +604,47 @@ function GridEditor({
         onPointerCancel={onUp}
       >
         <img src={src} alt="Foto da scansionare" draggable={false} />
-        <div
-          className="ge-area"
-          style={{
-            left: `${area.x * 100}%`,
-            top: `${area.y * 100}%`,
-            width: `${area.w * 100}%`,
-            height: `${area.h * 100}%`,
-            gridTemplateColumns: `repeat(${cols}, 1fr)`,
-            gridTemplateRows: `repeat(${rows}, 1fr)`,
-          }}
-        >
-          {cells.map(({ i }) => {
-            const it = items?.[i];
-            const cls = !it
-              ? ""
-              : it.state === "reading"
-                ? " reading"
-                : it.state === "done"
-                  ? it.card
-                    ? " ok"
-                    : " miss"
-                  : "";
-            return (
-              <div key={i} className={`ge-cell${cls}`}>
-                <span>{i + 1}</span>
-              </div>
-            );
-          })}
-          {(["tl", "tr", "bl", "br"] as Corner[]).map((c) => (
-            <div
-              key={c}
-              className={`ge-handle ${c}`}
-              onPointerDown={(e) => onDown(c, e)}
-              aria-label="Sposta l'angolo della griglia"
-            />
-          ))}
-        </div>
+        {areas.map((area, page) => (
+          <div
+            key={page}
+            className={`ge-area${areas.length > 1 ? " multi" : ""}`}
+            style={{
+              left: `${area.x * 100}%`,
+              top: `${area.y * 100}%`,
+              width: `${area.w * 100}%`,
+              height: `${area.h * 100}%`,
+              gridTemplateColumns: `repeat(${cols}, 1fr)`,
+              gridTemplateRows: `repeat(${rows}, 1fr)`,
+            }}
+          >
+            {Array.from({ length: per }, (_, k) => {
+              const i = page * per + k;
+              const it = items?.[i];
+              const cls = !it
+                ? ""
+                : it.state === "reading"
+                  ? " reading"
+                  : it.state === "done"
+                    ? it.card
+                      ? " ok"
+                      : " miss"
+                    : "";
+              return (
+                <div key={i} className={`ge-cell${cls}`}>
+                  <span>{i + 1}</span>
+                </div>
+              );
+            })}
+            {(["tl", "tr", "bl", "br"] as Corner[]).map((c) => (
+              <div
+                key={c}
+                className={`ge-handle ${c}`}
+                onPointerDown={(e) => onDown(page, c, e)}
+                aria-label="Sposta l'angolo della griglia"
+              />
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   );

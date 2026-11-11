@@ -20,10 +20,7 @@ export interface CardBox {
 
 const WORK_SIDE = 720;
 
-export function detectCards(
-  frame: HTMLCanvasElement,
-  debug?: (name: string, data: unknown) => void,
-): CardBox[] {
+export function detectCards(frame: HTMLCanvasElement): CardBox[] {
   const k = Math.min(1, WORK_SIDE / Math.max(frame.width, frame.height));
   const W = Math.max(8, Math.round(frame.width * k));
   const H = Math.max(8, Math.round(frame.height * k));
@@ -82,8 +79,9 @@ export function detectCards(
 
   let edge: Uint8Array = new Uint8Array(N);
   for (let i = 0; i < N; i++) edge[i] = mag[i] > thr ? 1 : 0;
-  debug?.("thr", { thr, p90, W, H });
-  debug?.("edge", edge);
+  // Bordi appena ingrossati: per seguire il contorno delle carte e per
+  // cercare le linee di separazione tra le tasche di un raccoglitore.
+  const edge1 = dilate(edge, W, H, 1);
   edge = dilate(edge, W, H, 2);
 
   // Sfondo = zona senza bordi collegata ai lati dell'immagine.
@@ -116,7 +114,6 @@ export function detectCards(
   let fg: Uint8Array = new Uint8Array(N);
   for (let i = 0; i < N; i++) fg[i] = bg[i] ? 0 : 1;
   fg = erode(fg, W, H, 2);
-  debug?.("fg", fg);
 
   // Macchie (componenti connesse).
   const label = new Int32Array(N);
@@ -143,9 +140,6 @@ export function detectCards(
     if (pts.length > N * 0.003) blobs.push({ ...fitBox(pts, W), pts });
   }
 
-  // Tieni le macchie con forma di carta; quelle grandi il doppio o il triplo
-  // (carte che si toccano) vengono divise lungo il lato lungo.
-  debug?.("blobs", blobs);
   const ratioOk = (bx: Box) => {
     const ar = bx.w / bx.h;
     return ar > CARD_RATIO * 0.8 && ar < CARD_RATIO * 1.2;
@@ -158,6 +152,15 @@ export function detectCards(
   const out: Box[] = [];
   for (const bx of blobs) {
     if (median && bx.w * bx.h < median * 0.35) continue;
+    // Pagina di raccoglitore (o carte in fila che si toccano): si cerca la
+    // griglia le cui linee di taglio cadono sui bordi tra una carta e l'altra.
+    if (bx.fill > FILL_OK) {
+      const cells = gridSplit(bx, edge1, W, H, ratioOk);
+      if (cells) {
+        out.push(...cells);
+        continue;
+      }
+    }
     if (cardLike(bx) && (!median || bx.w * bx.h < median * 1.6)) {
       out.push(bx);
       continue;
@@ -173,11 +176,18 @@ export function detectCards(
     }
     // Carte che si toccano per un angolo o un pezzo di lato: si "consuma" la
     // macchia dai bordi finché non si stacca in pezzi con forma di carta.
-    out.push(...splitByErosion(bx.pts, W, (b) => cardLike(b) && (!median || b.w * b.h > median * 0.5)));
+    if ("pts" in bx) {
+      const pts = (bx as { pts: number[] }).pts;
+      out.push(...splitByErosion(pts, W, (b) => cardLike(b) && (!median || b.w * b.h > median * 0.5)));
+    }
   }
 
+  // Si tolgono i riquadri doppi o interni a un'altra carta e quelli che
+  // contengono più carte (una pagina intera che non si è riusciti a dividere).
+  const final = dedupe(out);
+
   // La dilatazione/erosione lascia ~1px in più: restringiamo un filo.
-  return out
+  return final
     .map((bx) => ({
       cx: bx.cx / k,
       cy: bx.cy / k,
@@ -199,6 +209,119 @@ interface Box {
 
 interface Blob extends Box {
   fill: number;
+}
+
+function inside(bx: Box, x: number, y: number): boolean {
+  const ux = Math.cos(bx.angle);
+  const uy = Math.sin(bx.angle);
+  const dx = x - bx.cx;
+  const dy = y - bx.cy;
+  return Math.abs(dx * ux + dy * uy) <= bx.h / 2 && Math.abs(-dx * uy + dy * ux) <= bx.w / 2;
+}
+
+function dedupe(boxes: Box[]): Box[] {
+  const area = (b: Box) => b.w * b.h;
+  // Riquadri che contengono il centro di due o più riquadri più piccoli = gruppi.
+  const groups = new Set<Box>();
+  for (const a of boxes) {
+    let n = 0;
+    for (const b of boxes) {
+      if (b !== a && area(b) < area(a) * 0.6 && inside(a, b.cx, b.cy)) n++;
+    }
+    if (n >= 2) groups.add(a);
+  }
+  const rest = boxes.filter((b) => !groups.has(b)).sort((a, b) => area(b) - area(a));
+  const kept: Box[] = [];
+  for (const b of rest) {
+    if (kept.some((k) => inside(k, b.cx, b.cy))) continue;
+    kept.push(b);
+  }
+  // Scarta i riquadri molto più piccoli delle altre carte.
+  const areas = kept.map(area).sort((a, z) => a - z);
+  const med = areas[Math.floor(areas.length / 2)] ?? 0;
+  return kept.filter((b) => area(b) > med * 0.4);
+}
+
+/**
+ * Divide un rettangolo in una griglia di carte, se esiste una griglia le cui
+ * linee di taglio cadono (quasi) tutte su dei bordi. null se non c'è.
+ */
+function gridSplit(
+  bx: Box,
+  edge: Uint8Array,
+  W: number,
+  H: number,
+  ratioOk: (b: Box) => boolean,
+): Box[] | null {
+  const ux = Math.cos(bx.angle);
+  const uy = Math.sin(bx.angle);
+  const vx = -uy;
+  const vy = ux;
+  const at = (u: number, v: number) => {
+    const x = Math.round(bx.cx + u * ux + v * vx);
+    const y = Math.round(bx.cy + u * uy + v * vy);
+    return x >= 0 && y >= 0 && x < W && y < H && edge[y * W + x] === 1;
+  };
+  // Quota della linea a u fissato (o v fissato) coperta da bordi, con ±2px di tolleranza.
+  const lineScore = (alongU: boolean, pos: number, len: number) => {
+    let hit = 0;
+    let n = 0;
+    for (let t = -len / 2 + 2; t < len / 2 - 2; t += 1.5) {
+      n++;
+      for (let d = -2; d <= 2; d++) {
+        if (alongU ? at(t, pos + d) : at(pos + d, t)) {
+          hit++;
+          break;
+        }
+      }
+    }
+    return n ? hit / n : 0;
+  };
+
+  let best: { score: number; nu: number; nv: number } | null = null;
+  for (let nu = 1; nu <= 8; nu++) {
+    for (let nv = 1; nv <= 8; nv++) {
+      if (nu * nv < 2 || nu * nv > 36) continue;
+      const cl = bx.h / nu;
+      const cs = bx.w / nv;
+      if (Math.min(cl, cs) < 14) continue;
+      const cell = { cx: 0, cy: 0, angle: 0, w: Math.min(cl, cs), h: Math.max(cl, cs) };
+      if (!ratioOk(cell) || Math.abs(cell.w / cell.h - CARD_RATIO) > 0.06) continue;
+      let sum = 0;
+      let cnt = 0;
+      let worst = 1;
+      for (let i = 1; i < nu; i++) {
+        const sc = lineScore(false, -bx.h / 2 + i * cl, bx.w);
+        sum += sc;
+        cnt++;
+        worst = Math.min(worst, sc);
+      }
+      for (let j = 1; j < nv; j++) {
+        const sc = lineScore(true, -bx.w / 2 + j * cs, bx.h);
+        sum += sc;
+        cnt++;
+        worst = Math.min(worst, sc);
+      }
+      const score = Math.min(sum / cnt, worst + 0.15);
+      // A parità, meno caselle (le linee interne di una carta non contano).
+      if (score >= 0.6 && (!best || score > best.score + 0.08 || (score > best.score - 0.08 && nu * nv < best.nu * best.nv))) {
+        best = { score, nu, nv };
+      }
+    }
+  }
+  if (!best) return null;
+  const cells: Box[] = [];
+  const cl = bx.h / best.nu;
+  const cs = bx.w / best.nv;
+  for (let i = 0; i < best.nu; i++) {
+    for (let j = 0; j < best.nv; j++) {
+      const u = -bx.h / 2 + (i + 0.5) * cl;
+      const v = -bx.w / 2 + (j + 0.5) * cs;
+      const c = { cx: bx.cx + u * ux + v * vx, cy: bx.cy + u * uy + v * vy, w: cs, h: cl, angle: bx.angle };
+      cells.push(normalize(c));
+    }
+  }
+  return cells;
 }
 
 const FILL_OK = 0.72;
