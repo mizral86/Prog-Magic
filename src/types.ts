@@ -39,6 +39,8 @@ export interface CardInfo {
   isLand: boolean;
   /** Colori che questa carta può produrre (soprattutto terre e mana dork). */
   producedMana: Color[];
+  /** Produce anche mana incolore ({C}). */
+  producesColorless?: boolean;
   /** Euristica: la terra entra tappata (non produce mana il turno in cui entra). */
   entersTapped: boolean;
   manaCost: string; // es. "{1}{R}"

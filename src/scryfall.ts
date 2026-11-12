@@ -230,6 +230,7 @@ function toCardInfo(card: ScryCard): CardInfo {
     colorIdentity: asColors(card.color_identity),
     isLand,
     producedMana: asColors(card.produced_mana),
+    producesColorless: (card.produced_mana ?? []).includes("C"),
     entersTapped: isLand && detectEntersTapped(card),
     manaCost,
     pips,

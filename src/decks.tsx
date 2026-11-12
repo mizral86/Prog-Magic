@@ -48,6 +48,8 @@ export interface DeckCard {
   setCode?: string;
   setName?: string;
   collectorNumber?: string;
+  /** Colori di mana che la carta produce (terre, mana dork). */
+  producedMana?: (Color | "C")[];
   /** Magia economica (costo ≤ 2) che pesca carte o dà mana (per le terre consigliate). */
   drawRamp?: boolean;
   /** Pedine create dalla carta; undefined = dati non ancora scaricati. */
@@ -67,6 +69,8 @@ export interface SavedDeck {
   updatedAt: number;
   /** URL immagine di copertina (art di una carta scelta dall'utente). */
   coverImageUrl?: string;
+  /** Note libere sul mazzo (strategia, piano di side…). */
+  notes?: string;
 }
 
 const KEY = "pm.decks.v1";
@@ -127,6 +131,7 @@ function toDeckCard(card: CardInfo, board: Board, qty: number): DeckCard {
     collectorNumber: card.collectorNumber,
     tokens: card.tokens ?? [],
     drawRamp: isDrawRamp(card),
+    producedMana: [...(card.producedMana ?? []), ...(card.producesColorless ? (["C"] as const) : [])],
     prices: card.prices,
     legalities: card.legalities,
     qty,
@@ -146,6 +151,7 @@ interface DecksCtx {
   removeCard: (deckId: string, cardId: string, board: Board) => void;
   replaceCards: (deckId: string, cards: DeckCard[]) => void;
   setCover: (deckId: string, url: string | undefined) => void;
+  setNotes: (deckId: string, notes: string) => void;
   /** Sposta `qty` copie (tutte se omesso) da una sezione all'altra. */
   moveCard: (deckId: string, cardId: string, from: Board, to: Board, qty?: number) => void;
   /** Sostituisce la stampa (edizione) di una carta, tenendo quantità e sezione. */
@@ -233,6 +239,7 @@ export function DecksProvider({ children }: { children: ReactNode }) {
         })),
       replaceCards: (deckId, cards) => mutate(deckId, (d) => ({ ...d, cards })),
       setCover: (deckId, url) => mutate(deckId, (d) => ({ ...d, coverImageUrl: url })),
+      setNotes: (deckId, notes) => mutate(deckId, (d) => ({ ...d, notes })),
       moveCard: (deckId, cardId, from, to, qty) =>
         mutate(deckId, (d) => {
           if (from === to) return d;
@@ -328,7 +335,7 @@ export function deckCardToInfo(c: DeckCard): CardInfo | null {
     colors: c.colors,
     colorIdentity: c.colorIdentity,
     isLand: c.isLand,
-    producedMana: [],
+    producedMana: (c.producedMana ?? []).filter((x): x is Color => x !== "C"),
     entersTapped: false,
     manaCost: c.manaCost ?? "",
     pips: {},

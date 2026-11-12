@@ -290,8 +290,12 @@ export function deckAnalysis(deck: SavedDeck): DeckAnalysis {
       .filter((c) => (c.colors ?? []).includes(col))
       .reduce((s, c) => s + c.qty, 0);
     if (demand === 0) continue;
+    // Fonte = terra che produce quel colore (dati Scryfall); per i mazzi
+    // salvati prima, l'identità di colore della terra.
     const sources = lands
-      .filter((c) => (c.colorIdentity ?? []).includes(col))
+      .filter((c) =>
+        c.producedMana?.length ? c.producedMana.includes(col) : (c.colorIdentity ?? []).includes(col),
+      )
       .reduce((s, c) => s + c.qty, 0);
     // Regola pratica: servono ~ demand/2 fonti (min 8-10 su 60 per un colore
     // molto richiesto). Segnaliamo se le fonti sono chiaramente sotto.
@@ -382,4 +386,100 @@ export function legalityIssues(deck: SavedDeck): LegalityIssue[] {
   }
 
   return issues;
+}
+
+// --- Grafici della scheda Statistiche ---------------------------------------
+
+export const CURVE_KEYS = ["0", "1", "2", "3", "4", "5", "6", "7+"] as const;
+
+/** Gruppo per colorare la curva: un colore, multicolore o incolore. */
+export type ColorGroup = Color | "M" | "C";
+export const COLOR_GROUPS: ColorGroup[] = ["W", "U", "B", "R", "G", "M", "C"];
+
+export interface StackedBucket {
+  label: string;
+  total: number;
+  parts: { key: string; count: number }[];
+}
+
+function curveKey(cmc: number): string {
+  return cmc >= 7 ? "7+" : String(Math.floor(cmc));
+}
+
+/**
+ * Curva delle magie del main, divisa per colore (W…G, multicolore, incolore)
+ * oppure per tipo principale (creature, istantanei…).
+ */
+export function stackedCurve(deck: SavedDeck, by: "color" | "type"): StackedBucket[] {
+  const spells = deck.cards.filter((c) => c.board === "main" && !c.isLand);
+  return CURVE_KEYS.map((label) => {
+    const m = new Map<string, number>();
+    for (const c of spells) {
+      if (curveKey(c.cmc) !== label) continue;
+      const key =
+        by === "type"
+          ? primaryType(c)
+          : (c.colors?.length ?? 0) > 1
+            ? "M"
+            : (c.colors?.[0] ?? "C");
+      m.set(key, (m.get(key) ?? 0) + c.qty);
+    }
+    const order: string[] = by === "type" ? TYPE_ORDER : COLOR_GROUPS;
+    const parts = order.filter((k) => m.has(k)).map((k) => ({ key: k, count: m.get(k)! }));
+    return { label, total: parts.reduce((s, p) => s + p.count, 0), parts };
+  });
+}
+
+export function typeLabel(t: string): string {
+  return TYPE_LABEL[t as CardCategory] ?? t;
+}
+
+/** Somma dei costi di mana (CMC) delle magie del main. */
+export function totalManaValue(deck: SavedDeck): number {
+  return deck.cards
+    .filter((c) => c.board === "main" && !c.isLand)
+    .reduce((s, c) => s + c.cmc * c.qty, 0);
+}
+
+/**
+ * Simboli di mana nei costi delle magie del main, per colore (un ibrido conta
+ * per entrambi i colori). `generic` = mana generico (numeri).
+ */
+export function costPips(deck: SavedDeck): { colors: Record<Color, number>; generic: number } {
+  const colors: Record<Color, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 };
+  let generic = 0;
+  for (const c of deck.cards) {
+    if (c.board !== "main" || c.isLand || !c.manaCost) continue;
+    // Solo la prima faccia delle carte doppie.
+    const cost = c.manaCost.split(" // ")[0];
+    for (const tok of cost.match(/\{[^}]+\}/g) ?? []) {
+      const sym = tok.slice(1, -1).toUpperCase();
+      if (/^\d+$/.test(sym)) {
+        generic += parseInt(sym, 10) * c.qty;
+        continue;
+      }
+      for (const col of ["W", "U", "B", "R", "G"] as Color[])
+        if (sym.split("/").includes(col)) colors[col] += c.qty;
+    }
+  }
+  return { colors, generic };
+}
+
+/** Fonti di mana del main per colore: copie che producono quel colore (C = incolore). */
+export function manaProduction(deck: SavedDeck): Record<Color | "C", number> {
+  const out: Record<Color | "C", number> = { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 };
+  for (const c of deck.cards) {
+    if (c.board !== "main") continue;
+    const prod = c.producedMana ?? [];
+    if (prod.length === 0) {
+      // Dati vecchi senza produzione: per le terre si usa l'identità di colore.
+      if (c.isLand && c.producedMana === undefined)
+        for (const col of c.colorIdentity ?? []) out[col] += c.qty;
+      continue;
+    }
+    for (const col of prod) {
+      if (col in out) out[col as Color | "C"] += c.qty;
+    }
+  }
+  return out;
 }
