@@ -243,39 +243,43 @@ export function deckAnalysis(deck: SavedDeck): DeckAnalysis {
           : "curva equilibrata",
   });
 
-  // 2) Terre vs linea guida (scala con la dimensione del main).
-  const target = commander
-    ? Math.round((mainCount / 100) * 37)
-    : clamp(Math.round((mainCount / 60) * (16 + (avgCmc - 2) * 3)), 16, 26);
+  // 2) Terre consigliate: formula di Frank Karsten (analisi di migliaia di
+  // mazzi da torneo). 60 carte: 19,59 + 1,90 × CMC medio − 0,28 × magie
+  // economiche (costo ≤ 2) che pescano o danno mana. Commander: 31,42 +
+  // 3,13 × CMC medio − 0,28 × le stesse magie. Mazzi più grandi in proporzione.
+  const cheap = spells.filter((c) => c.drawRamp).reduce((s, c) => s + c.qty, 0);
+  const raw = commander
+    ? 31.42 + 3.13 * avgCmc - 0.28 * cheap
+    : (19.59 + 1.9 * avgCmc - 0.28 * cheap) * Math.max(1, mainCount / 60);
+  const target = commander ? clamp(Math.round(raw), 30, 42) : clamp(Math.round(raw), 14, 28);
   const pct = mainCount ? Math.round((landCount / mainCount) * 100) : 0;
   const diff = landCount - target;
-  const landVerdict: Verdict = Math.abs(diff) <= 2 ? "good" : "warn";
+  // La formula tende a stare un po' alta: una o due terre in meno vanno ancora bene.
+  const landVerdict: Verdict = diff >= -2 && diff <= 1 ? "good" : "warn";
+  const why =
+    `CMC medio ${avgCmc.toFixed(2)}` +
+    (cheap > 0 ? `, ${cheap} magie economiche di pesca/mana` : "");
   items.push({
     label: "Terre",
     value: `${landCount} (${pct}%)`,
     verdict: landVerdict,
     note:
       landVerdict === "good"
-        ? `in linea (~${target} consigliate)`
+        ? `giuste: ~${target} consigliate (${why})`
         : diff < 0
-          ? `poche: ~${target} consigliate per questa curva`
-          : `molte: ~${target} basterebbero`,
+          ? `poche: ~${target} consigliate (${why})`
+          : `troppe: ~${target} consigliate (${why})`,
   });
 
-  // 3) Consistenza mano iniziale (7 carte): probabilità di tenerla (2-5 terre).
-  const keep = [2, 3, 4, 5].reduce(
-    (s, k) => s + hyp(mainCount, landCount, 7, k),
-    0,
-  );
+  // 3) Mano iniziale (7 carte): probabilità di avere 2, 3 o 4 terre.
+  const keep = [2, 3, 4].reduce((s, k) => s + hyp(mainCount, landCount, 7, k), 0);
   const screw = [0, 1].reduce((s, k) => s + hyp(mainCount, landCount, 7, k), 0);
-  const flood = keep + screw < 1 ? 1 - keep - screw : 0;
+  const flood = Math.max(0, 1 - keep - screw);
   items.push({
-    label: "Mano tenibile (2-5 terre su 7)",
+    label: "Mano iniziale con 2-4 terre",
     value: `${Math.round(keep * 100)}%`,
-    verdict: keep >= 0.65 ? "good" : "warn",
-    note: `mana screw ${Math.round(screw * 100)}% · flood ${Math.round(
-      flood * 100,
-    )}%`,
+    verdict: keep >= 0.7 ? "good" : "warn",
+    note: `0-1 terre ${Math.round(screw * 100)}% · 5 o più terre ${Math.round(flood * 100)}%`,
   });
 
   // 4) Bilancio fonti/richieste per colore.

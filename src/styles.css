@@ -3953,3 +3953,15 @@ label.primary-file {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.add-card-form .search-close {
+  flex: none;
+  padding: 6px 10px;
+}
+.dar-btns .dar-coll {
+  border-style: dashed;
+}
+@media (max-width: 400px) {
+  .dar-btns {
+    flex-wrap: wrap;
+  }
+}

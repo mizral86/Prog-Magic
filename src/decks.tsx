@@ -48,6 +48,8 @@ export interface DeckCard {
   setCode?: string;
   setName?: string;
   collectorNumber?: string;
+  /** Magia economica (costo ≤ 2) che pesca carte o dà mana (per le terre consigliate). */
+  drawRamp?: boolean;
   /** Pedine create dalla carta; undefined = dati non ancora scaricati. */
   tokens?: TokenRef[];
   prices?: CardInfo["prices"];
@@ -93,6 +95,14 @@ export function isScryfallId(id: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id);
 }
 
+/** Pesca o mana a basso costo (Opt, Llanowar Elves, Ponder…): conta come "mezza terra". */
+function isDrawRamp(card: CardInfo): boolean {
+  if (card.isLand || card.cmc > 2) return false;
+  if (card.manaAbility) return true;
+  const t = (card.oracleText ?? "").toLowerCase();
+  return /draw (a|two|three) cards?|look at the top \w+ cards|\bsurveil \d|search your library for (a|up to \w+) basic land|\{t\}: add \{/.test(t);
+}
+
 function cardKey(card: CardInfo): string {
   return card.scryfallId ?? card.name.toLowerCase();
 }
@@ -116,6 +126,7 @@ function toDeckCard(card: CardInfo, board: Board, qty: number): DeckCard {
     setName: card.setName,
     collectorNumber: card.collectorNumber,
     tokens: card.tokens ?? [],
+    drawRamp: isDrawRamp(card),
     prices: card.prices,
     legalities: card.legalities,
     qty,
