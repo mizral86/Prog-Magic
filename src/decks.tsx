@@ -315,3 +315,33 @@ export function autoCover(deck: SavedDeck): string | undefined {
   );
   return pick?.artCropUrl ?? pick?.imageUrl ?? pick?.imageSmallUrl;
 }
+
+/** Dati minimi di una carta del mazzo per metterla in collezione (serve l'ID Scryfall). */
+export function deckCardToInfo(c: DeckCard): CardInfo | null {
+  if (!isScryfallId(c.id)) return null;
+  return {
+    name: c.name,
+    printedName: c.printedName,
+    cmc: c.cmc,
+    typeLine: c.typeLine,
+    categories: c.categories,
+    colors: c.colors,
+    colorIdentity: c.colorIdentity,
+    isLand: c.isLand,
+    producedMana: [],
+    entersTapped: false,
+    manaCost: c.manaCost ?? "",
+    pips: {},
+    generic: 0,
+    oracleText: "",
+    imageUrl: c.imageUrl,
+    imageSmallUrl: c.imageSmallUrl,
+    artCropUrl: c.artCropUrl,
+    scryfallId: c.id,
+    setCode: c.setCode,
+    setName: c.setName,
+    collectorNumber: c.collectorNumber,
+    legalities: c.legalities,
+    prices: c.prices,
+  };
+}

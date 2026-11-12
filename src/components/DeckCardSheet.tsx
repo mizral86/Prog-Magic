@@ -2,7 +2,8 @@
 // maybeboard, cambio edizione, copertina del mazzo e carte simili.
 
 import { useEffect, useState } from "react";
-import { Board, BOARD_LABEL, BOARDS, isScryfallId, useDecks } from "../decks";
+import { Board, BOARD_LABEL, BOARDS, deckCardToInfo, isScryfallId, useDecks } from "../decks";
+import { useCollection } from "../collection";
 import { CardInfo } from "../types";
 import { cardById, cardByFuzzyName, getPrintings } from "../scryfall";
 import { bestPrice, formatMoney, formatPrice } from "../prices";
@@ -35,6 +36,7 @@ export function DeckCardSheet({
   const [opened, setOpened] = useState<CardInfo | null>(null);
   const [added, setAdded] = useState<string | null>(null);
   const name = entry?.name;
+  const collection = useCollection();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -198,6 +200,43 @@ export function DeckCardSheet({
                 </button>
               </div>
             </div>
+
+            {/* Collezione */}
+            {(() => {
+              const info = deckCardToInfo(entry);
+              const own = collection.get(entry.id);
+              const allOwned = collection.entries
+                .filter((e) => e.name === entry.name)
+                .reduce((s, e) => s + e.qty + e.foilQty, 0);
+              return (
+                <div className="collect-box">
+                  <div className="collect-status">
+                    In collezione: <strong>{own?.qty ?? 0}</strong> normali ·{" "}
+                    <strong>{own?.foilQty ?? 0}</strong> foil di questa edizione
+                    {allOwned > (own ? own.qty + own.foilQty : 0) &&
+                      ` (${allOwned} in tutte le edizioni)`}
+                  </div>
+                  <div className="collect-actions">
+                    <button
+                      type="button"
+                      className="ghost"
+                      disabled={!info}
+                      onClick={() => info && collection.add(info, { foil: false })}
+                    >
+                      + Aggiungi alla collezione
+                    </button>
+                    <button
+                      type="button"
+                      className="ghost"
+                      disabled={!info}
+                      onClick={() => info && collection.add(info, { foil: true })}
+                    >
+                      + Foil
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Carte simili */}
             <h3 className="mini-title">Carte simili</h3>
