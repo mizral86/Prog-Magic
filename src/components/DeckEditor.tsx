@@ -1,19 +1,33 @@
-// Editor di un singolo mazzo: aggiunta carte, import/export, statistiche,
-// legalità e liste main/sideboard.
+// Editor di un singolo mazzo: copertina, aggiunta carte con la ricerca,
+// import/export, statistiche (curva, tipi di creatura, pedine, maybeboard),
+// legalità e liste main / sideboard / maybeboard.
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Board, FORMATS, Format, useDecks } from "../decks";
+import {
+  autoCover,
+  Board,
+  BOARD_LABEL,
+  BOARDS,
+  deckCoverUrl,
+  FORMATS,
+  Format,
+  isScryfallId,
+  useDecks,
+} from "../decks";
 import { setCompareSlot } from "../compareTray";
 import { CardInfo, COLORS } from "../types";
-import { searchCards } from "../scryfall";
+import { CardIdentifier, resolveIdentifiers, searchCards } from "../scryfall";
 import { deckToText, parseAndResolve } from "../deckIO";
-import { deckAnalysis, deckStats, legalityIssues } from "../deckStats";
-import { formatMoney } from "../prices";
+import { deckAnalysis, deckStats, deckTokens, legalityIssues } from "../deckStats";
+import { formatMoney, formatPrice } from "../prices";
 import { ownedByName, useCollection } from "../collection";
 import { useWishlist } from "../wishlist";
+import { creatureTypeIt } from "../creatureTypes";
 import type { DeckCard, SavedDeck } from "../decks";
-import { Bar } from "./Bar";
+import { ManaCost } from "./ManaSymbol";
+import { CardDetail } from "./CardDetail";
+import { DeckCardSheet } from "./DeckCardSheet";
 
 const FORMAT_LABEL: Record<Format, string> = {
   standard: "Standard",
@@ -25,28 +39,55 @@ const FORMAT_LABEL: Record<Format, string> = {
   commander: "Commander",
 };
 
+const BOARD_TITLE: Record<Board, string> = {
+  main: "Main",
+  side: "Sideboard",
+  maybe: "Maybeboard",
+};
+
 export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => void }) {
   const decks = useDecks();
   const navigate = useNavigate();
   const deck = decks.get(deckId);
 
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<CardInfo[] | null>(null);
-  const [searching, setSearching] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [importText, setImportText] = useState("");
   const [importMsg, setImportMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [exportText, setExportText] = useState<string | null>(null);
+  const [sheet, setSheet] = useState<{ id: string; board: Board } | null>(null);
+  const [coverOpen, setCoverOpen] = useState(false);
 
   const stats = useMemo(() => (deck ? deckStats(deck) : null), [deck]);
   const analysis = useMemo(() => (deck ? deckAnalysis(deck) : null), [deck]);
   const issues = useMemo(() => (deck ? legalityIssues(deck) : []), [deck]);
+  const tokens = useMemo(() => (deck ? deckTokens(deck) : []), [deck]);
   const collection = useCollection();
   const owned = useMemo(() => ownedByName(collection.entries), [collection.entries]);
   const missing = useMemo(() => (deck ? missingCards(deck, owned) : null), [deck, owned]);
   const wishlist = useWishlist();
   const [wishMsg, setWishMsg] = useState<string | null>(null);
+
+  // Mazzi creati prima di questa versione non hanno pedine, illustrazioni ed
+  // edizione: si scaricano una volta da Scryfall (in gruppi da 75).
+  const enriching = useRef(new Set<string>());
+  const [enrichBusy, setEnrichBusy] = useState(false);
+  useEffect(() => {
+    if (!deck) return;
+    const todo = deck.cards.filter(
+      (c) => c.tokens === undefined && !enriching.current.has(c.id),
+    );
+    if (todo.length === 0) return;
+    todo.forEach((c) => enriching.current.add(c.id));
+    const ids: CardIdentifier[] = todo.map((c) =>
+      isScryfallId(c.id) ? { id: c.id } : { name: c.name },
+    );
+    setEnrichBusy(true);
+    resolveIdentifiers(ids)
+      .then((cards) => decks.refreshCards(deckId, cards))
+      .catch(() => undefined)
+      .finally(() => setEnrichBusy(false));
+  }, [deck, deckId, decks]);
 
   function missingToWishlist() {
     if (!deck || !missing) return;
@@ -56,7 +97,7 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
       wishlist.add(
         {
           name: c.name,
-          scryfallId: /^[0-9a-f-]{36}$/.test(c.id) ? c.id : undefined,
+          scryfallId: isScryfallId(c.id) ? c.id : undefined,
           imageSmallUrl: c.imageSmallUrl,
           imageUrl: c.imageUrl,
           prices: c.prices,
@@ -81,26 +122,14 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
     );
   }
 
-  async function doSearch(e?: FormEvent) {
-    e?.preventDefault();
-    const q = query.trim();
-    if (!q) return;
-    setSearching(true);
-    try {
-      setResults(await searchCards(q));
-    } catch {
-      setResults([]);
-    } finally {
-      setSearching(false);
-    }
-  }
-
   async function doImport() {
     setBusy(true);
     setImportMsg(null);
     try {
       const { cards, unresolved } = await parseAndResolve(importText);
-      decks.replaceCards(deckId, cards);
+      // La maybeboard resta: la lista importata sostituisce main e side.
+      const maybe = deck!.cards.filter((c) => c.board === "maybe");
+      decks.replaceCards(deckId, [...cards, ...maybe]);
       setImportMsg(
         `Importate ${cards.length} voci.` +
           (unresolved.length ? ` Non trovate: ${unresolved.join(", ")}` : ""),
@@ -112,8 +141,9 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
     }
   }
 
-  const main = deck.cards.filter((c) => c.board === "main");
-  const side = deck.cards.filter((c) => c.board === "side");
+  const byBoard = (b: Board) => deck.cards.filter((c) => c.board === b);
+  const main = byBoard("main");
+  const cover = deckCoverUrl(deck);
 
   function sendToSim(slot: "A" | "B") {
     if (!deck) return;
@@ -121,13 +151,25 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
     navigate("/simula");
   }
 
+  const maxCurve = Math.max(1, ...(stats?.curve.map((b) => b.count) ?? [1]));
+
   return (
     <div className="page">
       <button className="ghost" onClick={onBack} style={{ marginBottom: 10 }}>
         ← Tutti i mazzi
       </button>
 
-      <div className="deck-editor-head">
+      {/* Copertina */}
+      <div
+        className={`deck-hero${cover ? "" : " deck-hero--empty"}`}
+        style={cover ? { backgroundImage: `url(${cover})` } : undefined}
+      >
+        <button type="button" className="deck-hero-btn" onClick={() => setCoverOpen(true)}>
+          🖼 Cambia immagine
+        </button>
+      </div>
+
+      <div className="deck-editor-head" style={{ marginTop: 10 }}>
         <input
           className="deck-name-input"
           value={deck.name}
@@ -183,51 +225,7 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
 
       {/* Aggiunta carte */}
       <div className="panel" style={{ marginTop: 12 }}>
-        <strong style={{ fontSize: 14 }}>Aggiungi carte</strong>
-        <form className="search-bar" style={{ marginTop: 8 }} onSubmit={doSearch}>
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Cerca una carta da aggiungere…"
-          />
-          <button className="primary" type="submit" disabled={searching}>
-            {searching ? "…" : "Cerca"}
-          </button>
-        </form>
-        {results && (
-          <div className="add-results">
-            {results.slice(0, 24).map((c) => (
-              <div key={c.scryfallId ?? c.name} className="add-result">
-                {c.imageSmallUrl && (
-                  <img src={c.imageSmallUrl} alt={c.name} loading="lazy" />
-                )}
-                <span className="ar-name">{c.name}</span>
-                <span className="ar-actions">
-                  <button
-                    type="button"
-                    className="ghost ar-add"
-                    onClick={() => decks.addCard(deckId, c, "main")}
-                    title="Aggiungi al mazzo principale"
-                  >
-                    + Main
-                  </button>
-                  <button
-                    type="button"
-                    className="ghost ar-add"
-                    onClick={() => decks.addCard(deckId, c, "side")}
-                    title="Aggiungi al sideboard"
-                  >
-                    + Side
-                  </button>
-                </span>
-              </div>
-            ))}
-            {results.length === 0 && (
-              <span className="muted small">Nessun risultato.</span>
-            )}
-          </div>
-        )}
+        <AddCardSearch deckId={deckId} />
 
         <div className="row" style={{ marginTop: 10, gap: 8 }}>
           <button
@@ -278,9 +276,28 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
         )}
       </div>
 
+      {/* Liste */}
+      <p className="muted small" style={{ margin: "14px 0 0" }}>
+        Tocca una carta per cambiarne l'edizione, spostarla o vedere carte simili.
+        Le frecce la spostano subito di una copia.
+      </p>
+      {BOARDS.map((b) => (
+        <CardList
+          key={b}
+          title={`${BOARD_TITLE[b]} (${
+            b === "main" ? stats?.mainCount : b === "side" ? stats?.sideCount : stats?.maybeCount
+          })`}
+          cards={byBoard(b)}
+          deck={deck}
+          board={b}
+          owned={owned}
+          onOpen={(c) => setSheet({ id: c.id, board: b })}
+        />
+      ))}
+
       {/* Statistiche + legalità */}
       {stats && (
-        <div className="results-grid" style={{ marginTop: 12 }}>
+        <div className="results-grid" style={{ marginTop: 16 }}>
           <div className="panel">
             <h2 style={{ marginTop: 0, fontSize: 15 }}>Statistiche</h2>
             <div className="stat-cards">
@@ -293,11 +310,16 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
                 <div className="label">Sideboard</div>
               </div>
               <div className="stat-card">
-                <div className="value">
-                  {formatMoney(stats.totalPriceEur, "EUR")}
-                </div>
+                <div className="value">{stats.maybeCount}</div>
                 <div className="label">
-                  Prezzo
+                  Maybeboard
+                  {stats.maybeCount > 0 && ` · ${formatMoney(stats.maybePriceEur, "EUR")}`}
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="value">{formatMoney(stats.totalPriceEur, "EUR")}</div>
+                <div className="label">
+                  Prezzo main + side
                   {stats.missingPrice > 0 && ` · ${stats.missingPrice} senza`}
                 </div>
               </div>
@@ -328,18 +350,34 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
                 </div>
               )}
             </div>
+
             <div className="chart">
-              <h3>Curva di mana (magie del main)</h3>
-              {stats.curve.map((b) => (
-                <Bar
-                  key={b.label}
-                  label={b.label}
-                  value={b.count}
-                  fraction={b.count / Math.max(1, ...stats.curve.map((x) => x.count))}
-                  display={String(b.count)}
-                />
-              ))}
+              <h3>
+                Curva di mana{" "}
+                <span className="muted small">
+                  · magie del main · CMC medio {stats.avgCmc.toFixed(2)}
+                </span>
+              </h3>
+              <div className="mana-curve" role="img" aria-label="Curva di mana">
+                {stats.curve.map((b) => (
+                  <div key={b.label} className="mc-col" title={`${b.count} carte (${b.creatures} creature) a costo ${b.label}`}>
+                    <span className="mc-n">{b.count || ""}</span>
+                    <span className="mc-bar" style={{ height: `${(b.count / maxCurve) * 100}%` }}>
+                      <span
+                        className="mc-cre"
+                        style={{ height: b.count ? `${(b.creatures / b.count) * 100}%` : 0 }}
+                      />
+                    </span>
+                    <span className="mc-label">{b.label}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mc-legend muted small">
+                <span><i className="mc-swatch cre" /> creature</span>
+                <span><i className="mc-swatch oth" /> altre magie</span>
+              </div>
             </div>
+
             <div className="chart">
               <h3>Colori (copie)</h3>
               <div className="chips">
@@ -361,6 +399,25 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
                 ))}
               </div>
             </div>
+            <div className="chart">
+              <h3>Tipi di creatura (copie main)</h3>
+              {stats.creatureTypes.length === 0 ? (
+                <div className="muted small">Nessuna creatura nel main.</div>
+              ) : (
+                <div className="chips">
+                  {stats.creatureTypes.map((t) => (
+                    <span key={t.label} className="chip" title={t.label}>
+                      {creatureTypeIt(t.label)}: {t.count}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="chart">
+              <h3>Pedine usate dal mazzo</h3>
+              <TokenList tokens={tokens} loading={enrichBusy} />
+            </div>
+
             {analysis && !analysis.empty && (
               <div className="chart">
                 <h3>Analisi &amp; consistenza</h3>
@@ -399,103 +456,371 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
             )}
             <p className="muted small" style={{ marginTop: 8 }}>
               Controlli basati sui dati di legalità di Scryfall e su regole base
-              (copie, dimensione mazzo). Non copre ogni eccezione.
+              (copie, dimensione mazzo). La maybeboard non conta.
             </p>
           </div>
         </div>
       )}
 
-      {/* Liste */}
-      <CardList
-        title={`Main (${stats?.mainCount ?? 0})`}
-        cards={main}
-        deckId={deckId}
-        board="main"
-      />
-      {side.length > 0 && (
-        <CardList
-          title={`Sideboard (${stats?.sideCount ?? 0})`}
-          cards={side}
+      {sheet && (
+        <DeckCardSheet
           deckId={deckId}
-          board="side"
+          cardId={sheet.id}
+          board={sheet.board}
+          onMoved={(id, board) => setSheet({ id, board })}
+          onClose={() => setSheet(null)}
         />
       )}
+      {coverOpen && <CoverPicker deck={deck} onClose={() => setCoverOpen(false)} />}
     </div>
   );
 }
 
+// --- Ricerca e aggiunta di carte singole -------------------------------------
+
+function AddCardSearch({ deckId }: { deckId: string }) {
+  const decks = useDecks();
+  const deck = decks.get(deckId);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<CardInfo[] | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lastAdded, setLastAdded] = useState<string | null>(null);
+  const [opened, setOpened] = useState<CardInfo | null>(null);
+
+  async function doSearch(e?: FormEvent) {
+    e?.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    setSearching(true);
+    setError(null);
+    try {
+      setResults((await searchCards(q)).slice(0, 30));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setResults(null);
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function add(c: CardInfo, b: Board) {
+    decks.addCard(deckId, c, b);
+    setLastAdded(`${c.printedName ?? c.name} → ${BOARD_TITLE[b]}`);
+  }
+
+  const inDeck = (name: string, b: Board) =>
+    (deck?.cards ?? [])
+      .filter((c) => c.board === b && c.name === name)
+      .reduce((s, c) => s + c.qty, 0);
+
+  return (
+    <>
+      <strong style={{ fontSize: 14 }}>🔍 Aggiungi carta</strong>
+      <form className="row add-card-form" style={{ marginTop: 8 }} onSubmit={doSearch}>
+        <input
+          type="search"
+          className="deck-name-input"
+          style={{ margin: 0 }}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Nome della carta, anche in italiano…"
+          aria-label="Cerca una carta da aggiungere al mazzo"
+        />
+        <button className="primary" type="submit" disabled={searching || !query.trim()}>
+          {searching ? "Cerco…" : "Cerca"}
+        </button>
+      </form>
+      <p className="muted small" style={{ margin: "6px 0 0" }}>
+        <strong>+Main</strong>, <strong>+Side</strong> o <strong>+Maybe</strong> aggiungono
+        una copia. Tocca la carta per vederla e sceglierne l'edizione.
+      </p>
+      {error && <div className="status-line error" style={{ marginTop: 8 }}>{error}</div>}
+      {lastAdded && <div className="add-card-ok small">✓ Aggiunta: {lastAdded}</div>}
+      {results && results.length === 0 && (
+        <div className="muted small" style={{ marginTop: 8 }}>
+          Nessuna carta trovata.
+        </div>
+      )}
+      {results && results.length > 0 && (
+        <div className="add-card-results">
+          {results.map((c) => {
+            const counts = BOARDS.map((b) => [b, inDeck(c.name, b)] as const).filter(
+              ([, n]) => n > 0,
+            );
+            return (
+              <div key={c.scryfallId ?? c.name} className="add-card-row deck-add-row">
+                <button type="button" className="acr-open" onClick={() => setOpened(c)}>
+                  {c.imageSmallUrl ? (
+                    <img src={c.imageSmallUrl} alt="" loading="lazy" />
+                  ) : (
+                    <span className="acr-noimg" />
+                  )}
+                  <span className="acr-main">
+                    <span className="acr-name">
+                      {c.printedName ?? c.name}{" "}
+                      {c.manaCost && <ManaCost cost={c.manaCost} size={13} />}
+                    </span>
+                    <span className="muted small">
+                      {c.printedName ? `${c.name} · ` : ""}
+                      {(c.setCode ?? "").toUpperCase()} · {formatPrice(c)}
+                      {counts.length > 0 &&
+                        ` · nel mazzo: ${counts.map(([b, n]) => `${n} ${BOARD_LABEL[b]}`).join(", ")}`}
+                    </span>
+                  </span>
+                </button>
+                <span className="dar-btns">
+                  {BOARDS.map((b) => (
+                    <button
+                      key={b}
+                      type="button"
+                      className={`ghost${b === "main" ? " dar-main" : ""}`}
+                      onClick={() => add(c, b)}
+                      title={`Aggiungi a ${BOARD_TITLE[b]}`}
+                    >
+                      +{BOARD_LABEL[b]}
+                    </button>
+                  ))}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {opened && <CardDetail card={opened} deckId={deckId} onClose={() => setOpened(null)} />}
+    </>
+  );
+}
+
+// --- Liste delle carte ---------------------------------------------------------
+
+/** Dove spostare con un tocco: dal main al side, dagli altri al main. */
+const QUICK_MOVE: Record<Board, Board[]> = {
+  main: ["side"],
+  side: ["main"],
+  maybe: ["main", "side"],
+};
+
 function CardList({
   title,
   cards,
-  deckId,
+  deck,
   board,
+  owned,
+  onOpen,
 }: {
   title: string;
-  cards: import("../decks").DeckCard[];
-  deckId: string;
+  cards: DeckCard[];
+  deck: SavedDeck;
   board: Board;
+  owned: Map<string, number>;
+  onOpen: (c: DeckCard) => void;
 }) {
   const decks = useDecks();
-  const deck = decks.get(deckId);
-  const cover = deck?.coverImageUrl;
-  const collection = useCollection();
-  const owned = useMemo(() => ownedByName(collection.entries), [collection.entries]);
-  const need = useMemo(() => (deck ? neededByName(deck) : new Map<string, number>()), [deck]);
-  const sorted = [...cards].sort(
-    (a, b) => a.cmc - b.cmc || a.name.localeCompare(b.name),
-  );
+  const cover = deck.coverImageUrl;
+  const need = useMemo(() => neededByName(deck), [deck]);
+  const sorted = [...cards].sort((a, b) => a.cmc - b.cmc || a.name.localeCompare(b.name));
   return (
-    <div style={{ marginTop: 14 }}>
+    <div className={`deck-board deck-board--${board}`}>
       <h2 className="section-title" style={{ fontSize: 16 }}>
         {title}
       </h2>
-      {sorted.length === 0 && <div className="muted small">Vuoto.</div>}
+      {sorted.length === 0 && (
+        <div className="muted small">
+          {board === "main"
+            ? "Vuoto: cerca una carta qui sopra."
+            : board === "side"
+              ? "Vuoto. Usa “→ Side” su una carta del main per spostarla qui."
+              : "Vuota. Metti qui le carte che stai valutando: non contano nel mazzo."}
+        </div>
+      )}
       <div className="deck-cardlist">
         {sorted.map((c) => {
-          const art = c.imageUrl ?? c.imageSmallUrl;
-          const isCover = !!art && cover === art;
+          const isCover =
+            !!cover && [c.artCropUrl, c.imageUrl, c.imageSmallUrl].includes(cover);
           return (
-          <div className="deck-line" key={c.id}>
-            <button
-              type="button"
-              className={`dl-thumb${isCover ? " is-cover" : ""}`}
-              title={isCover ? "Copertina del mazzo" : "Usa come copertina"}
-              onClick={() => decks.setCover(deckId, isCover ? undefined : art)}
-            >
-              {c.imageSmallUrl ? (
-                <img src={c.imageSmallUrl} alt="" loading="lazy" />
-              ) : (
-                <span className="dl-thumb-empty" />
+            <div className="deck-line" key={c.id}>
+              <button
+                type="button"
+                className={`dl-thumb${isCover ? " is-cover" : ""}`}
+                title="Apri la carta"
+                onClick={() => onOpen(c)}
+              >
+                {c.imageSmallUrl ? (
+                  <img src={c.imageSmallUrl} alt="" loading="lazy" />
+                ) : (
+                  <span className="dl-thumb-empty" />
+                )}
+                {isCover && <span className="dl-cover-star">★</span>}
+              </button>
+              <span className="dl-qty">{c.qty}×</span>
+              <button type="button" className="dl-name dl-open" onClick={() => onOpen(c)}>
+                <span>{c.name}</span>
+                {c.setCode && <span className="dl-set">{c.setCode.toUpperCase()}</span>}
+              </button>
+              {board !== "maybe" && (
+                <OwnBadge
+                  card={c}
+                  have={owned.get(c.name.toLowerCase()) ?? 0}
+                  need={need.get(c.name.toLowerCase()) ?? 0}
+                />
               )}
-              {isCover && <span className="dl-cover-star">★</span>}
-            </button>
-            <span className="dl-qty">{c.qty}×</span>
-            <span className="dl-name">{c.name}</span>
-            <OwnBadge card={c} have={owned.get(c.name.toLowerCase()) ?? 0} need={need.get(c.name.toLowerCase()) ?? 0} />
-            <span className="stepper">
-              <button
-                type="button"
-                onClick={() => decks.setQty(deckId, c.id, board, c.qty - 1)}
-              >
-                −
-              </button>
-              <button
-                type="button"
-                onClick={() => decks.setQty(deckId, c.id, board, c.qty + 1)}
-              >
-                +
-              </button>
-            </span>
-            <button
-              type="button"
-              className="ghost dl-remove"
-              onClick={() => decks.removeCard(deckId, c.id, board)}
-            >
-              ✕
-            </button>
-          </div>
+              <span className="stepper">
+                <button
+                  type="button"
+                  aria-label="Una copia in meno"
+                  onClick={() => decks.setQty(deck.id, c.id, board, c.qty - 1)}
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  aria-label="Una copia in più"
+                  onClick={() => decks.setQty(deck.id, c.id, board, c.qty + 1)}
+                >
+                  +
+                </button>
+              </span>
+              {QUICK_MOVE[board].map((to) => (
+                <button
+                  key={to}
+                  type="button"
+                  className="ghost dl-move"
+                  title={`Sposta una copia in ${BOARD_TITLE[to]}`}
+                  onClick={() => decks.moveCard(deck.id, c.id, board, to, 1)}
+                >
+                  → {BOARD_LABEL[to]}
+                </button>
+              ))}
+            </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+// --- Pedine -----------------------------------------------------------------
+
+// Immagini delle pedine già scaricate (in memoria, per tutta la sessione).
+const tokenImages = new Map<string, string | null>();
+
+function TokenList({
+  tokens,
+  loading,
+}: {
+  tokens: ReturnType<typeof deckTokens>;
+  loading: boolean;
+}) {
+  const [, force] = useState(0);
+  const [zoom, setZoom] = useState<string | null>(null);
+  useEffect(() => {
+    const todo = tokens.filter((t) => !tokenImages.has(t.id));
+    if (todo.length === 0) return;
+    todo.forEach((t) => tokenImages.set(t.id, null));
+    resolveIdentifiers(todo.map((t) => ({ id: t.id })))
+      .then((cards) => {
+        for (const c of cards)
+          if (c.scryfallId) tokenImages.set(c.scryfallId, c.imageUrl ?? c.imageSmallUrl ?? null);
+        force((n) => n + 1);
+      })
+      .catch(() => undefined);
+  }, [tokens]);
+
+  if (tokens.length === 0)
+    return (
+      <div className="muted small">
+        {loading ? "Controllo le pedine delle carte…" : "Nessuna carta del mazzo crea pedine."}
+      </div>
+    );
+  return (
+    <>
+      <div className="token-grid">
+        {tokens.map((t) => {
+          const img = tokenImages.get(t.id);
+          return (
+            <button
+              type="button"
+              key={t.id}
+              className={`token-item${t.inMain ? "" : " side-only"}`}
+              onClick={() => img && setZoom(img)}
+              title={`Creata da: ${t.from.join(", ")}`}
+            >
+              {img ? <img src={img} alt={t.name} loading="lazy" /> : <span className="token-noimg">{t.name}</span>}
+              <span className="token-name">{t.name}</span>
+              <span className="token-from muted">
+                da {t.from.join(", ")}
+                {!t.inMain && " (side)"}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      {zoom && (
+        <div className="modal-backdrop" onClick={() => setZoom(null)}>
+          <img className="token-zoom" src={zoom} alt="" />
+        </div>
+      )}
+    </>
+  );
+}
+
+// --- Copertina ---------------------------------------------------------------
+
+function CoverPicker({ deck, onClose }: { deck: SavedDeck; onClose: () => void }) {
+  const decks = useDecks();
+  const auto = autoCover(deck);
+  // Una sola opzione per carta (stessa illustrazione in main e side).
+  const seen = new Set<string>();
+  const options: { url: string; name: string }[] = [];
+  for (const c of [...deck.cards].sort((a, b) => Number(a.isLand) - Number(b.isLand) || b.cmc - a.cmc)) {
+    const url = c.artCropUrl ?? c.imageUrl;
+    if (!url || seen.has(url)) continue;
+    seen.add(url);
+    options.push({ url, name: c.name });
+  }
+  const pick = (url: string | undefined) => {
+    decks.setCover(deck.id, url);
+    onClose();
+  };
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal cover-picker" onClick={(e) => e.stopPropagation()}>
+        <button type="button" className="modal-close" onClick={onClose} aria-label="Chiudi">
+          ✕
+        </button>
+        <h2 style={{ margin: "0 0 4px" }}>Immagine del mazzo</h2>
+        <p className="muted small" style={{ margin: "0 0 10px" }}>
+          Scegli l'illustrazione di una carta del mazzo. Per un'altra illustrazione
+          della stessa carta, aprila e cambia edizione.
+        </p>
+        <div className="cover-grid">
+          <button
+            type="button"
+            className={`cover-opt${!deck.coverImageUrl ? " active" : ""}`}
+            onClick={() => pick(undefined)}
+          >
+            <span
+              className="cover-img"
+              style={auto ? { backgroundImage: `url(${auto})` } : undefined}
+            />
+            <span className="cover-name">Automatica</span>
+          </button>
+          {options.map((o) => (
+            <button
+              key={o.url}
+              type="button"
+              className={`cover-opt${deck.coverImageUrl === o.url ? " active" : ""}`}
+              onClick={() => pick(o.url)}
+            >
+              <span className="cover-img" style={{ backgroundImage: `url(${o.url})` }} />
+              <span className="cover-name">{o.name}</span>
+            </button>
+          ))}
+        </div>
+        {options.length === 0 && (
+          <div className="muted small">Aggiungi qualche carta al mazzo per scegliere l'immagine.</div>
+        )}
       </div>
     </div>
   );
@@ -505,10 +830,11 @@ function CardList({
 
 const isBasicLand = (c: DeckCard) => /\bBasic\b/.test(c.typeLine);
 
-/** Copie richieste per nome, sommando main e sideboard. */
+/** Copie richieste per nome, sommando main e sideboard (non la maybeboard). */
 function neededByName(deck: SavedDeck): Map<string, number> {
   const m = new Map<string, number>();
   for (const c of deck.cards) {
+    if (c.board === "maybe") continue;
     const k = c.name.toLowerCase();
     m.set(k, (m.get(k) ?? 0) + c.qty);
   }
@@ -521,7 +847,7 @@ function missingCards(deck: SavedDeck, owned: Map<string, number>) {
   let valueEur = 0;
   const list: { card: DeckCard; lack: number }[] = [];
   for (const [k, n] of neededByName(deck)) {
-    const card = deck.cards.find((c) => c.name.toLowerCase() === k)!;
+    const card = deck.cards.find((c) => c.name.toLowerCase() === k && c.board !== "maybe")!;
     if (isBasicLand(card)) continue;
     const lack = Math.max(0, n - (owned.get(k) ?? 0));
     if (lack > 0) list.push({ card, lack });

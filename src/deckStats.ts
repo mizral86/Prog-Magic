@@ -2,18 +2,30 @@
 
 import { DeckCard, Format, SavedDeck } from "./decks";
 import { bestPrice } from "./prices";
-import { CardCategory, Color } from "./types";
+import { CardCategory, Color, TokenRef } from "./types";
 
 export interface Bucket {
   label: string;
   count: number;
 }
 
+export interface CurveBucket extends Bucket {
+  /** Di cui creature. */
+  creatures: number;
+}
+
 export interface DeckStats {
   mainCount: number;
   sideCount: number;
+  maybeCount: number;
   landCount: number;
-  curve: Bucket[]; // magie (non terre) del main per CMC
+  curve: CurveBucket[]; // magie (non terre) del main per CMC
+  /** CMC medio delle magie del main. */
+  avgCmc: number;
+  /** Tipi di creatura del main (Elfo, Goblin…), dal più frequente. */
+  creatureTypes: Bucket[];
+  /** Valore della maybeboard (non conta nel prezzo del mazzo). */
+  maybePriceEur: number;
   colors: Record<Color, number>; // copie main che includono quel colore
   colorless: number;
   types: Bucket[];
@@ -52,10 +64,15 @@ function primaryType(c: DeckCard): CardCategory {
 export function deckStats(deck: SavedDeck): DeckStats {
   const main = deck.cards.filter((c) => c.board === "main");
   const side = deck.cards.filter((c) => c.board === "side");
+  const maybe = deck.cards.filter((c) => c.board === "maybe");
 
   const curveMap = new Map<string, number>(
     ["0", "1", "2", "3", "4", "5", "6", "7+"].map((k) => [k, 0]),
   );
+  const curveCre = new Map<string, number>();
+  const ctypes = new Map<string, number>();
+  let cmcSum = 0;
+  let spellN = 0;
   const colors: Record<Color, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 };
   let colorless = 0;
   const typeMap = new Map<CardCategory, number>();
@@ -66,7 +83,13 @@ export function deckStats(deck: SavedDeck): DeckStats {
     else {
       const key = c.cmc >= 7 ? "7+" : String(Math.floor(c.cmc));
       curveMap.set(key, (curveMap.get(key) ?? 0) + c.qty);
+      if (c.categories.includes("creature"))
+        curveCre.set(key, (curveCre.get(key) ?? 0) + c.qty);
+      cmcSum += c.cmc * c.qty;
+      spellN += c.qty;
     }
+    for (const t of creatureSubtypes(c.typeLine))
+      ctypes.set(t, (ctypes.get(t) ?? 0) + c.qty);
     if ((c.colors?.length ?? 0) === 0 && !c.isLand) colorless += c.qty;
     for (const col of c.colors ?? []) colors[col] += c.qty;
     const t = primaryType(c);
@@ -75,18 +98,28 @@ export function deckStats(deck: SavedDeck): DeckStats {
 
   let totalPriceEur = 0;
   let missingPrice = 0;
-  for (const c of deck.cards) {
-    const p = bestPrice({ prices: c.prices } as any);
-    if (p && p.currency === "EUR") totalPriceEur += p.value * c.qty;
-    else if (c.prices?.eur != null) totalPriceEur += c.prices.eur * c.qty;
+  for (const c of [...main, ...side]) {
+    const p = eurOf(c);
+    if (p != null) totalPriceEur += p * c.qty;
     else missingPrice += c.qty;
   }
+  const maybePriceEur = maybe.reduce((s, c) => s + (eurOf(c) ?? 0) * c.qty, 0);
 
   return {
     mainCount: main.reduce((s, c) => s + c.qty, 0),
     sideCount: side.reduce((s, c) => s + c.qty, 0),
+    maybeCount: maybe.reduce((s, c) => s + c.qty, 0),
     landCount,
-    curve: [...curveMap].map(([label, count]) => ({ label, count })),
+    curve: [...curveMap].map(([label, count]) => ({
+      label,
+      count,
+      creatures: curveCre.get(label) ?? 0,
+    })),
+    avgCmc: spellN ? cmcSum / spellN : 0,
+    creatureTypes: [...ctypes]
+      .map(([label, count]) => ({ label, count }))
+      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label)),
+    maybePriceEur,
     colors,
     colorless,
     types: TYPE_ORDER.filter((t) => (typeMap.get(t) ?? 0) > 0).map((t) => ({
@@ -96,6 +129,54 @@ export function deckStats(deck: SavedDeck): DeckStats {
     totalPriceEur,
     missingPrice,
   };
+}
+
+function eurOf(c: DeckCard): number | undefined {
+  const p = bestPrice({ prices: c.prices } as any);
+  if (p && p.currency === "EUR") return p.value;
+  return c.prices?.eur ?? undefined;
+}
+
+/**
+ * Tipi di creatura dalla riga del tipo ("Legendary Creature — Elf Druid" →
+ * Elf, Druid). Per le carte doppie conta ogni faccia creatura una volta.
+ */
+export function creatureSubtypes(typeLine: string): string[] {
+  const out = new Set<string>();
+  for (const face of typeLine.split(" // ")) {
+    const [types, subs] = face.split(" — ");
+    if (!subs || !/\bCreature\b/.test(types)) continue;
+    for (const t of subs.trim().split(/\s+/)) if (t) out.add(t);
+  }
+  return [...out];
+}
+
+// --- Pedine generate dalle carte del mazzo ----------------------------------
+
+export interface DeckToken extends TokenRef {
+  /** Carte del mazzo che la creano (nomi). */
+  from: string[];
+  /** Almeno una delle carte che la creano è nel main. */
+  inMain: boolean;
+}
+
+/** Pedine create dalle carte di main e side (la maybeboard non conta). */
+export function deckTokens(deck: SavedDeck): DeckToken[] {
+  const map = new Map<string, DeckToken>();
+  for (const c of deck.cards) {
+    if (c.board === "maybe") continue;
+    for (const t of c.tokens ?? []) {
+      // Stesso nome e tipo = stessa pedina, anche se di stampe diverse.
+      const key = `${t.name}|${t.typeLine ?? ""}`;
+      const cur = map.get(key) ?? { ...t, from: [], inMain: false };
+      if (!cur.from.includes(c.name)) cur.from.push(c.name);
+      if (c.board === "main") cur.inMain = true;
+      map.set(key, cur);
+    }
+  }
+  return [...map.values()].sort(
+    (a, b) => Number(b.inMain) - Number(a.inMain) || a.name.localeCompare(b.name),
+  );
 }
 
 // --- Analisi single-deck (linee guida euristiche, non regole assolute) -------
@@ -248,8 +329,9 @@ export function legalityIssues(deck: SavedDeck): LegalityIssue[] {
   const mainCount = main.reduce((s, c) => s + c.qty, 0);
   const sideCount = side.reduce((s, c) => s + c.qty, 0);
 
-  // Legalità delle singole carte nel formato.
-  for (const c of deck.cards) {
+  // Legalità delle singole carte nel formato (la maybeboard non conta).
+  const played = [...main, ...side];
+  for (const c of played) {
     const status = c.legalities?.[f];
     if (status === "banned")
       issues.push({ level: "error", text: `${c.name}: bandita in ${f}.` });
@@ -263,7 +345,7 @@ export function legalityIssues(deck: SavedDeck): LegalityIssue[] {
   const singleton = f === "commander";
   const maxCopies = singleton ? 1 : 4;
   const totals = new Map<string, number>();
-  for (const c of deck.cards) {
+  for (const c of played) {
     if (isBasicLand(c)) continue;
     totals.set(c.name, (totals.get(c.name) ?? 0) + c.qty);
   }

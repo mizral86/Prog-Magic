@@ -61,6 +61,10 @@ export interface CardInfo {
   imageSmallUrl?: string;
   /** Immagine ad alta risoluzione per lo zoom. */
   imageLargeUrl?: string;
+  /** Solo l'illustrazione (senza cornice), per le copertine. */
+  artCropUrl?: string;
+  /** Pedine (e emblemi) che la carta può creare, da Scryfall all_parts. */
+  tokens?: TokenRef[];
   /** ID Scryfall della stampa (utile come chiave). */
   scryfallId?: string;
   rarity?: string;
@@ -95,4 +99,11 @@ export interface Deck {
   unresolved: string[];
   /** Numero totale di carte nel mazzo principale. */
   size: number;
+}
+
+/** Riferimento a una pedina generata da una carta (Scryfall all_parts). */
+export interface TokenRef {
+  id: string;
+  name: string;
+  typeLine?: string;
 }
