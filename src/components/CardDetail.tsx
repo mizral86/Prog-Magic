@@ -8,10 +8,13 @@ import { useCollection } from "../collection";
 import { useWishlist } from "../wishlist";
 import { ManaCost } from "./ManaSymbol";
 import { findSimilar, SimilarResult } from "../similar";
+import { AddToDeckBox } from "./AddToDeckBox";
 
 interface CardDetailProps {
   card: CardInfo;
   onClose: () => void;
+  /** Mazzo proposto nel riquadro "Aggiungi al mazzo" (aperto dall'editor). */
+  deckId?: string;
 }
 
 interface StackEntry {
@@ -27,7 +30,7 @@ interface StackEntry {
  * "Chiudi" (o "← Torna a…") riporta alla scheda di partenza con i
  * suggerimenti ancora aperti; solo dalla prima scheda si chiude davvero.
  */
-export function CardDetail({ card, onClose }: CardDetailProps) {
+export function CardDetail({ card, onClose, deckId }: CardDetailProps) {
   const [stack, setStack] = useState<StackEntry[]>([{ card }]);
   useEffect(() => {
     setStack([{ card }]);
@@ -44,6 +47,7 @@ export function CardDetail({ card, onClose }: CardDetailProps) {
     <CardDetailView
       key={`${stack.length}:${top.card.scryfallId ?? top.card.name}`}
       card={top.card}
+      deckId={deckId}
       similar={top.similar}
       returned={top.returned}
       onSimilar={(r) =>
@@ -76,6 +80,7 @@ function CardDetailView({
   similar,
   onSimilar,
   returned,
+  deckId,
 }: CardDetailViewProps) {
   const [shown, setShown] = useState<CardInfo>(card);
   const [printings, setPrintings] = useState<CardInfo[] | null>(null);
@@ -242,6 +247,8 @@ function CardDetailView({
                 )}
               </div>
             </div>
+
+            <AddToDeckBox card={shown} deckId={deckId} />
 
             {owned && (
               <label className="binder-pick">

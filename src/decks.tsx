@@ -8,9 +8,15 @@ import {
   useMemo,
   useState,
 } from "react";
-import { CardCategory, CardInfo, Color } from "./types";
+import { CardCategory, CardInfo, Color, TokenRef } from "./types";
 
-export type Board = "main" | "side";
+export type Board = "main" | "side" | "maybe";
+export const BOARDS: Board[] = ["main", "side", "maybe"];
+export const BOARD_LABEL: Record<Board, string> = {
+  main: "Main",
+  side: "Side",
+  maybe: "Maybe",
+};
 
 export const FORMATS = [
   "standard",
@@ -34,6 +40,16 @@ export interface DeckCard {
   categories: CardCategory[];
   imageSmallUrl?: string;
   imageUrl?: string;
+  /** Solo illustrazione, per la copertina del mazzo. */
+  artCropUrl?: string;
+  manaCost?: string;
+  /** Nome stampato (es. italiano) se diverso da quello inglese. */
+  printedName?: string;
+  setCode?: string;
+  setName?: string;
+  collectorNumber?: string;
+  /** Pedine create dalla carta; undefined = dati non ancora scaricati. */
+  tokens?: TokenRef[];
   prices?: CardInfo["prices"];
   legalities?: Record<string, string>;
   qty: number;
@@ -73,6 +89,10 @@ function uid(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 }
 
+export function isScryfallId(id: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id);
+}
+
 function cardKey(card: CardInfo): string {
   return card.scryfallId ?? card.name.toLowerCase();
 }
@@ -89,6 +109,13 @@ function toDeckCard(card: CardInfo, board: Board, qty: number): DeckCard {
     categories: card.categories,
     imageSmallUrl: card.imageSmallUrl,
     imageUrl: card.imageUrl,
+    artCropUrl: card.artCropUrl,
+    manaCost: card.manaCost,
+    printedName: card.printedName,
+    setCode: card.setCode,
+    setName: card.setName,
+    collectorNumber: card.collectorNumber,
+    tokens: card.tokens ?? [],
     prices: card.prices,
     legalities: card.legalities,
     qty,
@@ -108,6 +135,24 @@ interface DecksCtx {
   removeCard: (deckId: string, cardId: string, board: Board) => void;
   replaceCards: (deckId: string, cards: DeckCard[]) => void;
   setCover: (deckId: string, url: string | undefined) => void;
+  /** Sposta `qty` copie (tutte se omesso) da una sezione all'altra. */
+  moveCard: (deckId: string, cardId: string, from: Board, to: Board, qty?: number) => void;
+  /** Sostituisce la stampa (edizione) di una carta, tenendo quantità e sezione. */
+  changePrinting: (deckId: string, cardId: string, board: Board, card: CardInfo) => void;
+  /** Aggiorna i dati (pedine, immagini, prezzi) delle carte già nel mazzo. */
+  refreshCards: (deckId: string, cards: CardInfo[]) => void;
+}
+
+/** Unisce le voci con stesso id e sezione (dopo spostamenti o cambi di stampa). */
+function mergeSame(cards: DeckCard[]): DeckCard[] {
+  const out: DeckCard[] = [];
+  for (const c of cards) {
+    if (c.qty <= 0) continue;
+    const same = out.find((o) => o.id === c.id && o.board === c.board);
+    if (same) same.qty += c.qty;
+    else out.push({ ...c });
+  }
+  return out;
 }
 
 const Ctx = createContext<DecksCtx | null>(null);
@@ -177,6 +222,54 @@ export function DecksProvider({ children }: { children: ReactNode }) {
         })),
       replaceCards: (deckId, cards) => mutate(deckId, (d) => ({ ...d, cards })),
       setCover: (deckId, url) => mutate(deckId, (d) => ({ ...d, coverImageUrl: url })),
+      moveCard: (deckId, cardId, from, to, qty) =>
+        mutate(deckId, (d) => {
+          if (from === to) return d;
+          const src = d.cards.find((c) => c.id === cardId && c.board === from);
+          if (!src) return d;
+          const n = Math.min(src.qty, qty ?? src.qty);
+          const cards = d.cards.map((c) => (c === src ? { ...c, qty: c.qty - n } : c));
+          cards.push({ ...src, board: to, qty: n });
+          return { ...d, cards: mergeSame(cards) };
+        }),
+      changePrinting: (deckId, cardId, board, card) =>
+        mutate(deckId, (d) => {
+          const old = d.cards.find((c) => c.id === cardId && c.board === board);
+          if (!old) return d;
+          const fresh = toDeckCard(card, board, old.qty);
+          // La copertina segue la carta se era la sua illustrazione.
+          const wasCover =
+            !!d.coverImageUrl &&
+            [old.artCropUrl, old.imageUrl, old.imageSmallUrl].includes(d.coverImageUrl);
+          const cards = d.cards.map((c) => (c === old ? fresh : c));
+          return {
+            ...d,
+            cards: mergeSame(cards),
+            coverImageUrl: wasCover
+              ? fresh.artCropUrl ?? fresh.imageUrl
+              : d.coverImageUrl,
+          };
+        }),
+      refreshCards: (deckId, fresh) =>
+        mutate(deckId, (d) => {
+          const byId = new Map<string, CardInfo>();
+          const byName = new Map<string, CardInfo>();
+          for (const c of fresh) {
+            if (c.scryfallId) byId.set(c.scryfallId, c);
+            byName.set(c.name.toLowerCase(), c);
+          }
+          const cards = d.cards.map((c) => {
+            const f = isScryfallId(c.id)
+              ? byId.get(c.id)
+              : byName.get(c.name.toLowerCase());
+            if (!f) return c.tokens ? c : { ...c, tokens: [] };
+            return {
+              ...toDeckCard(f, c.board, c.qty),
+              printedName: c.printedName ?? f.printedName,
+            };
+          });
+          return { ...d, cards: mergeSame(cards) };
+        }),
     };
   }, [map]);
 
@@ -198,11 +291,16 @@ export function makeDeckCard(card: CardInfo, board: Board, qty: number): DeckCar
 // l'art della carta non-terra più costosa del main (la "bomba" del mazzo).
 export function deckCoverUrl(deck: SavedDeck): string | undefined {
   if (deck.coverImageUrl) return deck.coverImageUrl;
+  return autoCover(deck);
+}
+
+/** Copertina automatica: illustrazione della carta non-terra più cara di mana. */
+export function autoCover(deck: SavedDeck): string | undefined {
   const main = deck.cards.filter((c) => c.board === "main");
   const pool = main.filter((c) => !c.isLand);
   const pick = (pool.length ? pool : main).reduce<DeckCard | undefined>(
     (best, c) => (!best || c.cmc > best.cmc ? c : best),
     undefined,
   );
-  return pick?.imageUrl ?? pick?.imageSmallUrl;
+  return pick?.artCropUrl ?? pick?.imageUrl ?? pick?.imageSmallUrl;
 }

@@ -4,7 +4,7 @@
 //
 // Docs: https://scryfall.com/docs/api/cards/collection
 
-import { CardCategory, CardInfo, Color, COLORS, ManaAbility } from "./types";
+import { CardCategory, CardInfo, Color, COLORS, ManaAbility, TokenRef } from "./types";
 
 const COLLECTION_URL = "https://api.scryfall.com/cards/collection";
 const CHUNK = 75;
@@ -18,8 +18,15 @@ interface ScryCardFace {
   power?: string;
   toughness?: string;
   loyalty?: string;
-  image_uris?: { normal?: string; small?: string; large?: string; png?: string };
+  image_uris?: ImageUris;
 }
+type ImageUris = {
+  normal?: string;
+  small?: string;
+  large?: string;
+  png?: string;
+  art_crop?: string;
+};
 interface ScryCard {
   id?: string;
   name: string;
@@ -32,8 +39,9 @@ interface ScryCard {
   colors?: string[];
   color_identity?: string[];
   produced_mana?: string[];
-  image_uris?: { normal?: string; small?: string; large?: string; png?: string };
+  image_uris?: ImageUris;
   card_faces?: ScryCardFace[];
+  all_parts?: { id: string; component: string; name: string; type_line?: string }[];
   rarity?: string;
   set?: string;
   set_name?: string;
@@ -198,6 +206,12 @@ function toCardInfo(card: ScryCard): CardInfo {
     undefined;
   const imageSmallUrl =
     card.image_uris?.small ?? front?.image_uris?.small ?? undefined;
+  const artCropUrl =
+    card.image_uris?.art_crop ?? front?.image_uris?.art_crop ?? undefined;
+  // Pedine ed emblemi che la carta crea (escluse le altre parti, es. meld/combo).
+  const tokens: TokenRef[] = (card.all_parts ?? [])
+    .filter((p) => p.component === "token" && p.id !== card.id)
+    .map((p) => ({ id: p.id, name: p.name, typeLine: p.type_line }));
   const oracleText =
     card.oracle_text ??
     card.card_faces?.map((f) => f.oracle_text ?? "").join("\n") ??
@@ -230,6 +244,8 @@ function toCardInfo(card: ScryCard): CardInfo {
     imageUrl,
     imageSmallUrl,
     imageLargeUrl,
+    artCropUrl,
+    tokens,
     scryfallId: card.id,
     rarity: card.rarity,
     setCode: card.set,
@@ -556,6 +572,11 @@ export function cardBySetNumber(
 ): Promise<CardInfo | null> {
   const base = `/cards/${encodeURIComponent(set.toLowerCase())}/${encodeURIComponent(number)}`;
   return getCard(lang && lang !== "en" ? `${base}/${lang}` : base);
+}
+
+/** Una stampa precisa dal suo ID Scryfall. */
+export function cardById(id: string): Promise<CardInfo | null> {
+  return getCard(`/cards/${encodeURIComponent(id)}`);
 }
 
 /** Carta dal nome, anche scritto in modo impreciso (ricerca "fuzzy" in inglese). */
