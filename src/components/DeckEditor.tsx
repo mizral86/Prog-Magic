@@ -75,7 +75,9 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
   useEffect(() => {
     if (!deck) return;
     const todo = deck.cards.filter(
-      (c) => c.tokens === undefined && !enriching.current.has(c.id),
+      (c) =>
+        (c.tokens === undefined || c.drawRamp === undefined) &&
+        !enriching.current.has(c.id),
     );
     if (todo.length === 0) return;
     todo.forEach((c) => enriching.current.add(c.id));
@@ -431,10 +433,6 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
                     </div>
                   ))}
                 </div>
-                <p className="muted small" style={{ margin: "8px 0 0" }}>
-                  Linee guida euristiche (mano iniziale via ipergeometrica), non
-                  regole assolute.
-                </p>
               </div>
             )}
           </div>
@@ -454,10 +452,6 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
                 ))}
               </ul>
             )}
-            <p className="muted small" style={{ marginTop: 8 }}>
-              Controlli basati sui dati di legalità di Scryfall e su regole base
-              (copie, dimensione mazzo). La maybeboard non conta.
-            </p>
           </div>
         </div>
       )}
@@ -487,6 +481,19 @@ function AddCardSearch({ deckId }: { deckId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [lastAdded, setLastAdded] = useState<string | null>(null);
   const [opened, setOpened] = useState<CardInfo | null>(null);
+  const collection = useCollection();
+
+  function closeSearch() {
+    setQuery("");
+    setResults(null);
+    setError(null);
+    setLastAdded(null);
+  }
+
+  function addToCollection(c: CardInfo) {
+    collection.add(c, { foil: false });
+    setLastAdded(`${c.printedName ?? c.name} → Collezione`);
+  }
 
   async function doSearch(e?: FormEvent) {
     e?.preventDefault();
@@ -530,11 +537,25 @@ function AddCardSearch({ deckId }: { deckId: string }) {
         <button className="primary" type="submit" disabled={searching || !query.trim()}>
           {searching ? "Cerco…" : "Cerca"}
         </button>
+        {(results || query) && (
+          <button
+            type="button"
+            className="ghost search-close"
+            onClick={closeSearch}
+            aria-label="Chiudi la ricerca"
+            title="Chiudi la ricerca"
+          >
+            ✕ Chiudi
+          </button>
+        )}
       </form>
-      <p className="muted small" style={{ margin: "6px 0 0" }}>
-        <strong>+Main</strong>, <strong>+Side</strong> o <strong>+Maybe</strong> aggiungono
-        una copia. Tocca la carta per vederla e sceglierne l'edizione.
-      </p>
+      {results && (
+        <p className="muted small" style={{ margin: "6px 0 0" }}>
+          <strong>+Main</strong>, <strong>+Side</strong> o <strong>+Maybe</strong> aggiungono
+          una copia al mazzo, <strong>+Coll.</strong> alla collezione. Tocca la carta per
+          vederla e sceglierne l'edizione.
+        </p>
+      )}
       {error && <div className="status-line error" style={{ marginTop: 8 }}>{error}</div>}
       {lastAdded && <div className="add-card-ok small">✓ Aggiunta: {lastAdded}</div>}
       {results && results.length === 0 && (
@@ -545,6 +566,8 @@ function AddCardSearch({ deckId }: { deckId: string }) {
       {results && results.length > 0 && (
         <div className="add-card-results">
           {results.map((c) => {
+            const own = c.scryfallId ? collection.get(c.scryfallId) : undefined;
+            const ownN = own ? own.qty + own.foilQty : 0;
             const counts = BOARDS.map((b) => [b, inDeck(c.name, b)] as const).filter(
               ([, n]) => n > 0,
             );
@@ -566,6 +589,7 @@ function AddCardSearch({ deckId }: { deckId: string }) {
                       {(c.setCode ?? "").toUpperCase()} · {formatPrice(c)}
                       {counts.length > 0 &&
                         ` · nel mazzo: ${counts.map(([b, n]) => `${n} ${BOARD_LABEL[b]}`).join(", ")}`}
+                      {ownN > 0 && ` · in collezione: ${ownN}`}
                     </span>
                   </span>
                 </button>
@@ -581,6 +605,14 @@ function AddCardSearch({ deckId }: { deckId: string }) {
                       +{BOARD_LABEL[b]}
                     </button>
                   ))}
+                  <button
+                    type="button"
+                    className="ghost dar-coll"
+                    onClick={() => addToCollection(c)}
+                    title="Aggiungi una copia alla collezione"
+                  >
+                    +Coll.
+                  </button>
                 </span>
               </div>
             );
