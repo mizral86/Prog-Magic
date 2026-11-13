@@ -69,6 +69,8 @@ export interface SavedDeck {
   updatedAt: number;
   /** URL immagine di copertina (art di una carta scelta dall'utente). */
   coverImageUrl?: string;
+  /** Ultimo aggiornamento dei prezzi da Scryfall (ms). */
+  pricesAt?: number;
   /** Note libere sul mazzo (strategia, piano di side…). */
   notes?: string;
 }
@@ -152,6 +154,8 @@ interface DecksCtx {
   replaceCards: (deckId: string, cards: DeckCard[]) => void;
   setCover: (deckId: string, url: string | undefined) => void;
   setNotes: (deckId: string, notes: string) => void;
+  /** Nuovi prezzi per carta (id → prezzi), e segna l'ora dell'aggiornamento. */
+  updatePrices: (deckId: string, prices: Map<string, CardInfo["prices"]>) => void;
   /** Sposta `qty` copie (tutte se omesso) da una sezione all'altra. */
   moveCard: (deckId: string, cardId: string, from: Board, to: Board, qty?: number) => void;
   /** Sostituisce la stampa (edizione) di una carta, tenendo quantità e sezione. */
@@ -240,6 +244,20 @@ export function DecksProvider({ children }: { children: ReactNode }) {
       replaceCards: (deckId, cards) => mutate(deckId, (d) => ({ ...d, cards })),
       setCover: (deckId, url) => mutate(deckId, (d) => ({ ...d, coverImageUrl: url })),
       setNotes: (deckId, notes) => mutate(deckId, (d) => ({ ...d, notes })),
+      updatePrices: (deckId, prices) =>
+        setMap((prev) => {
+          const d = prev[deckId];
+          if (!d) return prev;
+          // Non cambia updatedAt: è un aggiornamento automatico, non una modifica.
+          return {
+            ...prev,
+            [deckId]: {
+              ...d,
+              pricesAt: Date.now(),
+              cards: d.cards.map((c) => (prices.has(c.id) ? { ...c, prices: prices.get(c.id) } : c)),
+            },
+          };
+        }),
       moveCard: (deckId, cardId, from, to, qty) =>
         mutate(deckId, (d) => {
           if (from === to) return d;

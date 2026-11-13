@@ -83,6 +83,21 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
       .finally(() => setEnrichBusy(false));
   }, [deck, deckId, decks]);
 
+  // Prezzi: una volta al giorno si rileggono da Scryfall. Le stampe senza
+  // prezzo in euro (spesso quelle in italiano o promo) prendono il prezzo
+  // della stampa inglese più comune della stessa carta.
+  const pricing = useRef(false);
+  useEffect(() => {
+    if (!deck || pricing.current || deck.cards.length === 0) return;
+    const stale = !deck.pricesAt || Date.now() - deck.pricesAt > 20 * 3600 * 1000;
+    const noEur = deck.cards.some((c) => c.prices?.eur == null && !/\bBasic\b/.test(c.typeLine));
+    if (!stale && !noEur) return;
+    pricing.current = true;
+    refreshDeckPrices(deck)
+      .then((m) => decks.updatePrices(deckId, m))
+      .catch(() => undefined);
+  }, [deck, deckId, decks]);
+
   if (!deck || !stats) {
     return (
       <div className="page">
@@ -124,8 +139,14 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
           </div>
         </div>
         <span className="deck-head-price">{formatMoney(stats.totalPriceEur, "EUR")}</span>
-        <button type="button" className="deck-head-cover" onClick={() => setCoverOpen(true)}>
-          🖼 Immagine
+        <button
+          type="button"
+          className="deck-head-cover"
+          onClick={() => setCoverOpen(true)}
+          aria-label="Cambia immagine del mazzo"
+          title="Cambia immagine del mazzo"
+        >
+          🖼
         </button>
       </header>
 
@@ -171,6 +192,29 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
       {coverOpen && <CoverPicker deck={deck} onClose={() => setCoverOpen(false)} />}
     </div>
   );
+}
+
+/** Prezzi aggiornati per ogni carta del mazzo (id → prezzi). */
+async function refreshDeckPrices(deck: SavedDeck): Promise<Map<string, DeckCard["prices"]>> {
+  const out = new Map<string, DeckCard["prices"]>();
+  const ids = [...new Set(deck.cards.map((c) => c.id).filter(isScryfallId))];
+  if (ids.length) {
+    for (const c of await resolveIdentifiers(ids.map((id) => ({ id }))))
+      if (c.scryfallId) out.set(c.scryfallId, c.prices);
+  }
+  // Senza euro: prezzo della stampa predefinita (inglese) cercata per nome.
+  const missing = deck.cards.filter((c) => (out.get(c.id) ?? c.prices)?.eur == null);
+  const names = [...new Set(missing.map((c) => c.name))];
+  if (names.length) {
+    const byName = new Map<string, DeckCard["prices"]>();
+    for (const c of await resolveIdentifiers(names.map((name) => ({ name }))))
+      byName.set(c.name.toLowerCase(), c.prices);
+    for (const c of missing) {
+      const ref = byName.get(c.name.toLowerCase());
+      if (ref?.eur != null) out.set(c.id, { ...(out.get(c.id) ?? c.prices), eur: ref.eur });
+    }
+  }
+  return out;
 }
 
 // --- Scheda Carte ---------------------------------------------------------------
@@ -338,7 +382,6 @@ function BoardList({
               const art = c.artCropUrl ?? c.imageSmallUrl;
               const isCover = !!cover && [c.artCropUrl, c.imageUrl, c.imageSmallUrl].includes(cover);
               const eur = c.prices?.eur;
-              const price = eur ?? c.prices?.usd;
               return (
                 <div className="dk-row" key={c.id}>
                   <button
@@ -348,8 +391,10 @@ function BoardList({
                     aria-label={`Apri ${c.name}`}
                     style={art ? { backgroundImage: `url(${art})` } : undefined}
                   >
-                    {price != null && (
-                      <span className="dk-price">{formatMoney(price, eur != null ? "EUR" : "USD")}</span>
+                    {eur != null && (
+                      <span className="dk-price" title={c.qty > 1 ? `${c.qty} copie: ${formatMoney(eur * c.qty, "EUR")}` : undefined}>
+                        {formatMoney(eur, "EUR")}
+                      </span>
                     )}
                     {isCover && <span className="dk-cover">★</span>}
                   </button>

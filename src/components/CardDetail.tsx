@@ -108,6 +108,11 @@ function CardDetailView({
   }
   const collection = useCollection();
   const owned = shown.scryfallId ? collection.get(shown.scryfallId) : undefined;
+  // Copie della stampa aperta all'inizio: si possono spostare su un'altra edizione.
+  const fromEntry = card.scryfallId ? collection.get(card.scryfallId) : undefined;
+  const ownedPrints = new Map<string, number>();
+  for (const e of collection.entries)
+    if (e.name === card.name) ownedPrints.set(e.id, e.qty + e.foilQty);
   const wishlist = useWishlist();
   const wishId = shown.scryfallId ?? shown.name.toLowerCase();
   const inWishlist = wishlist.has(wishId);
@@ -316,7 +321,56 @@ function CardDetailView({
               </div>
             )}
 
+            {fromEntry && shown.scryfallId && shown.scryfallId !== fromEntry.id && (
+              <div className="collect-box move-print">
+                <div className="collect-status">
+                  Cambia edizione alle tue copie di{" "}
+                  <strong>
+                    {(fromEntry.setCode ?? "").toUpperCase()} #{fromEntry.collectorNumber}
+                  </strong>{" "}
+                  ({fromEntry.qty} normali · {fromEntry.foilQty} foil): spostale su{" "}
+                  <strong>
+                    {(shown.setCode ?? "").toUpperCase()} #{shown.collectorNumber}
+                  </strong>
+                </div>
+                <div className="collect-actions">
+                  {fromEntry.qty > 0 && (
+                    <button
+                      type="button"
+                      className="ghost"
+                      onClick={() => collection.moveToPrinting(fromEntry.id, shown, 1, false)}
+                    >
+                      ⇄ 1 normale
+                    </button>
+                  )}
+                  {fromEntry.qty > 1 && (
+                    <button
+                      type="button"
+                      className="ghost"
+                      onClick={() => collection.moveToPrinting(fromEntry.id, shown, fromEntry.qty, false)}
+                    >
+                      ⇄ Tutte le normali ({fromEntry.qty})
+                    </button>
+                  )}
+                  {fromEntry.foilQty > 0 && (
+                    <button
+                      type="button"
+                      className="ghost"
+                      onClick={() => collection.moveToPrinting(fromEntry.id, shown, 1, true)}
+                    >
+                      ⇄ 1 foil
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             <h3 className="mini-title">Stampe / edizioni</h3>
+            {ownedPrints.size > 0 && (
+              <p className="muted small" style={{ margin: "0 0 6px" }}>
+                Le edizioni con ✓ sono nella tua collezione. Puoi avere più edizioni della stessa carta.
+              </p>
+            )}
             {loading && <div className="muted small">Carico le stampe…</div>}
             {printings && printings.length > 0 && (
               <div className="printings">
@@ -335,6 +389,9 @@ function CardDetailView({
                         {(pr.setCode ?? "").toUpperCase()}
                         <span className="muted"> #{pr.collectorNumber}</span>
                       </span>
+                      {pr.scryfallId && ownedPrints.has(pr.scryfallId) && (
+                        <span className="powned">✓ {ownedPrints.get(pr.scryfallId)}</span>
+                      )}
                       <span className="pprice">
                         {p ? formatMoney(p.value, p.currency) : "—"}
                       </span>

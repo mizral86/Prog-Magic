@@ -104,6 +104,8 @@ interface CollectionCtx {
   get: (id: string) => CollectionEntry | undefined;
   add: (card: CardInfo, opts?: { foil?: boolean; qty?: number }) => void;
   setQty: (id: string, qty: number) => void;
+  /** Cambia edizione a `qty` copie: le toglie da `fromId` e le mette sulla stampa `card`. */
+  moveToPrinting: (fromId: string, card: CardInfo, qty: number, foil: boolean) => void;
   setFoilQty: (id: string, qty: number) => void;
   remove: (id: string) => void;
   clear: () => void;
@@ -182,6 +184,62 @@ export function CollectionProvider({ children }: { children: ReactNode }) {
               qty: foil ? 0 : n,
               foilQty: foil ? n : 0,
               addedAt: Date.now(),
+            };
+          }
+          return next;
+        });
+      },
+      moveToPrinting: (fromId, card, qty, foil) => {
+        const toId = card.scryfallId;
+        if (!toId || toId === fromId || qty <= 0) return;
+        let binder: string | undefined;
+        let moved = 0;
+        setMap((prev) => {
+          const e = prev[fromId];
+          if (!e) return prev;
+          moved = Math.min(qty, foil ? e.foilQty : e.qty);
+          if (moved <= 0) return prev;
+          binder = e.binder;
+          const next = { ...prev };
+          next[fromId] = foil ? { ...e, foilQty: e.foilQty - moved } : { ...e, qty: e.qty - moved };
+          cleanup(next, fromId);
+          return next;
+        });
+        setMap((prev) => {
+          if (moved <= 0) return prev;
+          const next = { ...prev };
+          const ex = next[toId];
+          if (ex) {
+            next[toId] = {
+              ...ex,
+              qty: ex.qty + (foil ? 0 : moved),
+              foilQty: ex.foilQty + (foil ? moved : 0),
+              binder: ex.binder ?? binder,
+            };
+          } else {
+            next[toId] = {
+              id: toId,
+              name: card.name,
+              setCode: card.setCode,
+              setName: card.setName,
+              collectorNumber: card.collectorNumber,
+              imageSmallUrl: card.imageSmallUrl,
+              imageUrl: card.imageUrl,
+              colors: card.colors,
+              colorIdentity: card.colorIdentity,
+              rarity: card.rarity,
+              cmc: card.cmc,
+              typeLine: card.typeLine,
+              isLand: card.isLand,
+              prices: card.prices,
+              priceHistory: recordPoint([], card.prices),
+              addedPrices: card.prices
+                ? { eur: card.prices.eur, eurFoil: card.prices.eurFoil }
+                : undefined,
+              qty: foil ? 0 : moved,
+              foilQty: foil ? moved : 0,
+              addedAt: Date.now(),
+              binder,
             };
           }
           return next;
