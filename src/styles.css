@@ -40,6 +40,16 @@
 }
 
 /* Tema SCURO "Notte arcana" (dall'immagine MMG Menga Magic): segue il sistema, oppure la scelta fatta nell'app (data-theme). */
+@media (max-width: 560px) {
+  .comparison {
+    padding: 14px 12px;
+  }
+  table.factors th,
+  table.factors td {
+    padding: 5px 4px;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #090e1c;
@@ -1177,6 +1187,8 @@ label.field select {
 
 /* Comparison */
 .comparison {
+  overflow-wrap: anywhere;
+  min-width: 0;
   background: linear-gradient(180deg, var(--panel), var(--panel-2));
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -1419,6 +1431,22 @@ details.explain[open] summary {
   margin-bottom: 8px;
 }
 
+.factors-legend {
+  font-size: 12.5px;
+  margin-bottom: 6px;
+}
+.factors-legend .fav-a {
+  color: var(--accent);
+  font-weight: 700;
+}
+.factors-legend .fav-b {
+  color: var(--accent-2);
+  font-weight: 700;
+}
+.factors-wrap {
+  overflow-x: auto;
+  max-width: 100%;
+}
 table.factors {
   width: 100%;
   border-collapse: collapse;

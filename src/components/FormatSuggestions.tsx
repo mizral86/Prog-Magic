@@ -47,12 +47,24 @@ function namesOf(entries: DeckEntry[]): Set<string> {
   return s;
 }
 
-// Identità colore del mazzo (es. "wu", "r"), per suggerire solo carte on-color.
+// Colori del mazzo per suggerire solo carte on-color. Non si usa l'identità
+// di colore: il mana phyrexiano (Dismember, Mutagenic Growth) la allarga a
+// colori che il mazzo non gioca davvero. Contano i colori prodotti dalle terre
+// e dagli acceleratori (almeno 3 copie, così una terra "jolly" non basta);
+// se non ce ne sono, i colori delle magie.
 function colorsOf(entries: DeckEntry[]): string {
-  const s = new Set<string>();
-  for (const e of entries)
-    if (e.card) for (const c of e.card.colorIdentity) s.add(c.toLowerCase());
-  return [...s].join("");
+  const sources = new Map<string, number>();
+  for (const e of entries) {
+    if (!e.card || !(e.card.isLand || e.card.manaAbility)) continue;
+    for (const c of e.card.producedMana) sources.set(c, (sources.get(c) ?? 0) + e.quantity);
+  }
+  let cols = [...sources].filter(([, n]) => n >= 3).map(([c]) => c);
+  if (cols.length === 0) {
+    const s = new Set<string>();
+    for (const e of entries) if (e.card && !e.card.isLand) for (const c of e.card.colors) s.add(c);
+    cols = [...s];
+  }
+  return cols.join("").toLowerCase() || "c";
 }
 
 async function fetchFor(

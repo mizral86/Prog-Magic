@@ -74,6 +74,12 @@ interface Profile {
   burn: number;
   draw: number;
   lifegain: number;
+  /** Prospero: +1/+1 a ogni magia non creatura lanciata. */
+  prowess: boolean;
+  /** Rapidità: attacca il turno in cui entra. */
+  haste: boolean;
+  /** Potenziamento a una creatura (es. Crescita Mutagena: +2). */
+  pump: number;
 }
 
 function wordNum(w: string): number {
@@ -99,6 +105,12 @@ function profileOf(card: CardInfo): Profile {
     const dM = text.match(/draws? (\d+|a|two|three|four) cards?/);
     if (dM) draw = Math.min(4, wordNum(dM[1]));
   }
+  const pumpM = text.match(/target creature(?: you control)? gets \+(\d+)\/\+(\d+)/);
+  const pump = !isCreature && pumpM ? parseInt(pumpM[1], 10) : 0;
+  const prowess =
+    isCreature &&
+    (/\bprowess\b/.test(text) ||
+      /whenever you cast a noncreature spell, (this creature|~|[^,.]*) gets \+1\/\+1/.test(text));
   const lgM = text.match(/gains? (\d+) life/);
   const lifegain = lgM ? parseInt(lgM[1], 10) : 0;
 
@@ -127,6 +139,9 @@ function profileOf(card: CardInfo): Profile {
     burn,
     draw,
     lifegain,
+    prowess,
+    pump,
+    haste: isCreature && /^haste\b|\nhaste\b|, haste\b|\bhaste$/m.test(text),
   };
 }
 
@@ -168,7 +183,11 @@ interface Creature {
   sick: boolean;
   tapped: boolean;
   damage: number;
+  /** Bonus fino a fine turno (prospero, potenziamenti). */
+  pump: number;
 }
+const pw = (c: Creature) => c.p.power + c.pump;
+const tg = (c: Creature) => c.p.toughness + c.pump;
 interface Player {
   name: string;
   library: Profile[];
@@ -178,6 +197,8 @@ interface Player {
   manaPerms: ManaPerm[];
   creatures: Creature[];
   life: number;
+  /** Il mazzo ha creature con prospero: le magie non creatura si tengono per loro. */
+  prowessDeck: boolean;
 }
 
 function countLands(hand: Profile[]): number {
@@ -222,6 +243,7 @@ function newPlayer(name: string, deck: Profile[], cfg: BattleConfig, rng: () => 
     manaPerms: [],
     creatures: [],
     life: cfg.startLife,
+    prowessDeck: deck.filter((c) => c.prowess).length >= 4,
   };
 }
 
@@ -295,6 +317,7 @@ function mainPhase(me: Player, opp: Player, myColors: Color[], log: Log) {
       const c = me.hand[i];
       if (c.isLand || c.counter) continue; // i counter si tengono
       if (!canAfford(c, manaLeft, src)) continue;
+      if (holdForProwess(c, me, opp)) continue;
       const s = spellScore(c, me, opp);
       if (s > bestScore) {
         bestScore = s;
@@ -305,6 +328,14 @@ function mainPhase(me: Player, opp: Player, myColors: Color[], log: Log) {
 
     const spell = me.hand.splice(best, 1)[0];
     manaLeft -= spell.cmc;
+
+    // Prospero: si attiva al lancio, anche se poi la magia viene neutralizzata.
+    if (!spell.isCreature) {
+      const pumped = me.creatures.filter((c) => c.p.prowess);
+      for (const c of pumped) c.pump += 1;
+      if (pumped.length > 0)
+        say(log, `${me.name}: prospero +1/+1 a ${pumped.map((c) => c.p.name).join(", ")}`);
+    }
 
     // L'avversario può neutralizzare?
     if (
@@ -320,6 +351,23 @@ function mainPhase(me: Player, opp: Player, myColors: Color[], log: Log) {
 
     resolve(spell, me, opp, myColors, log);
   }
+}
+
+// Le creature pronte ad attaccare questo turno (non appena lanciate).
+function readyAttackers(me: Player): Creature[] {
+  return me.creatures.filter((c) => !c.sick && !c.tapped);
+}
+
+// Un mazzo prospero tiene le magie non creatura finché non ha una creatura con
+// prospero che può attaccare, così le usa per potenziarla. Eccezioni: burn
+// letale o che uccide una creatura che conta, rimozioni, ramp, mano piena.
+function holdForProwess(c: Profile, me: Player, opp: Player): boolean {
+  if (c.pump > 0) return readyAttackers(me).length === 0; // serve qualcuno da potenziare
+  if (!me.prowessDeck || c.isCreature || c.manaAbility || c.removal || c.boardwipe)
+    return false;
+  if (c.burn > 0 && (opp.life <= c.burn || bestBurnTarget(opp, c.burn) >= 0)) return false;
+  if (me.hand.length >= 7) return false;
+  return !readyAttackers(me).some((x) => x.p.prowess);
 }
 
 function playLand(me: Player) {
@@ -367,12 +415,13 @@ function spellScore(c: Profile, me: Player, opp: Player): number {
   if (c.burn > 0) return 20 + c.burn;
   if (c.lifegain > 0) return me.life < 10 ? 35 : 6;
   if (c.draw > 0) return 15;
+  if (c.pump > 0) return 12;
   return 5;
 }
 
 function biggest(p: Player): number {
   let m = 0;
-  for (const c of p.creatures) m = Math.max(m, c.p.power + c.p.toughness);
+  for (const c of p.creatures) m = Math.max(m, pw(c) + tg(c));
   return m;
 }
 
@@ -383,8 +432,8 @@ function bestBurnTarget(opp: Player, dmg: number): number {
   let bestPow = 1;
   for (let i = 0; i < opp.creatures.length; i++) {
     const c = opp.creatures[i];
-    if (c.p.toughness <= dmg && c.p.power > bestPow) {
-      bestPow = c.p.power;
+    if (tg(c) - c.damage <= dmg && pw(c) > bestPow) {
+      bestPow = pw(c);
       bi = i;
     }
   }
@@ -482,10 +531,21 @@ function resolve(spell: Profile, me: Player, opp: Player, myColors: Color[], log
     }
   }
   if (spell.isCreature) {
-    me.creatures.push({ p: spell, sick: true, tapped: false, damage: 0 });
+    me.creatures.push({ p: spell, sick: !spell.haste, tapped: false, damage: 0, pump: 0 });
     say(log, `${me.name} lancia ${spell.name} (${spell.power}/${spell.toughness})`, [
       spell.name,
     ]);
+  }
+  if (spell.pump > 0) {
+    const ready = readyAttackers(me);
+    const t = ready.sort((a, b) => pw(b) - pw(a))[0];
+    if (t) {
+      t.pump += spell.pump;
+      say(log, `${me.name} lancia ${spell.name}: +${spell.pump} a ${t.p.name}`, [
+        spell.name,
+        t.p.name,
+      ]);
+    }
   }
   if (spell.draw > 0) {
     for (let k = 0; k < spell.draw; k++) draw(me);
@@ -512,7 +572,7 @@ function shouldAttack(
   if (def.life <= teamPower) return true; // spinta per la vittoria / corsa
   // un bloccante uccide A e sopravvive? allora è un attacco svantaggioso
   const badBlock = blockers.some(
-    (b) => b.p.power >= a.p.toughness && b.p.toughness > a.p.power,
+    (b) => pw(b) >= tg(a) && tg(b) > pw(a),
   );
   if (!badBlock) return true; // attacco sicuro
   // rischioso: attacca solo se possiamo sommergere i bloccanti (più attaccanti)
@@ -523,7 +583,7 @@ function combat(att: Player, def: Player, log: Log) {
   const potential = att.creatures.filter((c) => !c.sick && !c.tapped);
   if (potential.length === 0) return;
   const blockers = def.creatures.filter((c) => !c.tapped);
-  const teamPower = potential.reduce((s, c) => s + c.p.power, 0);
+  const teamPower = potential.reduce((s, c) => s + pw(c), 0);
   const attackers = potential.filter((a) =>
     shouldAttack(a, blockers, def, potential.length, teamPower),
   );
@@ -532,15 +592,15 @@ function combat(att: Player, def: Player, log: Log) {
   const usedBlocker = new Set<Creature>();
   const blockOf = new Map<Creature, Creature>();
 
-  const sorted = [...attackers].sort((a, b) => b.p.power - a.p.power);
+  const sorted = [...attackers].sort((a, b) => pw(b) - pw(a));
 
   // 1) blocchi favorevoli: uccidi l'attaccante e sopravvivi
   for (const a of sorted) {
     const b = blockers.find(
       (x) =>
         !usedBlocker.has(x) &&
-        x.p.power >= a.p.toughness &&
-        x.p.toughness > a.p.power,
+        pw(x) >= tg(a) &&
+        tg(x) > pw(a),
     );
     if (b) {
       usedBlocker.add(b);
@@ -549,19 +609,19 @@ function combat(att: Player, def: Player, log: Log) {
   }
   // 2) chump se il danno non bloccato è letale
   let unblocked = sorted.filter((a) => !blockOf.has(a));
-  let dmg = unblocked.reduce((s, a) => s + a.p.power, 0);
+  let dmg = unblocked.reduce((s, a) => s + pw(a), 0);
   if (dmg >= def.life) {
     const avail = blockers
       .filter((b) => !usedBlocker.has(b))
-      .sort((a, b) => a.p.power + a.p.toughness - (b.p.power + b.p.toughness));
-    const bigFirst = [...unblocked].sort((a, b) => b.p.power - a.p.power);
+      .sort((a, b) => pw(a) + tg(a) - (pw(b) + tg(b)));
+    const bigFirst = [...unblocked].sort((a, b) => pw(b) - pw(a));
     for (const a of bigFirst) {
       if (dmg < def.life) break;
       const b = avail.shift();
       if (!b) break;
       usedBlocker.add(b);
       blockOf.set(a, b);
-      dmg -= a.p.power;
+      dmg -= pw(a);
     }
   }
 
@@ -571,12 +631,12 @@ function combat(att: Player, def: Player, log: Log) {
   for (const a of attackers) {
     const b = blockOf.get(a);
     if (b) {
-      b.damage += a.p.power;
-      a.damage += b.p.power;
-      if (b.damage >= b.p.toughness) dead.push(b);
-      if (a.damage >= a.p.toughness) dead.push(a);
+      b.damage += pw(a);
+      a.damage += pw(b);
+      if (b.damage >= tg(b)) dead.push(b);
+      if (a.damage >= tg(a)) dead.push(a);
     } else {
-      faceDamage += a.p.power;
+      faceDamage += pw(a);
     }
   }
   if (faceDamage > 0) def.life -= faceDamage;
@@ -620,6 +680,7 @@ function playMatch(
       c.tapped = false;
       c.damage = 0;
     }
+    for (const c of [...me.creatures, ...opp.creatures]) c.pump = 0;
 
     // Pesca (salta la primissima mossa di chi inizia)
     const isFirstEver = turn === 1 && startA === activeIsA;
