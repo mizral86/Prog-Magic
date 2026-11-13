@@ -60,47 +60,53 @@ export function ComparisonView({
 
       <details className="explain">
         <summary>Perché questi numeri? (fattori del confronto)</summary>
-        <table className="factors">
-          <thead>
-            <tr>
-              <th>Fattore</th>
-              <th className="num">{nameA}</th>
-              <th className="num">{nameB}</th>
-              <th className="num">Peso</th>
-              <th>Favorisce</th>
-            </tr>
-          </thead>
-          <tbody>
-            {comparison.factors.map((f) => {
-              const favA = f.contribA > f.contribB + 0.05;
-              const favB = f.contribB > f.contribA + 0.05;
-              return (
-                <tr key={f.key}>
-                  <td>{f.label}</td>
-                  <td className="num">{f.a.toFixed(1)}</td>
-                  <td className="num">{f.b.toFixed(1)}</td>
-                  <td className="num">×{f.weight}</td>
-                  <td className={favA ? "fav-a" : favB ? "fav-b" : ""}>
-                    {favA ? nameA : favB ? nameB : "pari"}
-                  </td>
-                </tr>
-              );
-            })}
-            <tr>
-              <td>
-                <strong>Punteggio totale</strong>
-              </td>
-              <td className="num">
-                <strong>{comparison.scoreA.toFixed(1)}</strong>
-              </td>
-              <td className="num">
-                <strong>{comparison.scoreB.toFixed(1)}</strong>
-              </td>
-              <td className="num" />
-              <td />
-            </tr>
-          </tbody>
-        </table>
+        <div className="factors-legend">
+          <span className="fav-a">A</span> = {nameA} ·{" "}
+          <span className="fav-b">B</span> = {nameB}
+        </div>
+        <div className="factors-wrap">
+          <table className="factors">
+            <thead>
+              <tr>
+                <th>Fattore</th>
+                <th className="num fav-a">A</th>
+                <th className="num fav-b">B</th>
+                <th className="num">Peso</th>
+                <th>Favorisce</th>
+              </tr>
+            </thead>
+            <tbody>
+              {comparison.factors.map((f) => {
+                const favA = f.contribA > f.contribB + 0.05;
+                const favB = f.contribB > f.contribA + 0.05;
+                return (
+                  <tr key={f.key}>
+                    <td>{f.label}</td>
+                    <td className="num">{f.a.toFixed(1)}</td>
+                    <td className="num">{f.b.toFixed(1)}</td>
+                    <td className="num">×{f.weight}</td>
+                    <td className={favA ? "fav-a" : favB ? "fav-b" : ""}>
+                      {favA ? "A" : favB ? "B" : "pari"}
+                    </td>
+                  </tr>
+                );
+              })}
+              <tr>
+                <td>
+                  <strong>Punteggio totale</strong>
+                </td>
+                <td className="num">
+                  <strong>{comparison.scoreA.toFixed(1)}</strong>
+                </td>
+                <td className="num">
+                  <strong>{comparison.scoreB.toFixed(1)}</strong>
+                </td>
+                <td className="num" />
+                <td />
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <div className="explain-text" style={{ marginTop: 8 }}>
           La percentuale nasce dalla differenza dei punteggi totali passata in
           una curva logistica (differenze piccole → vicino a 50/50, differenze
