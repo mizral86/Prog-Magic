@@ -109,10 +109,15 @@ function CardDetailView({
   const collection = useCollection();
   const owned = shown.scryfallId ? collection.get(shown.scryfallId) : undefined;
   // Copie della stampa aperta all'inizio: si possono spostare su un'altra edizione.
-  const fromEntry = card.scryfallId ? collection.get(card.scryfallId) : undefined;
+  // Si può ripetere quante volte si vuole: la stampa di partenza si sceglie tra
+  // quelle possedute (all'inizio quella aperta) e resta valida finché ha copie.
+  const ownedEntries = collection.entries.filter((e) => e.name === card.name);
   const ownedPrints = new Map<string, number>();
-  for (const e of collection.entries)
-    if (e.name === card.name) ownedPrints.set(e.id, e.qty + e.foilQty);
+  for (const e of ownedEntries) ownedPrints.set(e.id, e.qty + e.foilQty);
+  const [fromId, setFromId] = useState<string | undefined>(card.scryfallId);
+  const sources = ownedEntries.filter((e) => e.id !== shown.scryfallId);
+  const fromEntry =
+    sources.find((e) => e.id === fromId) ?? sources.find((e) => e.id === card.scryfallId) ?? sources[0];
   const wishlist = useWishlist();
   const wishId = shown.scryfallId ?? shown.name.toLowerCase();
   const inWishlist = wishlist.has(wishId);
@@ -324,11 +329,26 @@ function CardDetailView({
             {fromEntry && shown.scryfallId && shown.scryfallId !== fromEntry.id && (
               <div className="collect-box move-print">
                 <div className="collect-status">
-                  Cambia edizione alle tue copie di{" "}
-                  <strong>
-                    {(fromEntry.setCode ?? "").toUpperCase()} #{fromEntry.collectorNumber}
-                  </strong>{" "}
-                  ({fromEntry.qty} normali · {fromEntry.foilQty} foil): spostale su{" "}
+                  Sposta copie da{" "}
+                  {sources.length > 1 ? (
+                    <select
+                      className="atd-select"
+                      value={fromEntry.id}
+                      onChange={(e) => setFromId(e.target.value)}
+                      aria-label="Edizione da cui spostare"
+                    >
+                      {sources.map((e) => (
+                        <option key={e.id} value={e.id}>
+                          {(e.setCode ?? "").toUpperCase()} #{e.collectorNumber} ({e.qty + e.foilQty})
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <strong>
+                      {(fromEntry.setCode ?? "").toUpperCase()} #{fromEntry.collectorNumber}
+                    </strong>
+                  )}{" "}
+                  ({fromEntry.qty} normali · {fromEntry.foilQty} foil) a{" "}
                   <strong>
                     {(shown.setCode ?? "").toUpperCase()} #{shown.collectorNumber}
                   </strong>
