@@ -1,6 +1,7 @@
 // Risultati del simulatore interattivo: win-rate reale + log di una partita.
 
-import { BattleResult } from "../sim/battle";
+import { Fragment, useEffect, useState } from "react";
+import { BattleResult, TOKEN_A, TOKEN_B } from "../sim/battle";
 import { CardInfo } from "../types";
 import { CardThumb } from "./CardThumb";
 
@@ -14,6 +15,31 @@ interface Props {
 export function BattleResultView({ result, nameA, nameB, lookup }: Props) {
   const a = Math.round(result.winRateA * 100);
   const b = 100 - a;
+  const [pick, setPick] = useState(0);
+  useEffect(() => setPick(0), [result]);
+  const scenarios = result.scenarios ?? [];
+  const scen = scenarios[pick] ?? scenarios[0];
+  const lines = scen ? scen.lines : result.sampleLog;
+  const nameOf = (w: "A" | "B") => (w === "A" ? nameA : nameB);
+  const pct = (w: number, g: number) =>
+    g > 0 ? `${Math.round((w / g) * 100)}%` : "—";
+  const pl = result.play;
+
+  // Sostituisce i segnaposto dei giocatori con i nomi colorati dei mazzi.
+  const render = (text: string) =>
+    text.split(/(⟦A⟧|⟦B⟧)/).map((part, i) =>
+      part === TOKEN_A ? (
+        <strong key={i} className="bl-a">
+          {nameA}
+        </strong>
+      ) : part === TOKEN_B ? (
+        <strong key={i} className="bl-b">
+          {nameB}
+        </strong>
+      ) : (
+        <Fragment key={i}>{part}</Fragment>
+      ),
+    );
 
   return (
     <div className="comparison">
@@ -65,12 +91,49 @@ export function BattleResultView({ result, nameA, nameB, lookup }: Props) {
         </div>
       </div>
 
-      <details className="explain">
-        <summary>Log di una partita di esempio</summary>
+      {pl && pl.aPlayGames + pl.aDrawGames > 0 && (
+        <div className="play-draw small">
+          <div>
+            <strong className="bl-a">{nameA}</strong> vince il{" "}
+            {pct(pl.aPlayWins, pl.aPlayGames)} quando inizia e il{" "}
+            {pct(pl.aDrawWins, pl.aDrawGames)} quando pesca.
+          </div>
+          <div>
+            <strong className="bl-b">{nameB}</strong> vince il{" "}
+            {pct(pl.aDrawGames - pl.aDrawWins, pl.aDrawGames)} quando inizia e
+            il {pct(pl.aPlayGames - pl.aPlayWins, pl.aPlayGames)} quando pesca.
+          </div>
+        </div>
+      )}
+
+      <div className="panel scen-box">
+        <h3 className="stat-title">Partite di esempio</h3>
+        <p className="muted small" style={{ margin: "0 0 8px" }}>
+          Tre partite tipiche, vinte in proporzione alla win-rate e di durata
+          vicina alla media. Turno per turno, i due mazzi si rispondono.
+        </p>
+        {scenarios.length > 0 && (
+          <select
+            className="scen-select"
+            value={pick}
+            onChange={(e) => setPick(Number(e.target.value))}
+            aria-label="Partita di esempio"
+          >
+            {scenarios.map((sc, i) => (
+              <option key={i} value={i}>
+                {`Partita ${i + 1}: ${
+                  sc.winner === "draw"
+                    ? "pareggio"
+                    : `vince ${nameOf(sc.winner)}`
+                } al turno ${sc.turns} · inizia ${nameOf(sc.onPlay)}`}
+              </option>
+            ))}
+          </select>
+        )}
         <div className="battle-log">
-          {result.sampleLog.map((line, i) => (
+          {lines.map((line, i) => (
             <div key={i} className={`bl-line${line.head ? " bl-head" : ""}`}>
-              <span className="bl-text">{line.text}</span>
+              <span className="bl-text">{render(line.text)}</span>
               {line.cards && line.cards.length > 0 && (
                 <span className="bl-thumbs">
                   {line.cards.map((n, j) => (
@@ -81,15 +144,16 @@ export function BattleResultView({ result, nameA, nameB, lookup }: Props) {
             </div>
           ))}
         </div>
-      </details>
+      </div>
 
       <div className="disclaimer">
         <strong>Modello semplificato.</strong> Il motore gioca davvero (vita,
         creature, combattimento, rimozioni, spazzavia, counter, burn, ramp) ma
         deduce gli effetti dai ruoli/numeri delle carte: non conosce il testo
         specifico, le abilità attivate o i trigger complessi, e i planeswalker
-        sono approssimati a creature. È una win-rate reale <em>nei limiti di
-        questo modello</em>, non una simulazione di MTG completa.
+        sono approssimati a creature. È una win-rate reale{" "}
+        <em>nei limiti di questo modello</em>, non una simulazione di MTG
+        completa.
       </div>
     </div>
   );

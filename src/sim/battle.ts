@@ -41,6 +41,15 @@ export interface BattleLogLine {
   head?: boolean;
 }
 
+/** Una partita di esempio da mostrare (scelta in proporzione alle vittorie). */
+export interface BattleScenario {
+  winner: "A" | "B" | "draw";
+  /** Chi ha iniziato (on the play). */
+  onPlay: "A" | "B";
+  turns: number;
+  lines: BattleLogLine[];
+}
+
 export interface BattleResult {
   games: number;
   winsA: number;
@@ -51,7 +60,20 @@ export interface BattleResult {
   avgLifeA: number;
   avgLifeB: number;
   sampleLog: BattleLogLine[];
+  /** 3 partite di esempio: quante vinte da A/B in proporzione alla win-rate. */
+  scenarios: BattleScenario[];
+  /** Vittorie di A quando inizia e quando pesca (partite decise). */
+  play: {
+    aPlayWins: number;
+    aPlayGames: number;
+    aDrawWins: number;
+    aDrawGames: number;
+  };
 }
+
+/** Nei testi del log i giocatori sono segnaposto, la UI mette i nomi dei mazzi. */
+export const TOKEN_A = "⟦A⟧";
+export const TOKEN_B = "⟦B⟧";
 
 // ---------------------------------------------------------------------------
 // Profilo di gioco derivato da una carta.
@@ -84,7 +106,13 @@ interface Profile {
 
 function wordNum(w: string): number {
   const map: Record<string, number> = {
-    a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5,
+    a: 1,
+    an: 1,
+    one: 1,
+    two: 2,
+    three: 3,
+    four: 4,
+    five: 5,
   };
   return map[w] ?? (parseInt(w, 10) || 0);
 }
@@ -105,18 +133,24 @@ function profileOf(card: CardInfo): Profile {
     const dM = text.match(/draws? (\d+|a|two|three|four) cards?/);
     if (dM) draw = Math.min(4, wordNum(dM[1]));
   }
-  const pumpM = text.match(/target creature(?: you control)? gets \+(\d+)\/\+(\d+)/);
+  const pumpM = text.match(
+    /target creature(?: you control)? gets \+(\d+)\/\+(\d+)/,
+  );
   const pump = !isCreature && pumpM ? parseInt(pumpM[1], 10) : 0;
   const prowess =
     isCreature &&
     (/\bprowess\b/.test(text) ||
-      /whenever you cast a noncreature spell, (this creature|~|[^,.]*) gets \+1\/\+1/.test(text));
+      /whenever you cast a noncreature spell, (this creature|~|[^,.]*) gets \+1\/\+1/.test(
+        text,
+      ));
   const lgM = text.match(/gains? (\d+) life/);
   const lifegain = lgM ? parseInt(lgM[1], 10) : 0;
 
   // Planeswalker approssimato: forza 3, costituzione = lealtà (o 4).
-  const power = isPlaneswalker ? 3 : card.power ?? 0;
-  const toughness = isPlaneswalker ? card.loyalty ?? 4 : card.toughness ?? 0;
+  const power = isPlaneswalker ? 3 : (card.power ?? 0);
+  const toughness = isPlaneswalker
+    ? (card.loyalty ?? 4)
+    : (card.toughness ?? 0);
 
   return {
     name: card.name,
@@ -207,7 +241,11 @@ function countLands(hand: Profile[]): number {
   return n;
 }
 
-function mulliganHand(deck: Profile[], cfg: BattleConfig, rng: () => number): { hand: Profile[]; library: Profile[] } {
+function mulliganHand(
+  deck: Profile[],
+  cfg: BattleConfig,
+  rng: () => number,
+): { hand: Profile[]; library: Profile[] } {
   let library: Profile[] = [];
   let hand: Profile[] = [];
   let mulls = 0;
@@ -232,7 +270,12 @@ function bottomScore(c: Profile, lands: number): number {
   return 50 - c.cmc;
 }
 
-function newPlayer(name: string, deck: Profile[], cfg: BattleConfig, rng: () => number): Player {
+function newPlayer(
+  name: string,
+  deck: Profile[],
+  cfg: BattleConfig,
+  rng: () => number,
+): Player {
   const { hand, library } = mulliganHand(deck, cfg, rng);
   return {
     name,
@@ -271,7 +314,11 @@ function mana(p: Player): { total: number; src: Record<Color, number> } {
   return { total, src };
 }
 
-function canAfford(p: Profile, manaLeft: number, src: Record<Color, number>): boolean {
+function canAfford(
+  p: Profile,
+  manaLeft: number,
+  src: Record<Color, number>,
+): boolean {
   if (p.cmc > manaLeft) return false;
   for (const c of COLORS) {
     const need = p.pips[c] ?? 0;
@@ -334,7 +381,10 @@ function mainPhase(me: Player, opp: Player, myColors: Color[], log: Log) {
       const pumped = me.creatures.filter((c) => c.p.prowess);
       for (const c of pumped) c.pump += 1;
       if (pumped.length > 0)
-        say(log, `${me.name}: prospero +1/+1 a ${pumped.map((c) => c.p.name).join(", ")}`);
+        say(
+          log,
+          `${me.name}: prospero +1/+1 a ${pumped.map((c) => c.p.name).join(", ")}`,
+        );
     }
 
     // L'avversario può neutralizzare?
@@ -363,9 +413,16 @@ function readyAttackers(me: Player): Creature[] {
 // letale o che uccide una creatura che conta, rimozioni, ramp, mano piena.
 function holdForProwess(c: Profile, me: Player, opp: Player): boolean {
   if (c.pump > 0) return readyAttackers(me).length === 0; // serve qualcuno da potenziare
-  if (!me.prowessDeck || c.isCreature || c.manaAbility || c.removal || c.boardwipe)
+  if (
+    !me.prowessDeck ||
+    c.isCreature ||
+    c.manaAbility ||
+    c.removal ||
+    c.boardwipe
+  )
     return false;
-  if (c.burn > 0 && (opp.life <= c.burn || bestBurnTarget(opp, c.burn) >= 0)) return false;
+  if (c.burn > 0 && (opp.life <= c.burn || bestBurnTarget(opp, c.burn) >= 0))
+    return false;
   if (me.hand.length >= 7) return false;
   return !readyAttackers(me).some((x) => x.p.prowess);
 }
@@ -375,7 +432,8 @@ function playLand(me: Player) {
   for (const l of me.lands) for (const c of l.colors) current.add(c);
   const needed = new Set<Color>();
   for (const c of me.hand)
-    if (!c.isLand) for (const col of COLORS) if ((c.pips[col] ?? 0) > 0) needed.add(col);
+    if (!c.isLand)
+      for (const col of COLORS) if ((c.pips[col] ?? 0) > 0) needed.add(col);
 
   let best = -1;
   let bestScore = -Infinity;
@@ -406,7 +464,8 @@ function spellScore(c: Profile, me: Player, opp: Player): number {
   if (c.manaAbility) return 95 - me.lands.length; // ramp presto
   if (c.burn > 0 && opp.life <= c.burn) return 1000; // burn letale
   if (c.boardwipe) {
-    return opp.creatures.length >= 3 && opp.creatures.length > me.creatures.length
+    return opp.creatures.length >= 3 &&
+      opp.creatures.length > me.creatures.length
       ? 90
       : 0;
   }
@@ -459,13 +518,21 @@ function tryOppCounter(
   manaLeft: number,
   _spell: Profile,
 ): boolean {
-  const idx = opp.hand.findIndex((x) => x.counter && canAfford(x, manaLeft, src));
+  const idx = opp.hand.findIndex(
+    (x) => x.counter && canAfford(x, manaLeft, src),
+  );
   if (idx === -1) return false;
   opp.hand.splice(idx, 1);
   return true;
 }
 
-function resolve(spell: Profile, me: Player, opp: Player, myColors: Color[], log: Log) {
+function resolve(
+  spell: Profile,
+  me: Player,
+  opp: Player,
+  myColors: Color[],
+  log: Log,
+) {
   // Effetti di mana (ramp).
   if (spell.manaAbility?.kind === "permanent") {
     me.manaPerms.push({
@@ -478,10 +545,16 @@ function resolve(spell: Profile, me: Player, opp: Player, myColors: Color[], log
   }
   if (spell.manaAbility?.kind === "fetch") {
     for (let k = 0; k < spell.manaAbility.amount; k++)
-      me.lands.push({ colors: myColors, enteredTapped: true, enteredThisTurn: true });
-    say(log, `${me.name} lancia ${spell.name} (+${spell.manaAbility.amount} terra)`, [
-      spell.name,
-    ]);
+      me.lands.push({
+        colors: myColors,
+        enteredTapped: true,
+        enteredThisTurn: true,
+      });
+    say(
+      log,
+      `${me.name} lancia ${spell.name} (+${spell.manaAbility.amount} terra)`,
+      [spell.name],
+    );
     return;
   }
 
@@ -489,9 +562,11 @@ function resolve(spell: Profile, me: Player, opp: Player, myColors: Color[], log
     const n = me.creatures.length + opp.creatures.length;
     me.creatures = [];
     opp.creatures = [];
-    say(log, `${me.name} lancia ${spell.name}: spazzavia (${n} creature distrutte)`, [
-      spell.name,
-    ]);
+    say(
+      log,
+      `${me.name} lancia ${spell.name}: spazzavia (${n} creature distrutte)`,
+      [spell.name],
+    );
     return;
   }
   if (spell.removal && opp.creatures.length > 0) {
@@ -531,20 +606,29 @@ function resolve(spell: Profile, me: Player, opp: Player, myColors: Color[], log
     }
   }
   if (spell.isCreature) {
-    me.creatures.push({ p: spell, sick: !spell.haste, tapped: false, damage: 0, pump: 0 });
-    say(log, `${me.name} lancia ${spell.name} (${spell.power}/${spell.toughness})`, [
-      spell.name,
-    ]);
+    me.creatures.push({
+      p: spell,
+      sick: !spell.haste,
+      tapped: false,
+      damage: 0,
+      pump: 0,
+    });
+    say(
+      log,
+      `${me.name} lancia ${spell.name} (${spell.power}/${spell.toughness})`,
+      [spell.name],
+    );
   }
   if (spell.pump > 0) {
     const ready = readyAttackers(me);
     const t = ready.sort((a, b) => pw(b) - pw(a))[0];
     if (t) {
       t.pump += spell.pump;
-      say(log, `${me.name} lancia ${spell.name}: +${spell.pump} a ${t.p.name}`, [
-        spell.name,
-        t.p.name,
-      ]);
+      say(
+        log,
+        `${me.name} lancia ${spell.name}: +${spell.pump} a ${t.p.name}`,
+        [spell.name, t.p.name],
+      );
     }
   }
   if (spell.draw > 0) {
@@ -553,7 +637,9 @@ function resolve(spell: Profile, me: Player, opp: Player, myColors: Color[], log
   }
   if (spell.lifegain > 0) {
     me.life += spell.lifegain;
-    say(log, `${me.name} guadagna ${spell.lifegain} vita (${spell.name})`, [spell.name]);
+    say(log, `${me.name} guadagna ${spell.lifegain} vita (${spell.name})`, [
+      spell.name,
+    ]);
   }
 }
 
@@ -571,9 +657,7 @@ function shouldAttack(
   if (blockers.length === 0) return true; // nessun bloccante
   if (def.life <= teamPower) return true; // spinta per la vittoria / corsa
   // un bloccante uccide A e sopravvive? allora è un attacco svantaggioso
-  const badBlock = blockers.some(
-    (b) => pw(b) >= tg(a) && tg(b) > pw(a),
-  );
+  const badBlock = blockers.some((b) => pw(b) >= tg(a) && tg(b) > pw(a));
   if (!badBlock) return true; // attacco sicuro
   // rischioso: attacca solo se possiamo sommergere i bloccanti (più attaccanti)
   return teamCount > blockers.length;
@@ -597,10 +681,7 @@ function combat(att: Player, def: Player, log: Log) {
   // 1) blocchi favorevoli: uccidi l'attaccante e sopravvivi
   for (const a of sorted) {
     const b = blockers.find(
-      (x) =>
-        !usedBlocker.has(x) &&
-        pw(x) >= tg(a) &&
-        tg(x) > pw(a),
+      (x) => !usedBlocker.has(x) && pw(x) >= tg(a) && tg(x) > pw(a),
     );
     if (b) {
       usedBlocker.add(b);
@@ -642,8 +723,29 @@ function combat(att: Player, def: Player, log: Log) {
   if (faceDamage > 0) def.life -= faceDamage;
   att.creatures = att.creatures.filter((c) => !dead.includes(c));
   def.creatures = def.creatures.filter((c) => !dead.includes(c));
-  if (faceDamage > 0)
-    say(log, `${att.name} attacca per ${faceDamage} (${def.name} a ${def.life})`);
+  if (log.on) {
+    const names = attackers.map((a) => `${a.p.name} ${pw(a)}/${tg(a)}`);
+    say(
+      log,
+      `${att.name} attacca con ${names.join(", ")}`,
+      attackers.map((a) => a.p.name),
+    );
+    for (const [a, b] of blockOf) {
+      const res = [
+        dead.includes(a) ? `muore ${a.p.name}` : "",
+        dead.includes(b) ? `muore ${b.p.name}` : "",
+      ]
+        .filter(Boolean)
+        .join(", ");
+      say(
+        log,
+        `${def.name} blocca ${a.p.name} con ${b.p.name}${res ? `: ${res}` : ""}`,
+        [b.p.name],
+      );
+    }
+    if (faceDamage > 0)
+      say(log, `${faceDamage} danni a ${def.name} (vita ${def.life})`);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -657,11 +759,22 @@ function playMatch(
   cfg: BattleConfig,
   rng: () => number,
   log: Log,
-): { winner: "A" | "B" | "draw"; lifeA: number; lifeB: number; turns: number } {
-  const A = newPlayer("A", deckA, cfg, rng);
-  const B = newPlayer("B", deckB, cfg, rng);
+): {
+  winner: "A" | "B" | "draw";
+  lifeA: number;
+  lifeB: number;
+  turns: number;
+  startA: boolean;
+} {
+  const A = newPlayer(TOKEN_A, deckA, cfg, rng);
+  const B = newPlayer(TOKEN_B, deckB, cfg, rng);
   const startA = rng() < 0.5;
-  say(log, `Inizia ${startA ? "A" : "B"}. Vita ${cfg.startLife}-${cfg.startLife}.`, undefined, true);
+  say(
+    log,
+    `${startA ? TOKEN_A : TOKEN_B} inizia (on the play), ${startA ? TOKEN_B : TOKEN_A} pesca. Vita ${cfg.startLife} a testa.`,
+    undefined,
+    true,
+  );
 
   let turn = 0;
   let activeIsA = startA;
@@ -686,17 +799,28 @@ function playMatch(
     const isFirstEver = turn === 1 && startA === activeIsA;
     if (!isFirstEver) {
       if (!draw(me)) {
-        say(log, `${me.name} non può pescare: perde per deck out.`, undefined, true);
+        say(
+          log,
+          `${me.name} non può pescare: perde per deck out.`,
+          undefined,
+          true,
+        );
         return {
           winner: activeIsA ? "B" : "A",
           lifeA: A.life,
           lifeB: B.life,
           turns: turnNo,
+          startA,
         };
       }
     }
 
-    say(log, `T${turnNo} ${me.name} (vita ${me.life}/${opp.life}):`, undefined, true);
+    say(
+      log,
+      `Turno ${turnNo} · ${me.name} (vita ${me.life}, avversario ${opp.life})`,
+      undefined,
+      true,
+    );
     mainPhase(me, opp, myColors, log);
     combat(me, opp, log);
 
@@ -707,6 +831,7 @@ function playMatch(
         lifeA: A.life,
         lifeB: B.life,
         turns: turnNo,
+        startA,
       };
     }
     activeIsA = !activeIsA;
@@ -714,8 +839,15 @@ function playMatch(
 
   // Turni esauriti: decide la vita.
   const winner = A.life > B.life ? "A" : B.life > A.life ? "B" : "draw";
-  say(log, `Limite turni: vince ${winner} ai punti (A ${A.life}, B ${B.life}).`, undefined, true);
-  return { winner, lifeA: A.life, lifeB: B.life, turns: cfg.maxTurns };
+  say(
+    log,
+    winner === "draw"
+      ? `Limite turni: pareggio (${TOKEN_A} ${A.life}, ${TOKEN_B} ${B.life}).`
+      : `Limite turni: vince ${winner === "A" ? TOKEN_A : TOKEN_B} ai punti (${TOKEN_A} ${A.life}, ${TOKEN_B} ${B.life}).`,
+    undefined,
+    true,
+  );
+  return { winner, lifeA: A.life, lifeB: B.life, turns: cfg.maxTurns, startA };
 }
 
 // ---------------------------------------------------------------------------
@@ -739,15 +871,18 @@ export function runBattle(
   let turnsSum = 0;
   let lifeASum = 0;
   let lifeBSum = 0;
-  let sampleLog: BattleLogLine[] = [];
-  let haveDecisiveSample = false;
+  const samples: BattleScenario[] = [];
+  const LOGGED = 400;
+  let aPlayWins = 0,
+    aPlayGames = 0,
+    aDrawWins = 0,
+    aDrawGames = 0;
 
   const every = Math.max(1, Math.floor(cfg.games / 40));
 
   for (let g = 0; g < cfg.games; g++) {
-    // Registra il log finché non troviamo una partita "decisa" da mostrare come
-    // esempio (qualcuno vince prima del limite turni), entro le prime partite.
-    const tryLog = !haveDecisiveSample && g < 80;
+    // Registra il log delle prime partite: tra queste si scelgono gli esempi.
+    const tryLog = g < LOGGED;
     const log: Log = { on: tryLog, lines: [] };
     const r = playMatch(profA, profB, colorsA, colorsB, cfg, rng, log);
     if (r.winner === "A") winsA++;
@@ -756,27 +891,89 @@ export function runBattle(
     turnsSum += r.turns;
     lifeASum += r.lifeA;
     lifeBSum += r.lifeB;
-    if (tryLog) {
-      const decisive = r.winner !== "draw" && r.turns < cfg.maxTurns;
-      if (sampleLog.length === 0 || decisive) {
-        sampleLog = log.lines;
-        if (decisive) haveDecisiveSample = true;
+    if (r.winner !== "draw") {
+      if (r.startA) {
+        aPlayGames++;
+        if (r.winner === "A") aPlayWins++;
+      } else {
+        aDrawGames++;
+        if (r.winner === "A") aDrawWins++;
       }
     }
+    if (tryLog)
+      samples.push({
+        winner: r.winner,
+        onPlay: r.startA ? "A" : "B",
+        turns: r.turns,
+        lines: log.lines,
+      });
     if (onProgress && g % every === 0) onProgress(g / cfg.games);
   }
   if (onProgress) onProgress(1);
 
   const decided = winsA + winsB;
+  const winRateA = decided > 0 ? winsA / decided : 0.5;
+  const scenarios = pickScenarios(samples, winRateA, cfg.maxTurns);
   return {
     games: cfg.games,
     winsA,
     winsB,
     draws,
-    winRateA: decided > 0 ? winsA / decided : 0.5,
+    winRateA,
     avgTurns: turnsSum / cfg.games,
     avgLifeA: lifeASum / cfg.games,
     avgLifeB: lifeBSum / cfg.games,
-    sampleLog,
+    sampleLog: scenarios[0]?.lines ?? [],
+    scenarios,
+    play: { aPlayWins, aPlayGames, aDrawWins, aDrawGames },
   };
+}
+
+// Sceglie 3 partite "medie": tante vinte da A quanto dice la win-rate (60% → 2
+// su 3), alternando chi inizia, con durata vicina alla media delle vittorie di
+// quel mazzo.
+function pickScenarios(
+  samples: BattleScenario[],
+  winRateA: number,
+  maxTurns: number,
+): BattleScenario[] {
+  const decisive = samples.filter(
+    (s) => s.winner !== "draw" && s.turns < maxTurns,
+  );
+  const pool = decisive.length > 0 ? decisive : samples;
+  let nA = Math.round(winRateA * 3);
+  if (!pool.some((s) => s.winner === "A")) nA = 0;
+  if (!pool.some((s) => s.winner === "B")) nA = 3;
+  const plan: ("A" | "B")[] = [];
+  const first: "A" | "B" = nA >= 2 ? "A" : "B";
+  const second: "A" | "B" = first === "A" ? "B" : "A";
+  const nFirst = first === "A" ? nA : 3 - nA;
+  for (let i = 0; i < nFirst; i++) plan.push(first);
+  for (let i = nFirst; i < 3; i++) plan.push(second);
+
+  const used = new Set<BattleScenario>();
+  const out: BattleScenario[] = [];
+  const countFor: Record<string, number> = {};
+  for (const w of plan) {
+    const k = countFor[w] ?? 0;
+    countFor[w] = k + 1;
+    const wins = pool.filter((s) => s.winner === w);
+    const list = wins.length > 0 ? wins : pool;
+    const avg =
+      list.reduce((t, s) => t + s.turns, 0) / Math.max(1, list.length);
+    // Prima partita: il vincitore inizia; seconda: pesca; e così via.
+    const wantPlay: "A" | "B" = k % 2 === 0 ? w : w === "A" ? "B" : "A";
+    const pick = (arr: BattleScenario[]) =>
+      arr
+        .filter((s) => !used.has(s))
+        .sort((x, y) => Math.abs(x.turns - avg) - Math.abs(y.turns - avg))[0];
+    const s =
+      pick(list.filter((x) => x.onPlay === wantPlay)) ??
+      pick(list) ??
+      pick(samples);
+    if (!s) break;
+    used.add(s);
+    out.push(s);
+  }
+  return out;
 }
