@@ -1,7 +1,6 @@
 // Statistiche e controlli di legalità di un mazzo.
 
 import { DeckCard, Format, SavedDeck } from "./decks";
-import { bestPrice } from "./prices";
 import { CardCategory, Color, TokenRef } from "./types";
 
 export interface Bucket {
@@ -131,9 +130,8 @@ export function deckStats(deck: SavedDeck): DeckStats {
   };
 }
 
-function eurOf(c: DeckCard): number | undefined {
-  const p = bestPrice({ prices: c.prices } as any);
-  if (p && p.currency === "EUR") return p.value;
+/** Prezzo in euro di una copia non foil (Cardmarket via Scryfall). */
+export function eurOf(c: DeckCard): number | undefined {
   return c.prices?.eur ?? undefined;
 }
 

@@ -136,7 +136,8 @@ export function DeckCardSheet({
               {entry.setName ?? (entry.setCode ?? "").toUpperCase()}
               {entry.collectorNumber ? ` #${entry.collectorNumber}` : ""}
               {" · "}
-              {formatPrice({ prices: entry.prices } as CardInfo)}
+              {entry.prices?.eur != null ? formatMoney(entry.prices.eur, "EUR") : "prezzo non disponibile"}
+              {entry.prices?.eur != null && entry.qty > 1 && ` (×${entry.qty} = ${formatMoney(entry.prices.eur * entry.qty, "EUR")})`}
             </div>
 
             {/* Quantità e spostamento */}
