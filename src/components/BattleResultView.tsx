@@ -147,13 +147,12 @@ export function BattleResultView({ result, nameA, nameB, lookup }: Props) {
       </div>
 
       <div className="disclaimer">
-        <strong>Modello semplificato.</strong> Il motore gioca davvero (vita,
-        creature, combattimento, rimozioni, spazzavia, counter, burn, ramp) ma
-        deduce gli effetti dai ruoli/numeri delle carte: non conosce il testo
-        specifico, le abilità attivate o i trigger complessi, e i planeswalker
-        sono approssimati a creature. È una win-rate reale{" "}
-        <em>nei limiti di questo modello</em>, non una simulazione di MTG
-        completa.
+        <strong>Modello semplificato.</strong> Il motore gioca davvero (mani
+        iniziali e mulligan, terre, vita, creature, combattimento con blocchi,
+        rimozioni, spazzavia, counter, burn, ramp, prospero, rapidità, lampo) ma
+        deduce gli effetti dai ruoli/numeri delle carte: non conosce ogni testo
+        specifico, le abilità attivate o i trigger complessi (es. blink), e i
+        planeswalker sono approssimati a creature.
       </div>
     </div>
   );

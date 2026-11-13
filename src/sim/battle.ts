@@ -100,6 +100,8 @@ interface Profile {
   prowess: boolean;
   /** Rapidità: attacca il turno in cui entra. */
   haste: boolean;
+  /** Lampo: creatura lanciata nel turno avversario (fine turno). */
+  flash: boolean;
   /** Potenziamento a una creatura (es. Crescita Mutagena: +2). */
   pump: number;
 }
@@ -176,6 +178,7 @@ function profileOf(card: CardInfo): Profile {
     prowess,
     pump,
     haste: isCreature && /^haste\b|\nhaste\b|, haste\b|\bhaste$/m.test(text),
+    flash: isCreature && /^flash\b/m.test(text),
   };
 }
 
@@ -231,6 +234,11 @@ interface Player {
   manaPerms: ManaPerm[];
   creatures: Creature[];
   life: number;
+  /** Mulligan fatti all'inizio. */
+  mulls: number;
+  /** Mana rimasto stappato dopo la propria fase principale (per il lampo). */
+  manaLeft: number;
+  srcLeft: Record<Color, number>;
   /** Il mazzo ha creature con prospero: le magie non creatura si tengono per loro. */
   prowessDeck: boolean;
 }
@@ -245,7 +253,7 @@ function mulliganHand(
   deck: Profile[],
   cfg: BattleConfig,
   rng: () => number,
-): { hand: Profile[]; library: Profile[] } {
+): { hand: Profile[]; library: Profile[]; mulls: number } {
   let library: Profile[] = [];
   let hand: Profile[] = [];
   let mulls = 0;
@@ -263,7 +271,7 @@ function mulliganHand(
   idx.sort((a, b) => bottomScore(hand[a], lands) - bottomScore(hand[b], lands));
   const toBottom = idx.slice(0, mulls).sort((a, b) => b - a);
   for (const i of toBottom) library.push(...hand.splice(i, 1));
-  return { hand, library };
+  return { hand, library, mulls };
 }
 function bottomScore(c: Profile, lands: number): number {
   if (c.isLand) return lands > 3 ? 0 : 100;
@@ -276,8 +284,11 @@ function newPlayer(
   cfg: BattleConfig,
   rng: () => number,
 ): Player {
-  const { hand, library } = mulliganHand(deck, cfg, rng);
+  const { hand, library, mulls } = mulliganHand(deck, cfg, rng);
   return {
+    mulls,
+    manaLeft: 0,
+    srcLeft: { W: 0, U: 0, B: 0, R: 0, G: 0 },
     name,
     library,
     top: 0,
@@ -349,7 +360,7 @@ function say(log: Log, text: string, cards?: string[], head?: boolean) {
 // ---------------------------------------------------------------------------
 function mainPhase(me: Player, opp: Player, myColors: Color[], log: Log) {
   // Gioca una terra (preferisci una che aggiunge un colore mancante, untapped).
-  playLand(me);
+  playLand(me, log);
 
   const { total, src } = mana(me);
   let manaLeft = total;
@@ -363,6 +374,7 @@ function mainPhase(me: Player, opp: Player, myColors: Color[], log: Log) {
     for (let i = 0; i < me.hand.length; i++) {
       const c = me.hand[i];
       if (c.isLand || c.counter) continue; // i counter si tengono
+      if (c.flash) continue; // lampo: si lancia a fine turno avversario
       if (!canAfford(c, manaLeft, src)) continue;
       if (holdForProwess(c, me, opp)) continue;
       const s = spellScore(c, me, opp);
@@ -401,6 +413,23 @@ function mainPhase(me: Player, opp: Player, myColors: Color[], log: Log) {
 
     resolve(spell, me, opp, myColors, log);
   }
+  me.manaLeft = manaLeft;
+  me.srcLeft = src;
+}
+
+// Fine del turno avversario: chi non è di turno lancia le creature con lampo
+// col mana che ha lasciato stappato.
+function flashStep(me: Player, opp: Player, myColors: Color[], log: Log) {
+  while (true) {
+    const i = me.hand.findIndex(
+      (c) => c.flash && canAfford(c, me.manaLeft, me.srcLeft),
+    );
+    if (i === -1) return;
+    const spell = me.hand.splice(i, 1)[0];
+    me.manaLeft -= spell.cmc;
+    say(log, `Fine turno di ${opp.name}: ${me.name} usa il lampo`);
+    resolve(spell, me, opp, myColors, log);
+  }
 }
 
 // Le creature pronte ad attaccare questo turno (non appena lanciate).
@@ -427,7 +456,7 @@ function holdForProwess(c: Profile, me: Player, opp: Player): boolean {
   return !readyAttackers(me).some((x) => x.p.prowess);
 }
 
-function playLand(me: Player) {
+function playLand(me: Player, log: Log) {
   const current = new Set<Color>();
   for (const l of me.lands) for (const c of l.colors) current.add(c);
   const needed = new Set<Color>();
@@ -456,6 +485,11 @@ function playLand(me: Player) {
       enteredTapped: land.entersTapped,
       enteredThisTurn: true,
     });
+    say(
+      log,
+      `${me.name} gioca ${land.name}${land.entersTapped ? " (tappata)" : ""}`,
+      [land.name],
+    );
   }
 }
 
@@ -775,6 +809,12 @@ function playMatch(
     undefined,
     true,
   );
+  if (log.on)
+    for (const p of startA ? [A, B] : [B, A]) {
+      const names = p.hand.map((c) => c.name);
+      const mull = p.mulls > 0 ? ` (mulligan a ${p.hand.length})` : "";
+      say(log, `Mano iniziale di ${p.name}${mull}: ${names.join(", ")}`, names);
+    }
 
   let turn = 0;
   let activeIsA = startA;
@@ -795,6 +835,13 @@ function playMatch(
     }
     for (const c of [...me.creatures, ...opp.creatures]) c.pump = 0;
 
+    say(
+      log,
+      `Turno ${turnNo} · ${me.name} (vita ${me.life}, avversario ${opp.life})`,
+      undefined,
+      true,
+    );
+
     // Pesca (salta la primissima mossa di chi inizia)
     const isFirstEver = turn === 1 && startA === activeIsA;
     if (!isFirstEver) {
@@ -813,16 +860,14 @@ function playMatch(
           startA,
         };
       }
+      say(log, `${me.name} pesca ${me.hand[me.hand.length - 1].name}`, [
+        me.hand[me.hand.length - 1].name,
+      ]);
     }
 
-    say(
-      log,
-      `Turno ${turnNo} · ${me.name} (vita ${me.life}, avversario ${opp.life})`,
-      undefined,
-      true,
-    );
     mainPhase(me, opp, myColors, log);
     combat(me, opp, log);
+    if (opp.life > 0) flashStep(opp, me, activeIsA ? colorsB : colorsA, log);
 
     if (opp.life <= 0) {
       say(log, `${me.name} vince al turno ${turnNo}.`, undefined, true);
