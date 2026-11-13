@@ -4488,3 +4488,25 @@ label.primary-file {
 .move-print {
   margin-top: 12px;
 }
+
+/* Partite di esempio del simulatore */
+.bl-a {
+  color: var(--accent);
+}
+.bl-b {
+  color: var(--accent-2);
+}
+.play-draw {
+  margin: 10px 0 0;
+  display: grid;
+  gap: 2px;
+}
+.scen-box {
+  margin-top: 14px;
+  padding: 12px;
+}
+.scen-select {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 8px;
+}
