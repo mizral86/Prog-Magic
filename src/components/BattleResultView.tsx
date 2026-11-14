@@ -149,8 +149,10 @@ export function BattleResultView({ result, nameA, nameB, lookup }: Props) {
       <div className="disclaimer">
         <strong>Modello semplificato.</strong> Il motore gioca davvero (mani
         iniziali e mulligan, terre, vita, creature, combattimento con blocchi,
-        rimozioni, spazzavia, counter, burn, ramp, prospero, rapidità, lampo) ma
-        deduce gli effetti dai ruoli/numeri delle carte: non conosce ogni testo
+        rimozioni, spazzavia, counter, burn, ramp, prospero, rapidità, lampo,
+        volare, legame vitale, tocco letale, cautela, attacchi alla mano,
+        trigger "quando entra" e "ogni volta che una creatura entra") ma deduce
+        gli effetti dai ruoli/numeri delle carte: non conosce ogni testo
         specifico, le abilità attivate o i trigger complessi (es. blink), e i
         planeswalker sono approssimati a creature.
       </div>
