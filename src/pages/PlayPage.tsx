@@ -15,7 +15,7 @@ import {
 } from "../sim/engine";
 import { CardInfo, CardCategory } from "../types";
 import { CardThumb } from "../components/CardThumb";
-import { InteractivePlay } from "../components/InteractivePlay";
+import { Tabletop } from "../components/Tabletop";
 import { SAMPLE_A, SAMPLE_B } from "../sampleDecks";
 
 const SAMPLES: { id: string; label: string; text: string }[] = [
@@ -98,7 +98,8 @@ export default function PlayPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"interactive" | "auto">("interactive");
-  const [intKey, setIntKey] = useState(0); // remonta la partita interattiva
+  const [intKey, setIntKey] = useState(0); // remonta il tavolo (nuova partita)
+  const [tableOpen, setTableOpen] = useState(false);
 
   const cfg: SimConfig = { ...DEFAULT_CONFIG, onPlay };
 
@@ -132,6 +133,7 @@ export default function PlayPage() {
       } else {
         setGame(null);
         setIntKey((k) => k + 1);
+        setTableOpen(true);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -161,7 +163,8 @@ export default function PlayPage() {
       <h1 className="page-title">Gioca</h1>
       <p className="muted small" style={{ marginTop: -6 }}>
         Solitario: carica un mazzo e prova a mano lo sviluppo.{" "}
-        <strong>Interattivo</strong> = decidi tu mulligan, terra e magie;{" "}
+        <strong>Tavolo</strong> = tavolo libero senza regole: trascini le
+        carte dalla mano al campo, tappi, peschi, segni la vita;{" "}
         <strong>Automatico</strong> = guardi la partita giocata dall'euristica.
       </p>
 
@@ -170,7 +173,7 @@ export default function PlayPage() {
           className={mode === "interactive" ? "on" : ""}
           onClick={() => setMode("interactive")}
         >
-          🎮 Interattivo
+          🃏 Tavolo
         </button>
         <button
           className={mode === "auto" ? "on" : ""}
@@ -229,22 +232,28 @@ export default function PlayPage() {
         <>
           <div className="play-bar">
             <span className="play-turn">{deckLabel}</span>
-            <span className="muted small">
-              {onPlay ? "in gioco" : "in risposta"}
-            </span>
+            <button className="primary" onClick={() => setTableOpen(true)}>
+              🃏 Apri il tavolo
+            </button>
             <button
               className="ghost"
-              onClick={() => setIntKey((k) => k + 1)}
+              onClick={() => {
+                setIntKey((k) => k + 1);
+                setTableOpen(true);
+              }}
               title="Nuova partita (rimescola)"
             >
               🔀 Nuova partita
             </button>
           </div>
-          <InteractivePlay
+          <Tabletop
             key={intKey}
-            deck={deck}
+            names={deck.map((c) => c.name)}
             lookup={lookup}
             onPlay={onPlay}
+            title={deckLabel}
+            open={tableOpen}
+            onClose={() => setTableOpen(false)}
           />
         </>
       )}
