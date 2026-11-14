@@ -96,6 +96,22 @@ interface Profile {
   burn: number;
   draw: number;
   lifegain: number;
+  /** Toglie una carta non terra dalla mano avversaria (Thoughtseize, Salt Vampire). */
+  handAttack: boolean;
+  /** …e l'avversario pesca una carta al suo posto. */
+  handAttackDraw: boolean;
+  /** Istantaneo o stregoneria (va al cimitero dopo la risoluzione). */
+  isSpell: boolean;
+  /** L'avversario perde vita (drain). */
+  drain: number;
+  /** Trigger su ogni propria creatura che entra (dopo che questo è in campo). */
+  onAllyEnterGain: number;
+  onAllyEnterDrain: number;
+  flying: boolean;
+  reach: boolean;
+  lifelink: boolean;
+  deathtouch: boolean;
+  vigilance: boolean;
   /** Prospero: +1/+1 a ogni magia non creatura lanciata. */
   prowess: boolean;
   /** Rapidità: attacca il turno in cui entra. */
@@ -119,9 +135,42 @@ function wordNum(w: string): number {
   return map[w] ?? (parseInt(w, 10) || 0);
 }
 
+// Divide il testo Oracle nelle sue abilità e tiene solo quelle che fanno
+// qualcosa "subito": il testo di istantanei/stregonerie e le abilità "quando
+// entra" dei permanenti. Le abilità innescate ("ogni volta che…", "all'inizio
+// di…") e quelle attivate ("{T}: …") NON si risolvono al lancio.
+function splitAbilities(card: CardInfo): { now: string; all: string[] } {
+  const name = card.name.toLowerCase();
+  const lines = (card.oracleText || "")
+    .toLowerCase()
+    .split(/\n+/)
+    .map((l) => l.split(name).join("this").trim())
+    .filter(Boolean);
+  const isSpell =
+    card.categories.includes("instant") || card.categories.includes("sorcery");
+  const now: string[] = [];
+  for (const l of lines) {
+    if (/^(whenever|at the beginning|at end of)/.test(l)) continue;
+    if (/^[^"]*?\{[^}]+\}[^"]*?:/.test(l) || /^[a-z ,]+—/.test(l)) continue; // attivate / parole chiave con costo
+    if (isSpell) {
+      now.push(l);
+      continue;
+    }
+    const etb = l.match(
+      /^when (?:this [a-z]+|this) enters(?: the battlefield)?(?: or [^,]+)?, (.*)$/,
+    );
+    if (etb) now.push(etb[1]);
+  }
+  return { now: now.join("\n"), all: lines };
+}
+
+const NUM = "(\\d+|a|an|one|two|three|four)";
+const kw = (all: string[], k: string) =>
+  all.some((l) => new RegExp(`^(?:[a-z ]+, )*${k}(?:,|$| \\()`).test(l));
+
 function profileOf(card: CardInfo): Profile {
-  const text = (card.oracleText || "").toLowerCase();
-  const roles = rolesOf(card);
+  const { now: text, all } = splitAbilities(card);
+  const roles = rolesOf({ ...card, oracleText: text });
   const isCreature = card.categories.includes("creature");
   const isPlaneswalker = card.categories.includes("planeswalker");
 
@@ -130,23 +179,47 @@ function profileOf(card: CardInfo): Profile {
   );
   const burn = burnM ? parseInt(burnM[1], 10) : 0;
 
-  let draw = 0;
-  if (!/target (player|opponent) draws/.test(text)) {
-    const dM = text.match(/draws? (\d+|a|two|three|four) cards?/);
-    if (dM) draw = Math.min(4, wordNum(dM[1]));
-  }
+  // Pesca chi lancia solo con "draw" (2a persona): "that player draws",
+  // "target opponent draws" fanno pescare qualcun altro.
+  const dM = text.match(
+    new RegExp(`(?:^|you |may |then |and |, )draw ${NUM} cards?`, "m"),
+  );
+  const draw = dM ? Math.min(4, wordNum(dM[1])) : 0;
   const pumpM = text.match(
     /target creature(?: you control)? gets \+(\d+)\/\+(\d+)/,
   );
   const pump = !isCreature && pumpM ? parseInt(pumpM[1], 10) : 0;
   const prowess =
     isCreature &&
-    (/\bprowess\b/.test(text) ||
-      /whenever you cast a noncreature spell, (this creature|~|[^,.]*) gets \+1\/\+1/.test(
-        text,
+    (kw(all, "prowess") ||
+      all.some((l) =>
+        /^whenever you cast a noncreature spell, this [a-z ]*gets \+1\/\+1/.test(
+          l,
+        ),
       ));
-  const lgM = text.match(/gains? (\d+) life/);
+  // "you gain N life" / "gain N life": "its controller gains 3 life"
+  // (Swords to Plowshares) fa guadagnare l'avversario, non chi lancia.
+  const lgM = text.match(/(?:^|you |and |, |then )gain (\d+) life/m);
   const lifegain = lgM ? parseInt(lgM[1], 10) : 0;
+  const drM = text.match(
+    /each opponent loses (\d+) life|target (?:opponent|player) loses (\d+) life/,
+  );
+  const drain = drM ? parseInt(drM[1] ?? drM[2], 10) : 0;
+
+  // Trigger "ogni volta che una creatura che controlli entra" (Case of the
+  // Uneaten Feast, Soul Warden…): vita guadagnata / persa dall'avversario.
+  let onAllyEnterGain = 0;
+  let onAllyEnterDrain = 0;
+  for (const l of all) {
+    const m = l.match(
+      /^whenever (?:a|another) (?:nontoken )?creature(?: you control)? enters(?: the battlefield)?(?: under your control)?, (.*)$/,
+    );
+    if (!m) continue;
+    const g = m[1].match(/you gain (\d+) life/);
+    if (g) onAllyEnterGain += parseInt(g[1], 10);
+    const d = m[1].match(/each opponent loses (\d+) life/);
+    if (d) onAllyEnterDrain += parseInt(d[1], 10);
+  }
 
   // Planeswalker approssimato: forza 3, costituzione = lealtà (o 4).
   const power = isPlaneswalker ? 3 : (card.power ?? 0);
@@ -175,10 +248,26 @@ function profileOf(card: CardInfo): Profile {
     burn,
     draw,
     lifegain,
+    handAttack:
+      /(target (opponent|player)|that player)[^.]*(reveals|hand)[^.]*\.?[^.]*(choose|discards?|exiles?)[^.]*(nonland|card)/.test(
+        text,
+      ) && /(discards|exiles) (that|the chosen) card/.test(text),
+    handAttackDraw: /that player [^.]*then draws a card/.test(text),
+    isSpell:
+      card.categories.includes("instant") ||
+      card.categories.includes("sorcery"),
+    drain,
+    onAllyEnterGain,
+    onAllyEnterDrain,
     prowess,
     pump,
-    haste: isCreature && /^haste\b|\nhaste\b|, haste\b|\bhaste$/m.test(text),
-    flash: isCreature && /^flash\b/m.test(text),
+    haste: isCreature && kw(all, "haste"),
+    flash: isCreature && kw(all, "flash"),
+    flying: isCreature && kw(all, "flying"),
+    reach: isCreature && kw(all, "reach"),
+    lifelink: isCreature && kw(all, "lifelink"),
+    deathtouch: isCreature && kw(all, "deathtouch"),
+    vigilance: isCreature && kw(all, "vigilance"),
   };
 }
 
@@ -233,6 +322,8 @@ interface Player {
   lands: Land[];
   manaPerms: ManaPerm[];
   creatures: Creature[];
+  /** Permanenti non creatura con abilità innescate (es. Case of the Uneaten Feast). */
+  statics: Profile[];
   life: number;
   /** Mulligan fatti all'inizio. */
   mulls: number;
@@ -296,6 +387,7 @@ function newPlayer(
     lands: [],
     manaPerms: [],
     creatures: [],
+    statics: [],
     life: cfg.startLife,
     prowessDeck: deck.filter((c) => c.prowess).length >= 4,
   };
@@ -417,6 +509,30 @@ function mainPhase(me: Player, opp: Player, myColors: Color[], log: Log) {
   me.srcLeft = src;
 }
 
+// Una propria creatura entra: si attivano i trigger "ogni volta che una
+// creatura che controlli entra" dei permanenti già in campo.
+function allyEnters(me: Player, opp: Player, entering: Profile, log: Log) {
+  const sources = [...me.statics, ...me.creatures.map((c) => c.p)];
+  for (const src of sources) {
+    if (src.onAllyEnterGain > 0) {
+      me.life += src.onAllyEnterGain;
+      say(
+        log,
+        `${me.name} guadagna ${src.onAllyEnterGain} vita (${src.name}: entra ${entering.name})`,
+        [src.name],
+      );
+    }
+    if (src.onAllyEnterDrain > 0) {
+      opp.life -= src.onAllyEnterDrain;
+      say(
+        log,
+        `${opp.name} perde ${src.onAllyEnterDrain} vita (${src.name}: entra ${entering.name})`,
+        [src.name],
+      );
+    }
+  }
+}
+
 // Fine del turno avversario: chi non è di turno lancia le creature con lampo
 // col mana che ha lasciato stappato.
 function flashStep(me: Player, opp: Player, myColors: Color[], log: Log) {
@@ -506,6 +622,12 @@ function spellScore(c: Profile, me: Player, opp: Player): number {
   if (c.removal) return opp.creatures.length > 0 ? 70 + biggest(opp) : 0;
   if (c.isCreature) return 40 + c.power + c.toughness;
   if (c.burn > 0) return 20 + c.burn;
+  if (c.drain > 0) return 22 + c.drain;
+  if (c.handAttack && !c.isCreature)
+    return opp.hand.some((x) => !x.isLand) ? 45 : 0;
+  if (!c.isSpell && (c.onAllyEnterGain > 0 || c.onAllyEnterDrain > 0))
+    // prima delle creature, così i loro ingressi la attivano
+    return me.hand.some((x) => x.isCreature) ? 60 : 20;
   if (c.lifegain > 0) return me.life < 10 ? 35 : 6;
   if (c.draw > 0) return 15;
   if (c.pump > 0) return 12;
@@ -640,6 +762,7 @@ function resolve(
     }
   }
   if (spell.isCreature) {
+    allyEnters(me, opp, spell, log);
     me.creatures.push({
       p: spell,
       sick: !spell.haste,
@@ -669,6 +792,40 @@ function resolve(
     for (let k = 0; k < spell.draw; k++) draw(me);
     say(log, `${me.name} pesca ${spell.draw} con ${spell.name}`, [spell.name]);
   }
+  if (spell.handAttack) {
+    let bi = -1;
+    for (let i = 0; i < opp.hand.length; i++)
+      if (
+        !opp.hand[i].isLand &&
+        (bi === -1 || opp.hand[i].cmc > opp.hand[bi].cmc)
+      )
+        bi = i;
+    if (bi >= 0) {
+      const lost = opp.hand.splice(bi, 1)[0];
+      say(log, `${spell.name}: ${opp.name} perde ${lost.name} dalla mano`, [
+        spell.name,
+        lost.name,
+      ]);
+      if (spell.handAttackDraw && draw(opp))
+        say(log, `${opp.name} pesca una carta (${spell.name})`);
+    }
+  }
+  if (spell.drain > 0) {
+    opp.life -= spell.drain;
+    say(
+      log,
+      `${opp.name} perde ${spell.drain} vita (${spell.name}, vita ${opp.life})`,
+      [spell.name],
+    );
+  }
+  if (
+    !spell.isCreature &&
+    !spell.isSpell &&
+    (spell.onAllyEnterGain > 0 || spell.onAllyEnterDrain > 0)
+  ) {
+    me.statics.push(spell);
+    say(log, `${me.name} lancia ${spell.name}`, [spell.name]);
+  }
   if (spell.lifegain > 0) {
     me.life += spell.lifegain;
     say(log, `${me.name} guadagna ${spell.lifegain} vita (${spell.name})`, [
@@ -681,6 +838,13 @@ function resolve(
 // Combattimento
 // ---------------------------------------------------------------------------
 // Decide se una creatura debba attaccare, evitando attacchi suicidi.
+// Può `b` bloccare `a`? (volare: solo creature con volare o raggiungere)
+const canBlock = (b: Creature, a: Creature) =>
+  !a.p.flying || b.p.flying || b.p.reach;
+// `x` uccide `y` in combattimento? (tocco letale: basta 1 danno)
+const kills = (x: Creature, y: Creature) =>
+  pw(x) > 0 && (x.p.deathtouch || pw(x) >= tg(y) - y.damage);
+
 function shouldAttack(
   a: Creature,
   blockers: Creature[],
@@ -691,7 +855,9 @@ function shouldAttack(
   if (blockers.length === 0) return true; // nessun bloccante
   if (def.life <= teamPower) return true; // spinta per la vittoria / corsa
   // un bloccante uccide A e sopravvive? allora è un attacco svantaggioso
-  const badBlock = blockers.some((b) => pw(b) >= tg(a) && tg(b) > pw(a));
+  const able = blockers.filter((b) => canBlock(b, a));
+  if (able.length === 0) return true; // nessuno può bloccarla (es. volare)
+  const badBlock = able.some((b) => kills(b, a) && !kills(a, b));
   if (!badBlock) return true; // attacco sicuro
   // rischioso: attacca solo se possiamo sommergere i bloccanti (più attaccanti)
   return teamCount > blockers.length;
@@ -706,7 +872,7 @@ function combat(att: Player, def: Player, log: Log) {
     shouldAttack(a, blockers, def, potential.length, teamPower),
   );
   if (attackers.length === 0) return;
-  for (const a of attackers) a.tapped = true;
+  for (const a of attackers) if (!a.p.vigilance) a.tapped = true;
   const usedBlocker = new Set<Creature>();
   const blockOf = new Map<Creature, Creature>();
 
@@ -715,7 +881,8 @@ function combat(att: Player, def: Player, log: Log) {
   // 1) blocchi favorevoli: uccidi l'attaccante e sopravvivi
   for (const a of sorted) {
     const b = blockers.find(
-      (x) => !usedBlocker.has(x) && pw(x) >= tg(a) && tg(x) > pw(a),
+      (x) =>
+        !usedBlocker.has(x) && canBlock(x, a) && kills(x, a) && !kills(a, x),
     );
     if (b) {
       usedBlocker.add(b);
@@ -732,8 +899,9 @@ function combat(att: Player, def: Player, log: Log) {
     const bigFirst = [...unblocked].sort((a, b) => pw(b) - pw(a));
     for (const a of bigFirst) {
       if (dmg < def.life) break;
-      const b = avail.shift();
-      if (!b) break;
+      const bi = avail.findIndex((x) => canBlock(x, a));
+      if (bi === -1) continue;
+      const b = avail.splice(bi, 1)[0];
       usedBlocker.add(b);
       blockOf.set(a, b);
       dmg -= pw(a);
@@ -743,18 +911,25 @@ function combat(att: Player, def: Player, log: Log) {
   // risoluzione danni
   let faceDamage = 0;
   const dead: Creature[] = [];
+  let attLink = 0;
+  let defLink = 0;
   for (const a of attackers) {
     const b = blockOf.get(a);
     if (b) {
+      if (kills(a, b)) dead.push(b);
+      if (kills(b, a)) dead.push(a);
       b.damage += pw(a);
       a.damage += pw(b);
-      if (b.damage >= tg(b)) dead.push(b);
-      if (a.damage >= tg(a)) dead.push(a);
+      if (a.p.lifelink) attLink += pw(a);
+      if (b.p.lifelink) defLink += pw(b);
     } else {
       faceDamage += pw(a);
+      if (a.p.lifelink) attLink += pw(a);
     }
   }
   if (faceDamage > 0) def.life -= faceDamage;
+  att.life += attLink;
+  def.life += defLink;
   att.creatures = att.creatures.filter((c) => !dead.includes(c));
   def.creatures = def.creatures.filter((c) => !dead.includes(c));
   if (log.on) {
@@ -779,6 +954,16 @@ function combat(att: Player, def: Player, log: Log) {
     }
     if (faceDamage > 0)
       say(log, `${faceDamage} danni a ${def.name} (vita ${def.life})`);
+    if (attLink > 0)
+      say(
+        log,
+        `${att.name} guadagna ${attLink} vita (legame vitale, vita ${att.life})`,
+      );
+    if (defLink > 0)
+      say(
+        log,
+        `${def.name} guadagna ${defLink} vita (legame vitale, vita ${def.life})`,
+      );
   }
 }
 
