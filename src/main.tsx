@@ -6,6 +6,7 @@ import { CollectionProvider } from "./collection";
 import { DecksProvider } from "./decks";
 import { WishlistProvider } from "./wishlist";
 import { AuthProvider } from "./auth";
+import { FriendsProvider } from "./friendsContext";
 import "./styles.css";
 import { applyTheme, getTheme } from "./theme";
 
@@ -18,6 +19,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
     >
       <AuthProvider>
+      <FriendsProvider>
       <CollectionProvider>
         <DecksProvider>
           <WishlistProvider>
@@ -25,6 +27,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           </WishlistProvider>
         </DecksProvider>
       </CollectionProvider>
+      </FriendsProvider>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>,
