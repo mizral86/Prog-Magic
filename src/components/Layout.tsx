@@ -1,6 +1,7 @@
 // Shell dell'app: barra superiore + contenuto + navigazione inferiore a schede.
 
 import { useAuth } from "../auth";
+import { useFriends } from "../friendsContext";
 import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { applyTheme, getTheme, isDark, ThemeChoice } from "../theme";
@@ -49,6 +50,7 @@ export function Layout() {
           >
             {dark ? "☀" : "☾"}
           </button>
+          <FriendsButton />
           <AccountButton />
         </div>
       </header>
@@ -121,6 +123,29 @@ function IconCamera() {
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
       <circle cx="12" cy="13.5" r="3.5" />
+    </svg>
+  );
+}
+
+function FriendsButton() {
+  const fr = useFriends();
+  if (fr.status === "off" || fr.status === "loading") return null;
+  const label = fr.badge > 0 ? `Amici (${fr.badge} novità)` : "Amici";
+  return (
+    <Link to="/amici" className="icon-btn friends-btn" aria-label={label} title={label}>
+      <IconFriends />
+      {fr.badge > 0 && <span className="friends-badge">{fr.badge > 99 ? "99+" : fr.badge}</span>}
+    </Link>
+  );
+}
+
+function IconFriends() {
+  return (
+    <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="8" r="3.5" />
+      <path d="M2.5 20c0-3.6 3-5.5 6.5-5.5s6.5 1.9 6.5 5.5" />
+      <path d="M16 4.6a3.5 3.5 0 0 1 0 6.8" />
+      <path d="M18 14.8c2.2.6 3.5 2.3 3.5 5.2" />
     </svg>
   );
 }
