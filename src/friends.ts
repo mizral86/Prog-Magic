@@ -93,8 +93,10 @@ function fail(e: PgError | null): never {
   if (e?.code === "23505") throw new FriendsError("C'è già una richiesta tra voi due.");
   if (e?.code === "23514" && m.includes("username"))
     throw new FriendsError("Nome utente non valido: 3-20 tra lettere minuscole, numeri, _ e punto.");
-  if (e?.code === "42501" || m.includes("row-level security"))
-    throw new FriendsError("Operazione non permessa (potete scrivervi solo da amici).");
+  if (m.includes("row-level security") && m.includes("messages"))
+    throw new FriendsError("Operazione non permessa: potete scrivervi solo da amici.");
+  if (e?.code === "42501" || m.includes("row-level security") || m.includes("permission denied"))
+    throw new FriendsError(`Operazione non permessa dal server (${msg}).`);
   if (m.includes("failed to fetch") || m.includes("network"))
     throw new FriendsError("Connessione assente: riprova.");
   throw new FriendsError(msg);
@@ -133,11 +135,17 @@ class SupabaseFriends implements FriendsBackend {
   }
 
   async saveProfile(uid: string, username: string, displayName: string | null) {
-    const { data, error } = await this.sb
-      .from("profiles")
-      .upsert({ id: uid, username, display_name: displayName || null }, { onConflict: "id" })
-      .select("*")
-      .single();
+    // Niente upsert: aggiornerebbe anche la colonna id, che le regole non
+    // permettono di modificare. Prima volta insert, poi update.
+    const row = { username, display_name: displayName || null };
+    const existing = await this.myProfile(uid);
+    const { data, error } = existing
+      ? await this.sb.from("profiles").update(row).eq("id", uid).select("*").single()
+      : await this.sb
+          .from("profiles")
+          .insert({ id: uid, ...row })
+          .select("*")
+          .single();
     if (error) fail(error);
     return data as Profile;
   }
