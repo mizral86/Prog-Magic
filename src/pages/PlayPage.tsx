@@ -2,7 +2,7 @@
 // goldfish) con la visualizzazione del tavolo. Riusa il motore di simulazione
 // giocando UNA partita riproducibile (seed) e mostrandone lo stato passo-passo.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDecks } from "../decks";
 import { deckToText } from "../deckIO";
 import { parseDecklist } from "../deckParser";
@@ -17,6 +17,7 @@ import { CardInfo, CardCategory } from "../types";
 import { CardThumb } from "../components/CardThumb";
 import { Tabletop } from "../components/Tabletop";
 import { SAMPLE_A, SAMPLE_B } from "../sampleDecks";
+import { LifeSetup } from "../components/LifeSetup";
 
 const SAMPLES: { id: string; label: string; text: string }[] = [
   { id: "sample:a", label: "Esempio · Mono-Red Aggro", text: SAMPLE_A },
@@ -97,9 +98,15 @@ export default function PlayPage() {
   const [turnIdx, setTurnIdx] = useState(0); // 0 = solo mano iniziale
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<"interactive" | "auto">("interactive");
+  const [mode, setMode] = useState<"interactive" | "auto" | "life">(() =>
+    sessionStorage.getItem("mm.gioca.mode") === "life" ? "life" : "interactive",
+  );
   const [intKey, setIntKey] = useState(0); // remonta il tavolo (nuova partita)
   const [tableOpen, setTableOpen] = useState(false);
+
+  useEffect(() => {
+    sessionStorage.setItem("mm.gioca.mode", mode);
+  }, [mode]);
 
   const cfg: SimConfig = { ...DEFAULT_CONFIG, onPlay };
 
@@ -162,10 +169,11 @@ export default function PlayPage() {
     <div className="page">
       <h1 className="page-title">Gioca</h1>
       <p className="muted small" style={{ marginTop: -6 }}>
-        Solitario: carica un mazzo e prova a mano lo sviluppo.{" "}
-        <strong>Tavolo</strong> = tavolo libero senza regole: trascini le
-        carte dalla mano al campo, tappi, peschi, segni la vita;{" "}
-        <strong>Automatico</strong> = guardi la partita giocata dall'euristica.
+        <strong>Tavolo</strong> = solitario libero senza regole: trascini le
+        carte dalla mano al campo, tappi, peschi;{" "}
+        <strong>Automatico</strong> = guardi la partita giocata dall'euristica;{" "}
+        <strong>Segnapunti</strong> = punti vita e segnalini per giocare dal
+        vivo con gli amici, un solo telefono al centro del tavolo.
       </p>
 
       <div className="segmented" style={{ marginBottom: 10 }}>
@@ -181,7 +189,15 @@ export default function PlayPage() {
         >
           👁 Automatico
         </button>
+        <button className={mode === "life" ? "on" : ""} onClick={() => setMode("life")}>
+          ❤️ Segnapunti
+        </button>
       </div>
+
+      {mode === "life" && <LifeSetup />}
+
+      {mode !== "life" && (
+      <>
 
       <div className="play-setup">
         <label className="field" style={{ flex: 1, minWidth: 200 }}>
@@ -329,6 +345,8 @@ export default function PlayPage() {
             empty="mano vuota"
           />
         </>
+      )}
+      </>
       )}
     </div>
   );
