@@ -1,7 +1,62 @@
 // Galleria per scegliere l'immagine profilo tra le illustrazioni dei
 // planeswalker (art crop da Scryfall, una per illustrazione, più recenti prima).
+// Si può filtrare per colori: un colore, gilde di Ravnica (coppie) e trii
+// (frammenti di Alara e clan di Tarkir).
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { ManaSymbol } from "./ManaSymbol";
+
+export interface ColorFilter {
+  id: string;
+  label: string;
+  /** Colori esatti in sintassi Scryfall (c=…); "C" = incolore, "4+" = quattro o più. */
+  colors: string;
+}
+
+export const COLOR_GROUPS: { title: string; items: ColorFilter[] }[] = [
+  {
+    title: "Un colore",
+    items: [
+      { id: "w", label: "Bianco", colors: "W" },
+      { id: "u", label: "Blu", colors: "U" },
+      { id: "b", label: "Nero", colors: "B" },
+      { id: "r", label: "Rosso", colors: "R" },
+      { id: "g", label: "Verde", colors: "G" },
+      { id: "c", label: "Incolore", colors: "C" },
+    ],
+  },
+  {
+    title: "Gilde di Ravnica",
+    items: [
+      { id: "azorius", label: "Azorius", colors: "WU" },
+      { id: "dimir", label: "Dimir", colors: "UB" },
+      { id: "rakdos", label: "Rakdos", colors: "BR" },
+      { id: "gruul", label: "Gruul", colors: "RG" },
+      { id: "selesnya", label: "Selesnya", colors: "GW" },
+      { id: "orzhov", label: "Orzhov", colors: "WB" },
+      { id: "izzet", label: "Izzet", colors: "UR" },
+      { id: "golgari", label: "Golgari", colors: "BG" },
+      { id: "boros", label: "Boros", colors: "RW" },
+      { id: "simic", label: "Simic", colors: "GU" },
+    ],
+  },
+  {
+    title: "Tre colori",
+    items: [
+      { id: "esper", label: "Esper", colors: "WUB" },
+      { id: "grixis", label: "Grixis", colors: "UBR" },
+      { id: "jund", label: "Jund", colors: "BRG" },
+      { id: "naya", label: "Naya", colors: "RGW" },
+      { id: "bant", label: "Bant", colors: "GWU" },
+      { id: "abzan", label: "Abzan", colors: "WBG" },
+      { id: "jeskai", label: "Jeskai", colors: "URW" },
+      { id: "sultai", label: "Sultai", colors: "BGU" },
+      { id: "mardu", label: "Mardu", colors: "RWB" },
+      { id: "temur", label: "Temur", colors: "GUR" },
+      { id: "four", label: "4-5 colori", colors: "4+" },
+    ],
+  },
+];
 
 export interface AvatarOption {
   name: string;
@@ -24,9 +79,15 @@ interface ScryPage {
 
 const SEARCH = "https://api.scryfall.com/cards/search";
 
-function firstUrl(text: string): string {
+function colorQuery(f: ColorFilter | null): string {
+  if (!f) return "";
+  if (f.colors === "4+") return " c>=4";
+  return ` c=${f.colors.toLowerCase()}`;
+}
+
+function firstUrl(text: string, f: ColorFilter | null = null): string {
   // Il testo libero cerca nel nome (anche in italiano); il resto filtra i planeswalker.
-  const q = `t:planeswalker -is:digital${text.trim() ? ` ${text.trim()}` : ""}`;
+  const q = `t:planeswalker -is:digital${colorQuery(f)}${text.trim() ? ` ${text.trim()}` : ""}`;
   return `${SEARCH}?q=${encodeURIComponent(q)}&unique=art&order=released&dir=desc&include_multilingual=true`;
 }
 
@@ -61,6 +122,7 @@ export default function AvatarPicker({
   const req = useRef(0);
   // Testo della ricerca mostrata adesso ("" = tutti i planeswalker).
   const [shown, setShown] = useState("");
+  const [color, setColor] = useState<ColorFilter | null>(null);
 
   async function load(url: string, append: boolean, cache = false) {
     const id = ++req.current;
@@ -72,7 +134,7 @@ export default function AvatarPicker({
       if (res.status === 404) {
         if (!append) setItems([]);
         setNext(null);
-        setErr("Nessun planeswalker con questo nome.");
+        setErr("Nessun planeswalker trovato con questi filtri.");
         return;
       }
       if (!res.ok) throw new Error(`Scryfall ha risposto ${res.status}. Riprova tra poco.`);
@@ -107,9 +169,13 @@ export default function AvatarPicker({
 
   function search(e: FormEvent) {
     e.preventDefault();
-    const t = text.trim();
+    show(text.trim(), color);
+  }
+
+  function show(t: string, f: ColorFilter | null) {
     setShown(t);
-    if (!t && cached) {
+    setColor(f);
+    if (!t && !f && cached) {
       req.current++;
       setItems(cached.items);
       setNext(cached.next);
@@ -117,7 +183,7 @@ export default function AvatarPicker({
       setBusy(false);
       return;
     }
-    void load(firstUrl(t), false, !t);
+    void load(firstUrl(t, f), false, !t && !f);
   }
 
   async function pick(url: string | null) {
@@ -157,6 +223,40 @@ export default function AvatarPicker({
             Cerca
           </button>
         </form>
+        <div className="avatar-colors">
+          <button
+            type="button"
+            className={`avatar-chip${!color ? " on" : ""}`}
+            onClick={() => show(text.trim(), null)}
+          >
+            Tutti i colori
+          </button>
+          {COLOR_GROUPS.map((g) => (
+            <div key={g.title} className="avatar-color-group">
+              <div className="avatar-color-title">{g.title}</div>
+              <div className="avatar-chips">
+                {g.items.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    className={`avatar-chip${color?.id === f.id ? " on" : ""}`}
+                    onClick={() => show(text.trim(), color?.id === f.id ? null : f)}
+                    aria-pressed={color?.id === f.id}
+                  >
+                    {f.colors !== "4+" && (
+                      <span className="avatar-chip-mana" aria-hidden>
+                        {f.colors.split("").map((c, i) => (
+                          <ManaSymbol key={i} sym={c} size={15} />
+                        ))}
+                      </span>
+                    )}
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
         {current && (
           <button
             type="button"
@@ -186,7 +286,7 @@ export default function AvatarPicker({
         </div>
         {busy && <p className="muted small">Carico i planeswalker…</p>}
         {!busy && next && (
-          <button type="button" className="ghost avatar-more" onClick={() => void load(next, true, !shown)}>
+          <button type="button" className="ghost avatar-more" onClick={() => void load(next, true, !shown && !color)}>
             Mostra altri
           </button>
         )}
