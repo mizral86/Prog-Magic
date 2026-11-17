@@ -3,6 +3,7 @@
 // giocando UNA partita riproducibile (seed) e mostrandone lo stato passo-passo.
 
 import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useDecks } from "../decks";
 import { deckToText } from "../deckIO";
 import { parseDecklist } from "../deckParser";
@@ -18,6 +19,29 @@ import { CardThumb } from "../components/CardThumb";
 import { Tabletop } from "../components/Tabletop";
 import { SAMPLE_A, SAMPLE_B } from "../sampleDecks";
 import { LifeSetup } from "../components/LifeSetup";
+import { useFriends } from "../friendsContext";
+import { shownName } from "../friends";
+import {
+  clearSavedGame,
+  DeckCard,
+  inviteBody,
+  loadSavedGame,
+  newGameId,
+  SavedGame,
+  saveGame,
+} from "../onlineGame";
+import { useTableNet } from "../useTableNet";
+import { TableState } from "../tabletop";
+
+/** Partita in due in corso. */
+interface OnlineSession {
+  gameId: string;
+  friendId: string;
+  friendName: string;
+  host: boolean;
+  initial: TableState | null;
+  active: string | null;
+}
 
 const SAMPLES: { id: string; label: string; text: string }[] = [
   { id: "sample:a", label: "Esempio · Mono-Red Aggro", text: SAMPLE_A },
@@ -87,7 +111,16 @@ export default function PlayPage() {
     [decks],
   );
 
+  const fr = useFriends();
+  const [params, setParams] = useSearchParams();
   const [selId, setSelId] = useState(options[0]?.id ?? "sample:a");
+  // Avversario: "" = da solo, altrimenti l'id dell'amico da sfidare.
+  const [vs, setVs] = useState("");
+  // Sfida ricevuta (link dalla chat): partita da raggiungere.
+  const [invite, setInvite] = useState<{ gameId: string; friendId: string } | null>(null);
+  const [online, setOnline] = useState<OnlineSession | null>(null);
+  const [saved, setSaved] = useState<SavedGame | null>(() => loadSavedGame(fr.uid));
+  useEffect(() => setSaved(loadSavedGame(fr.uid)), [fr.uid]);
   const [onPlay, setOnPlay] = useState(true);
 
   const [deck, setDeck] = useState<CardInfo[] | null>(null);
@@ -99,8 +132,31 @@ export default function PlayPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"interactive" | "auto" | "life">(() =>
-    sessionStorage.getItem("mm.gioca.mode") === "life" ? "life" : "interactive",
+    params.get("sfida") || params.get("partita")
+      ? "interactive"
+      : sessionStorage.getItem("mm.gioca.mode") === "life"
+        ? "life"
+        : "interactive",
   );
+
+  // Link da Amici o dalla chat (anche con la pagina già aperta); servono una volta sola.
+  useEffect(() => {
+    const sfida = params.get("sfida");
+    const g = params.get("partita");
+    const f = params.get("contro");
+    if (!sfida && !g) return;
+    setMode("interactive");
+    // Sfida già accettata su questo telefono: si riprende quella partita.
+    if (g && f && loadSavedGame(fr.uid)?.gameId !== g) setInvite({ gameId: g, friendId: f });
+    else if (sfida) {
+      setInvite(null);
+      setVs(sfida);
+    }
+    setParams({}, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
+
+  const friendName = (id: string) => shownName(fr.friends.find((f) => f.id === id)?.profile);
   const [intKey, setIntKey] = useState(0); // remonta il tavolo (nuova partita)
   const [tableOpen, setTableOpen] = useState(false);
 
@@ -131,9 +187,47 @@ export default function PlayPage() {
         setError("Troppe poche carte risolte per giocare (controlla i nomi).");
         return;
       }
+      // Partita con un amico: sfida accettata o nuova sfida (messaggio in chat).
+      let session: OnlineSession | null = null;
+      if (mode === "interactive" && invite) {
+        session = {
+          gameId: invite.gameId,
+          friendId: invite.friendId,
+          friendName: friendName(invite.friendId),
+          host: false,
+          initial: null,
+          active: null,
+        };
+      } else if (mode === "interactive" && vs) {
+        if (!fr.backend || !fr.uid) {
+          setError("Per sfidare un amico devi aver fatto l'accesso.");
+          return;
+        }
+        const gameId = newGameId();
+        await fr.backend.send(fr.uid, vs, inviteBody(gameId, opt.label));
+        session = { gameId, friendId: vs, friendName: friendName(vs), host: true, initial: null, active: null };
+      }
       setDeck(expanded);
       setDeckLabel(opt.label);
       setLookup(cards);
+      setOnline(session);
+      setInvite(null);
+      if (session) {
+        const g: SavedGame = {
+          uid: fr.uid!,
+          gameId: session.gameId,
+          friendId: session.friendId,
+          friendName: session.friendName,
+          host: session.host,
+          deckLabel: opt.label,
+          names: expanded.map((c) => c.name),
+          state: null,
+          active: null,
+          savedAt: Date.now(),
+        };
+        saveGame(g);
+        setSaved(g);
+      }
       if (mode === "auto") {
         setGame(playSingleGame(expanded, { ...cfg, onPlay }, freshSeed()));
         setTurnIdx(0);
@@ -147,6 +241,46 @@ export default function PlayPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // Riprende la partita in due salvata su questo telefono.
+  async function resume(g: SavedGame) {
+    setLoading(true);
+    setError(null);
+    try {
+      const { cards } = await resolveCards([...new Set(g.names)]);
+      const expanded = g.names
+        .map((n) => cards.get(n.toLowerCase()))
+        .filter((c): c is CardInfo => !!c);
+      setMode("interactive");
+      setDeck(expanded);
+      setDeckLabel(g.deckLabel);
+      setLookup(cards);
+      setGame(null);
+      setInvite(null);
+      setOnline({
+        gameId: g.gameId,
+        friendId: g.friendId,
+        friendName: friendName(g.friendId) !== "Utente" ? friendName(g.friendId) : g.friendName,
+        host: !!g.host,
+        initial: g.state,
+        active: g.active,
+      });
+      setIntKey((k) => k + 1);
+      setTableOpen(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function leaveOnline() {
+    if (online && fr.uid) clearSavedGame(fr.uid, online.gameId);
+    setSaved(null);
+    setOnline(null);
+    setTableOpen(false);
+    setDeck(null);
   }
 
   function reshuffle() {
@@ -199,6 +333,69 @@ export default function PlayPage() {
       {mode !== "life" && (
       <>
 
+      {mode === "interactive" && saved && !online && !invite && (
+        <div className="panel play-challenge">
+          <p>
+            ⚔ Partita in corso contro <b>{friendName(saved.friendId) !== "Utente" ? friendName(saved.friendId) : saved.friendName}</b>{" "}
+            <span className="muted small">({saved.deckLabel})</span>
+          </p>
+          <div className="row">
+            <button className="primary" onClick={() => resume(saved)} disabled={loading}>
+              Riprendi
+            </button>
+            <button
+              className="ghost"
+              onClick={() => {
+                clearSavedGame(saved.uid, saved.gameId);
+                setSaved(null);
+              }}
+            >
+              Chiudi la partita
+            </button>
+          </div>
+        </div>
+      )}
+
+      {mode === "interactive" && invite && (
+        <div className="panel play-challenge">
+          <p>
+            ⚔ <b>{friendName(invite.friendId)}</b> ti ha sfidato al Tavolo.
+          </p>
+          <p className="muted small">
+            Scegli il tuo mazzo qui sotto e premi <b>Accetta la sfida</b>.{" "}
+            <button className="link-btn" onClick={() => setInvite(null)}>
+              Non ora
+            </button>
+          </p>
+        </div>
+      )}
+
+      {mode === "interactive" && !invite && (
+        <div className="play-vs">
+          {fr.status === "ready" && fr.friends.length > 0 ? (
+            <label className="field" style={{ flex: 1, minWidth: 200 }}>
+              Contro
+              <select value={vs} onChange={(e) => setVs(e.target.value)}>
+                <option value="">Da solo (solitario)</option>
+                <optgroup label="Sfida un amico">
+                  {fr.friends.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {shownName(f.profile)}
+                      {f.online ? " · online" : ""}
+                    </option>
+                  ))}
+                </optgroup>
+              </select>
+            </label>
+          ) : (
+            <span className="muted small">
+              Vuoi giocare contro un amico?{" "}
+              <Link to="/amici">Aggiungilo in Amici</Link>, poi sceglilo qui.
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="play-setup">
         <label className="field" style={{ flex: 1, minWidth: 200 }}>
           Mazzo
@@ -225,16 +422,26 @@ export default function PlayPage() {
             </optgroup>
           </select>
         </label>
-        <label className="field">
-          <input
-            type="checkbox"
-            checked={onPlay}
-            onChange={(e) => setOnPlay(e.target.checked)}
-          />
-          In gioco (no pescata al T1)
-        </label>
+        {!(mode === "interactive" && (vs || invite)) && (
+          <label className="field">
+            <input
+              type="checkbox"
+              checked={onPlay}
+              onChange={(e) => setOnPlay(e.target.checked)}
+            />
+            In gioco (no pescata al T1)
+          </label>
+        )}
         <button className="primary" onClick={loadAndPlay} disabled={loading}>
-          {loading ? "Carico…" : deck ? "Ricarica" : "Gioca"}
+          {loading
+            ? "Carico…"
+            : mode === "interactive" && invite
+              ? "⚔ Accetta la sfida"
+              : mode === "interactive" && vs
+                ? "⚔ Sfida"
+                : deck
+                  ? "Ricarica"
+                  : "Gioca"}
         </button>
       </div>
 
@@ -244,7 +451,40 @@ export default function PlayPage() {
         </div>
       )}
 
-      {deck && mode === "interactive" && (
+      {mode === "interactive" && vs && !invite && !online && (
+        <p className="muted small" style={{ marginTop: 6 }}>
+          {friendName(vs)} riceve la sfida in chat: quando la accetta, vedete tutti e due il
+          campo dell'altro e potete scrivervi dal tavolo (💬).
+        </p>
+      )}
+
+      {deck && mode === "interactive" && online && fr.uid && (
+        <>
+          <div className="play-bar">
+            <span className="play-turn">
+              ⚔ {online.friendName} · {deckLabel}
+            </span>
+            <button className="primary" onClick={() => setTableOpen(true)}>
+              🃏 Apri il tavolo
+            </button>
+          </div>
+          <OnlineTable
+            key={`${online.gameId}-${intKey}`}
+            session={online}
+            uid={fr.uid}
+            myName={fr.me ? shownName(fr.me) : "Amico"}
+            devMode={fr.devMode}
+            names={deck.map((c) => c.name)}
+            lookup={lookup}
+            deckLabel={deckLabel}
+            open={tableOpen}
+            onClose={() => setTableOpen(false)}
+            onLeave={leaveOnline}
+          />
+        </>
+      )}
+
+      {deck && mode === "interactive" && !online && (
         <>
           <div className="play-bar">
             <span className="play-turn">{deckLabel}</span>
@@ -427,6 +667,97 @@ function PermZone({
         </div>
       )}
     </div>
+  );
+}
+
+// Tavolo collegato all'amico: rete + salvataggio sul telefono.
+function OnlineTable({
+  session,
+  uid,
+  myName,
+  devMode,
+  names,
+  lookup,
+  deckLabel,
+  open,
+  onClose,
+  onLeave,
+}: {
+  session: OnlineSession;
+  uid: string;
+  myName: string;
+  devMode: boolean;
+  names: string[];
+  lookup: Map<string, CardInfo>;
+  deckLabel: string;
+  open: boolean;
+  onClose: () => void;
+  onLeave: () => void;
+}) {
+  const cards = useMemo<DeckCard[]>(() => {
+    const out: DeckCard[] = [];
+    for (const n of new Set(names)) {
+      const c = lookup.get(n.toLowerCase());
+      out.push({
+        name: n,
+        printed: c?.printedName,
+        img: c?.imageUrl ?? c?.imageSmallUrl,
+        big: c?.imageLargeUrl,
+        type: c?.typeLine,
+      });
+    }
+    return out;
+  }, [names, lookup]);
+
+  const net = useTableNet({
+    gameId: session.gameId,
+    uid,
+    friendId: session.friendId,
+    friendName: session.friendName,
+    myName,
+    deckLabel,
+    cards,
+    host: session.host,
+    initialActive: session.active,
+    devMode,
+  });
+
+  const latest = useMemo(() => ({ state: session.initial as TableState | null }), [session]);
+  const store = (state: TableState | null) =>
+    saveGame({
+      uid,
+      gameId: session.gameId,
+      friendId: session.friendId,
+      friendName: net.friendName,
+      host: session.host,
+      deckLabel,
+      names,
+      state,
+      active: net.active,
+      savedAt: Date.now(),
+    });
+
+  useEffect(() => {
+    if (latest.state) store(latest.state);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [net.active]);
+
+  return (
+    <Tabletop
+      names={names}
+      lookup={lookup}
+      onPlay
+      title={deckLabel}
+      open={open}
+      onClose={onClose}
+      net={net}
+      initial={session.initial}
+      onState={(s) => {
+        latest.state = s;
+        store(s);
+      }}
+      onLeave={onLeave}
+    />
   );
 }
 
