@@ -130,9 +130,24 @@ export function validUsername(u: string): boolean {
   return /^[a-z0-9_.]{3,20}$/.test(u);
 }
 
-/** Vero se l'indirizzo è un'immagine di Scryfall (le sole ammesse come avatar). */
+/**
+ * Vero se l'avatar è ammesso: un simbolo dell'app ("sym:W", "sym:WU",
+ * "sym:WUB", "sym:C") o un'immagine di Scryfall (illustrazione di planeswalker).
+ */
 export function validAvatar(url: string | null | undefined): url is string {
-  return !!url && /^https:\/\/cards\.scryfall\.io\/[^"'()\s]+$/.test(url) && url.length <= 300;
+  if (!url) return false;
+  if (url.startsWith("sym:")) return /^sym:[WUBRGC]{1,3}$/.test(url);
+  return /^https:\/\/cards\.scryfall\.io\/[^"'()\s]+$/.test(url) && url.length <= 300;
+}
+
+/** Indirizzo dell'immagine da mostrare per un avatar valido. */
+export function avatarImageUrl(avatar: string): string {
+  return avatar.startsWith("sym:") ? symbolAvatarUrl(avatar) : avatar;
+}
+
+/** "sym:WU" → immagine del simbolo in public/mana/ (disco pastello). */
+export function symbolAvatarUrl(avatar: string): string {
+  return `${import.meta.env.BASE_URL}mana/${avatar.slice(4)}.webp`;
 }
 
 /** Nome da mostrare: quello scelto, altrimenti il nome utente. */

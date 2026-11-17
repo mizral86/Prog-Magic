@@ -29,6 +29,7 @@ alter table public.profiles add column if not exists avatar text;
 alter table public.profiles drop constraint if exists profiles_avatar_url;
 alter table public.profiles add constraint profiles_avatar_url check (
   avatar is null
+  or avatar ~ '^sym:[WUBRGC]{1,3}$'
   or (avatar ~ '^https://cards\.scryfall\.io/[^"''()[:space:]]+$' and char_length(avatar) <= 300)
 );
 

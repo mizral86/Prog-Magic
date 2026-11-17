@@ -1,7 +1,7 @@
-// Tondo con l'immagine profilo di un utente (art di un planeswalker scelta
-// dalla galleria) o, se non l'ha scelta, l'iniziale del nome.
+// Tondo con l'immagine profilo di un utente (simbolo di colori o art di un
+// planeswalker scelti dalla galleria) o, se non l'ha scelta, l'iniziale del nome.
 
-import { validAvatar } from "../friends";
+import { avatarImageUrl, validAvatar } from "../friends";
 
 export default function UserAvatar({
   name,
@@ -15,10 +15,11 @@ export default function UserAvatar({
   online?: boolean;
   className?: string;
 }) {
-  const img = validAvatar(avatar) ? avatar : null;
+  const img = validAvatar(avatar) ? avatarImageUrl(avatar) : null;
+  const sym = !!img && !!avatar?.startsWith("sym:");
   return (
     <span
-      className={`${className}${img ? " has-img" : ""}`}
+      className={`${className}${img ? " has-img" : ""}${sym ? " is-sym" : ""}`}
       style={img ? { backgroundImage: `url("${img}")` } : undefined}
       aria-hidden
     >
