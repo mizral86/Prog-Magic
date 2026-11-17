@@ -14,7 +14,9 @@ import {
   lossReason,
   resetGame,
   seatsFor,
+  survivors,
 } from "../lifeCounter";
+import { RecordGame } from "./RecordGame";
 
 interface Props {
   game: LcGame;
@@ -34,6 +36,7 @@ export function LifeCounter({ game, onChange, onClose }: Props) {
   const [spin, setSpin] = useState<string | null>(null); // riquadro illuminato durante "chi inizia"
   const [starter, setStarter] = useState<string | null>(null); // badge "Inizi tu"
   const [panel, setPanel] = useState<string | null>(null); // segnalini aperti
+  const [record, setRecord] = useState(false); // registra nel gruppo di amici
   const gameRef = useRef(game);
   gameRef.current = game;
 
@@ -82,6 +85,8 @@ export function LifeCounter({ game, onChange, onClose }: Props) {
   const n = game.players.length;
   const hubTop =
     n <= 2 ? 50 : ((n % 2 === 1 ? pairs : Math.floor(pairs / 2)) / rows) * 100;
+  const alive = survivors(game);
+  const over = n > 1 && alive.length <= 1;
 
   function pickFirst() {
     setMenu(false);
@@ -151,6 +156,33 @@ export function LifeCounter({ game, onChange, onClose }: Props) {
         <span className="lc-hub-gem">✦</span>
       </button>
 
+      {over && !menu && !record && (
+        <button
+          className={`lc-record ${game.recordedId ? "done" : ""}`}
+          style={{ top: `calc(${hubTop}% + 40px)` }}
+          onClick={() => !game.recordedId && setRecord(true)}
+        >
+          {game.recordedId
+            ? "✓ Registrata nel gruppo"
+            : `🏆 ${alive[0]?.name ?? "Fine"} · Registra la partita`}
+        </button>
+      )}
+
+      {record && (
+        <RecordGame
+          players={game.players.map((p) => ({ uid: p.uid, name: p.name, life: p.life, out: lossReason(p) }))}
+          groupId={game.groupId}
+          startLife={game.startLife}
+          commander={game.commander}
+          durationMin={Math.max(1, Math.round((Date.now() - game.startedAt) / 60000))}
+          onSaved={(id, gid) => {
+            apply((g) => ({ ...g, recordedId: id, groupId: gid }));
+            setRecord(false);
+          }}
+          onClose={() => setRecord(false)}
+        />
+      )}
+
       {menu && (
         <div className="lc-veil" onClick={() => setMenu(false)}>
           <div className="lc-menu" onClick={(e) => e.stopPropagation()}>
@@ -181,6 +213,16 @@ export function LifeCounter({ game, onChange, onClose }: Props) {
               {confirmReset
                 ? `Sicuro? Tutti tornano a ${game.startLife}`
                 : `↺ Nuova partita (vita ${game.startLife})`}
+            </button>
+            <button
+              className="lc-menu-wide"
+              disabled={!!game.recordedId}
+              onClick={() => {
+                setMenu(false);
+                setRecord(true);
+              }}
+            >
+              {game.recordedId ? "✓ Partita registrata nel gruppo" : "📒 Registra nel gruppo di amici"}
             </button>
             <button className="lc-menu-wide" onClick={onClose}>
               ⚙ Giocatori e impostazioni

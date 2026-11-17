@@ -29,6 +29,8 @@ export interface LcPlayer {
   name: string;
   tint: Tint;
   art?: string;
+  /** Account dell'amico (gruppi), se scelto tra i membri del gruppo. */
+  uid?: string;
   life: number;
   counters: Record<CounterKey, number>;
   /** Danni da comandante ricevuti, per id dell'avversario. */
@@ -45,6 +47,10 @@ export interface LcGame {
   /** Chi ha iniziato (scelto a caso). */
   first?: string;
   startedAt: number;
+  /** Gruppo di amici in cui registrare la partita. */
+  groupId?: string;
+  /** Già registrata nel gruppo (id della partita salvata). */
+  recordedId?: string;
 }
 
 export interface LcSetup {
@@ -52,7 +58,9 @@ export interface LcSetup {
   startLife: number;
   commander: boolean;
   rotate: boolean;
-  players: { name: string; tint: Tint; art?: string }[];
+  players: { name: string; tint: Tint; art?: string; uid?: string }[];
+  /** Gruppo di amici scelto (i nomi si prendono dai membri). */
+  groupId?: string;
 }
 
 const DEFAULT_NAMES = ["Giocatore 1", "Giocatore 2", "Giocatore 3", "Giocatore 4", "Giocatore 5", "Giocatore 6"];
@@ -78,6 +86,7 @@ export function newGame(s: LcSetup): LcGame {
     name: p.name.trim() || DEFAULT_NAMES[i],
     tint: p.tint,
     art: p.art,
+    uid: p.uid,
     life: s.startLife,
     counters: zero(),
     cmd: {},
@@ -88,6 +97,7 @@ export function newGame(s: LcSetup): LcGame {
     commander: s.commander,
     rotate: s.rotate,
     startedAt: Date.now(),
+    groupId: s.groupId,
   };
 }
 
@@ -99,6 +109,7 @@ export function resetGame(g: LcGame): LcGame {
     monarch: undefined,
     first: undefined,
     startedAt: Date.now(),
+    recordedId: undefined,
   };
 }
 
@@ -200,4 +211,9 @@ export function seatsFor(n: number, rotate: boolean): { cols: number; rows: numb
   if (odd) seats.push({ col: "1 / span 2", row: String(rows), rot: 0 });
   for (let i = pairs - 1; i >= 0; i--) seats.push({ col: "2", row: String(i + 1), rot: rotate ? 270 : 0 });
   return { cols: 2, rows, seats };
+}
+
+/** Chi è ancora in gioco; se è rimasto uno solo, la partita è finita. */
+export function survivors(g: LcGame): LcPlayer[] {
+  return g.players.filter((p) => !lossReason(p));
 }
