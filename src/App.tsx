@@ -8,6 +8,7 @@ import PlayPage from "./pages/PlayPage";
 import ScanPage from "./pages/ScanPage";
 import AccountPage from "./pages/AccountPage";
 import FriendsPage from "./pages/FriendsPage";
+import GroupsPage from "./pages/GroupsPage";
 
 export default function App() {
   return (
@@ -22,6 +23,9 @@ export default function App() {
         <Route path="/scansiona" element={<ScanPage />} />
         <Route path="/amici" element={<FriendsPage />} />
         <Route path="/amici/:id" element={<FriendsPage />} />
+        <Route path="/gruppi" element={<GroupsPage />} />
+        <Route path="/gruppi/:gid" element={<GroupsPage />} />
+        <Route path="/gruppi/:gid/torneo/:tid" element={<GroupsPage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="*" element={<Navigate to="/cerca" replace />} />
       </Route>
