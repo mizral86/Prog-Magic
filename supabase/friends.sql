@@ -22,6 +22,16 @@ create table if not exists public.profiles (
 );
 create unique index if not exists profiles_username_key on public.profiles (username);
 
+-- Immagine profilo: illustrazione di un planeswalker scelta dalla galleria
+-- (solo immagini di Scryfall). Per chi aveva già eseguito questo file prima
+-- delle immagini c'è anche supabase/avatar.sql, che fa solo questa parte.
+alter table public.profiles add column if not exists avatar text;
+alter table public.profiles drop constraint if exists profiles_avatar_url;
+alter table public.profiles add constraint profiles_avatar_url check (
+  avatar is null
+  or (avatar ~ '^https://cards\.scryfall\.io/[^"''()[:space:]]+$' and char_length(avatar) <= 300)
+);
+
 -- ---------------------------------------------------------------------------
 -- Amicizie
 
@@ -157,17 +167,19 @@ grant update (status, accepted_at) on public.friendships to authenticated;
 revoke update on public.messages from anon, authenticated;
 grant update (read_at) on public.messages to authenticated;
 revoke update on public.profiles from anon, authenticated;
-grant update (username, display_name, last_seen) on public.profiles to authenticated;
+grant update (username, display_name, last_seen, avatar) on public.profiles to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Ricerca di nuovi amici: per nome utente (inizio del nome) o per email
--- esatta. Restituisce solo id, nome utente e nome visualizzato, mai l'email.
+-- esatta. Restituisce solo id, nome utente, nome visualizzato e immagine,
+-- mai l'email.
 
-create or replace function public.search_profiles(q text)
-returns table (id uuid, username text, display_name text)
+drop function if exists public.search_profiles(text);
+create function public.search_profiles(q text)
+returns table (id uuid, username text, display_name text, avatar text)
 language sql stable security definer set search_path = public
 as $$
-  select p.id, p.username, p.display_name
+  select p.id, p.username, p.display_name, p.avatar
   from public.profiles p
   join auth.users u on u.id = p.id
   where auth.uid() is not null

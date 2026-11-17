@@ -132,7 +132,7 @@ class SupabaseGroups implements GroupsBackend {
   async members(groupId: string) {
     const { data, error } = await this.sb
       .from("group_members")
-      .select("*, profile:profiles!group_members_user_id_fkey(id, username, display_name, last_seen)")
+      .select("*, profile:profiles!group_members_user_id_fkey(*)")
       .eq("group_id", groupId)
       .order("joined_at");
     if (error) fail(error);

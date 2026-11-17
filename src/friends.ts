@@ -13,6 +13,8 @@ export interface Profile {
   username: string;
   display_name: string | null;
   last_seen?: string | null;
+  /** Immagine profilo: art crop di un planeswalker su cards.scryfall.io. */
+  avatar?: string | null;
 }
 
 export interface Friendship {
@@ -46,6 +48,8 @@ export interface LiveHandlers {
 export interface FriendsBackend {
   myProfile(uid: string): Promise<Profile | null>;
   saveProfile(uid: string, username: string, displayName: string | null): Promise<Profile>;
+  /** Imposta (o toglie, con null) l'immagine profilo. */
+  saveAvatar(uid: string, avatar: string | null): Promise<Profile>;
   touch(uid: string): Promise<void>;
   search(q: string): Promise<Profile[]>;
   friendships(): Promise<Friendship[]>;
@@ -79,6 +83,13 @@ interface PgError {
 function fail(e: PgError | null): never {
   const msg = e?.message ?? "Errore sconosciuto";
   const m = msg.toLowerCase();
+  if (m.includes("avatar") && (e?.code === "PGRST204" || e?.code === "42703" || m.includes("column")))
+    throw new FriendsError(
+      "Le immagini profilo non sono ancora attive sul server: va eseguito una volta il file supabase/avatar.sql su Supabase.",
+      "setup",
+    );
+  if (e?.code === "23514" && m.includes("avatar"))
+    throw new FriendsError("Immagine non valida: scegline una dalla galleria.");
   if (
     e?.code === "42P01" ||
     e?.code === "PGRST205" ||
@@ -119,6 +130,11 @@ export function validUsername(u: string): boolean {
   return /^[a-z0-9_.]{3,20}$/.test(u);
 }
 
+/** Vero se l'indirizzo è un'immagine di Scryfall (le sole ammesse come avatar). */
+export function validAvatar(url: string | null | undefined): url is string {
+  return !!url && /^https:\/\/cards\.scryfall\.io\/[^"'()\s]+$/.test(url) && url.length <= 300;
+}
+
 /** Nome da mostrare: quello scelto, altrimenti il nome utente. */
 export function shownName(p: Profile | undefined | null): string {
   if (!p) return "Utente";
@@ -146,6 +162,17 @@ class SupabaseFriends implements FriendsBackend {
           .insert({ id: uid, ...row })
           .select("*")
           .single();
+    if (error) fail(error);
+    return data as Profile;
+  }
+
+  async saveAvatar(uid: string, avatar: string | null) {
+    const { data, error } = await this.sb
+      .from("profiles")
+      .update({ avatar })
+      .eq("id", uid)
+      .select("*")
+      .single();
     if (error) fail(error);
     return data as Profile;
   }

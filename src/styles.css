@@ -6523,3 +6523,129 @@ button.primary.danger {
   opacity: 0.6;
   cursor: default;
 }
+
+/* Immagine profilo: illustrazione di un planeswalker al posto dell'iniziale */
+.friend-avatar.has-img,
+.account-avatar.has-img,
+.account-initial.has-img {
+  background-color: var(--panel-2);
+  background-size: cover;
+  background-position: center 30%;
+  box-shadow: 0 0 0 1.5px var(--border);
+}
+.avatar-edit {
+  position: relative;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 50%;
+  cursor: pointer;
+  line-height: 0;
+}
+.avatar-edit-badge {
+  position: absolute;
+  left: -3px;
+  bottom: -3px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 11px;
+  line-height: 1;
+  box-shadow: 0 0 0 1.5px var(--border);
+}
+.avatar-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+}
+.avatar-sheet {
+  width: min(640px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 14px 16px 22px;
+  border-radius: 18px 18px 0 0;
+  background: var(--panel);
+  color: var(--text);
+}
+@media (min-width: 700px) {
+  .avatar-veil {
+    align-items: center;
+  }
+  .avatar-sheet {
+    border-radius: 18px;
+  }
+}
+.avatar-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.avatar-search {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.avatar-search input {
+  flex: 1;
+  min-width: 0;
+}
+.avatar-remove {
+  margin-bottom: 8px;
+}
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+  margin: 6px 0 10px;
+}
+.avatar-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 4px;
+  border: 1.5px solid transparent;
+  border-radius: 12px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.avatar-opt:hover {
+  background: var(--panel-2);
+}
+.avatar-opt.on {
+  border-color: var(--accent);
+  background: var(--panel-2);
+}
+.avatar-opt-img {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background-color: var(--panel-2);
+  background-size: cover;
+  background-position: center 30%;
+  box-shadow: 0 0 0 1.5px var(--border);
+}
+.avatar-opt-name {
+  font-size: 11.5px;
+  line-height: 1.2;
+  text-align: center;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.avatar-more {
+  width: 100%;
+  justify-content: center;
+}

@@ -8,6 +8,8 @@ import { Message, Profile, shownName, suggestUsername, validUsername } from "../
 import { FriendEntry, useFriends } from "../friendsContext";
 import { parseInvite } from "../onlineGame";
 import { FriendsTabs } from "./GroupsPage";
+import AvatarPicker from "../components/AvatarPicker";
+import UserAvatar from "../components/UserAvatar";
 
 export default function FriendsPage() {
   const fr = useFriends();
@@ -165,6 +167,7 @@ function ProfileForm({ onDone }: { onDone?: () => void }) {
 function FriendsHome() {
   const fr = useFriends();
   const [editing, setEditing] = useState(false);
+  const [picking, setPicking] = useState(false);
   const me = fr.me!;
 
   return (
@@ -173,7 +176,16 @@ function FriendsHome() {
         <ProfileForm onDone={() => setEditing(false)} />
       ) : (
         <div className="panel friends-me">
-          <Avatar profile={me} online />
+          <button
+            type="button"
+            className="avatar-edit"
+            onClick={() => setPicking(true)}
+            title="Cambia immagine profilo"
+            aria-label="Cambia immagine profilo"
+          >
+            <Avatar profile={me} online />
+            <span className="avatar-edit-badge" aria-hidden>✎</span>
+          </button>
           <div className="friends-me-text">
             <div className="friends-name">{shownName(me)}</div>
             <div className="muted small">
@@ -184,6 +196,10 @@ function FriendsHome() {
             Modifica
           </button>
         </div>
+      )}
+
+      {picking && (
+        <AvatarPicker current={me.avatar} onPick={fr.saveAvatar} onClose={() => setPicking(false)} />
       )}
 
       {fr.error && <p className="account-error">{fr.error}</p>}
@@ -370,13 +386,7 @@ function Presence({ online, lastSeen }: { online: boolean; lastSeen?: string | n
 }
 
 function Avatar({ profile, online }: { profile: Profile | undefined | null; online?: boolean }) {
-  const name = shownName(profile);
-  return (
-    <span className="friend-avatar" aria-hidden>
-      {(name[0] ?? "?").toUpperCase()}
-      {online !== undefined && <span className={`friend-dot${online ? " on" : ""}`} />}
-    </span>
-  );
+  return <UserAvatar name={shownName(profile)} avatar={profile?.avatar} online={online} />;
 }
 
 function ActionButton({

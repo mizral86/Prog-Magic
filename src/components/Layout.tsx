@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { applyTheme, getTheme, isDark, ThemeChoice } from "../theme";
 import { ChallengeBanner } from "./ChallengeBanner";
+import UserAvatar from "./UserAvatar";
 
 interface Tab {
   to: string;
@@ -154,6 +155,7 @@ function IconFriends() {
 
 function AccountButton() {
   const auth = useAuth();
+  const fr = useFriends();
   if (auth.status === "disabled") return null;
   const label =
     auth.status === "in"
@@ -162,7 +164,9 @@ function AccountButton() {
   const initial = (auth.user?.email?.[0] ?? "").toUpperCase();
   return (
     <Link to="/account" className="icon-btn account-btn" aria-label={label} title={label}>
-      {auth.status === "in" ? (
+      {auth.status === "in" && fr.me?.avatar && !auth.syncError ? (
+        <UserAvatar name={initial} avatar={fr.me.avatar} className="account-initial" />
+      ) : auth.status === "in" ? (
         <span className={`account-initial${auth.syncError ? " warn" : ""}`}>{initial || "✓"}</span>
       ) : (
         <IconUser />

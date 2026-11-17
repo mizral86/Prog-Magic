@@ -3,6 +3,11 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useAuth } from "../auth";
 import { googleEnabled } from "../cloud";
+import { Link } from "react-router-dom";
+import { shownName } from "../friends";
+import { useFriends } from "../friendsContext";
+import AvatarPicker from "../components/AvatarPicker";
+import UserAvatar from "../components/UserAvatar";
 
 type Mode = "login" | "signup" | "reset";
 
@@ -49,25 +54,52 @@ function Profile() {
   const [error, setError] = useState<string | null>(null);
   const [newPw, setNewPw] = useState("");
   const [pwMsg, setPwMsg] = useState<string | null>(null);
+  const fr = useFriends();
+  const [picking, setPicking] = useState(false);
   const user = auth.user!;
-  const name =
-    (user.user_metadata?.full_name as string | undefined) ??
-    (user.user_metadata?.name as string | undefined) ??
-    user.email ??
-    "Profilo";
+  const name = fr.me
+    ? shownName(fr.me)
+    : (user.user_metadata?.full_name as string | undefined) ??
+      (user.user_metadata?.name as string | undefined) ??
+      user.email ??
+      "Profilo";
 
   return (
     <>
       <div className="panel account-panel">
         <div className="account-head">
-          <span className="account-avatar" aria-hidden>
-            {(name[0] ?? "?").toUpperCase()}
-          </span>
+          {fr.status === "ready" ? (
+            <button
+              type="button"
+              className="avatar-edit"
+              onClick={() => setPicking(true)}
+              title="Cambia immagine profilo"
+              aria-label="Cambia immagine profilo"
+            >
+              <UserAvatar name={name} avatar={fr.me?.avatar} className="account-avatar" />
+              <span className="avatar-edit-badge" aria-hidden>✎</span>
+            </button>
+          ) : (
+            <UserAvatar name={name} className="account-avatar" />
+          )}
           <div>
             <div className="account-name">{name}</div>
             {user.email && user.email !== name && <div className="muted small">{user.email}</div>}
+            {fr.status === "ready" && (
+              <button type="button" className="link-btn small" onClick={() => setPicking(true)}>
+                {fr.me?.avatar ? "Cambia immagine profilo" : "Scegli un planeswalker come immagine"}
+              </button>
+            )}
+            {fr.status === "needProfile" && (
+              <Link to="/amici" className="small">
+                Scegli un nome utente in Amici per avere un'immagine profilo
+              </Link>
+            )}
           </div>
         </div>
+        {picking && fr.me && (
+          <AvatarPicker current={fr.me.avatar} onPick={fr.saveAvatar} onClose={() => setPicking(false)} />
+        )}
 
         <div className="account-sync">
           {auth.syncing ? (
