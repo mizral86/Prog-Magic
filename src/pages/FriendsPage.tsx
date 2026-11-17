@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../auth";
 import { Message, Profile, shownName, suggestUsername, validUsername } from "../friends";
 import { FriendEntry, useFriends } from "../friendsContext";
+import { FriendsTabs } from "./GroupsPage";
 
 export default function FriendsPage() {
   const fr = useFriends();
@@ -74,6 +75,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="page friends-page">
       <h1 className="page-title">Amici</h1>
+      <FriendsTabs />
       {children}
     </div>
   );

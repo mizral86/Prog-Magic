@@ -15,6 +15,8 @@ import {
   TINTS,
 } from "../lifeCounter";
 import { searchCards } from "../scryfall";
+import { Group, GroupMember, memberName, useGroupsBackend } from "../groups";
+import { useFriends } from "../friendsContext";
 import { LifeCounter } from "./LifeCounter";
 
 const LIFE_PRESETS = [
@@ -32,6 +34,32 @@ export function LifeSetup() {
 
   useEffect(() => saveLc(setup, game), [setup, game]);
 
+  // Gruppi di amici: i giocatori si possono scegliere tra i membri, così la
+  // partita si registra già con i nomi giusti.
+  const fr = useFriends();
+  const groupsBackend = useGroupsBackend();
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [members, setMembers] = useState<GroupMember[]>([]);
+  useEffect(() => {
+    if (!groupsBackend || !fr.uid) return;
+    groupsBackend
+      .myGroups(fr.uid)
+      .then(setGroups)
+      .catch(() => setGroups([]));
+  }, [groupsBackend, fr.uid]);
+  const groupId = groups.some((g) => g.id === setup.groupId) ? setup.groupId : undefined;
+  useEffect(() => {
+    if (!groupsBackend || !groupId) return setMembers([]);
+    let alive = true;
+    groupsBackend
+      .members(groupId)
+      .then((ms) => alive && setMembers(ms))
+      .catch(() => alive && setMembers([]));
+    return () => {
+      alive = false;
+    };
+  }, [groupsBackend, groupId]);
+
   const setPlayer = (i: number, patch: Partial<LcSetup["players"][number]>) =>
     setSetup((s) => ({
       ...s,
@@ -39,7 +67,7 @@ export function LifeSetup() {
     }));
 
   function start() {
-    setGame(newGame(setup));
+    setGame(newGame({ ...setup, groupId }));
     setOpen(true);
   }
 
@@ -130,6 +158,29 @@ export function LifeSetup() {
         </label>
       </div>
 
+      {groups.length > 0 && (
+        <div className="lcs-block">
+          <div className="lcs-label">Gruppo di amici</div>
+          <select
+            className="lcs-group"
+            value={groupId ?? ""}
+            onChange={(e) => setSetup((s) => ({ ...s, groupId: e.target.value || undefined }))}
+          >
+            <option value="">Nessuno (partita libera)</option>
+            {groups.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
+              </option>
+            ))}
+          </select>
+          {groupId && (
+            <p className="muted small" style={{ margin: "4px 0 0" }}>
+              Scegli chi gioca tra i membri: a fine partita la registri nel gruppo con un tocco.
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="lcs-block">
         <div className="lcs-label">Chi gioca</div>
         <div className="lcs-players">
@@ -143,10 +194,28 @@ export function LifeSetup() {
               >
                 <span>✎</span>
               </button>
+              {groupId && members.length > 0 && (
+                <select
+                  className="lcs-member"
+                  value={members.some((m) => m.user_id === p.uid) ? p.uid : ""}
+                  onChange={(e) => {
+                    const m = members.find((x) => x.user_id === e.target.value);
+                    setPlayer(i, m ? { uid: m.user_id, name: memberName(m).slice(0, 18) } : { uid: undefined });
+                  }}
+                  aria-label={`Membro del gruppo per il giocatore ${i + 1}`}
+                >
+                  <option value="">Ospite</option>
+                  {members.map((m) => (
+                    <option key={m.user_id} value={m.user_id}>
+                      {memberName(m)}
+                    </option>
+                  ))}
+                </select>
+              )}
               <input
                 value={p.name}
                 maxLength={18}
-                onChange={(e) => setPlayer(i, { name: e.target.value })}
+                onChange={(e) => setPlayer(i, { name: e.target.value, uid: undefined })}
                 onFocus={(e) => e.target.select()}
                 aria-label={`Nome giocatore ${i + 1}`}
               />
