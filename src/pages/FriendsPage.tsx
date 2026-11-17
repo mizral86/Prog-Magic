@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../auth";
 import { Message, Profile, shownName, suggestUsername, validUsername } from "../friends";
 import { FriendEntry, useFriends } from "../friendsContext";
+import { parseInvite } from "../onlineGame";
 import { FriendsTabs } from "./GroupsPage";
 
 export default function FriendsPage() {
@@ -554,6 +555,9 @@ function Chat({ friendId }: { friendId: string }) {
             <Presence online={entry.online} lastSeen={entry.profile?.last_seen} />
           </div>
         </div>
+        <Link to={`/gioca?sfida=${friendId}`} className="primary-link small-btn" title="Gioca al Tavolo contro questo amico">
+          ⚔ Sfida
+        </Link>
         <button type="button" className="link-btn chat-remove" onClick={removeFriend}>
           Togli amico
         </button>
@@ -568,13 +572,25 @@ function Chat({ friendId }: { friendId: string }) {
         )}
         {messages?.map((m, i) => {
           const mine = m.sender === uid;
+          const inv = parseInvite(m.body);
           const day = dayLabel(m.created_at);
           const showDay = i === 0 || dayLabel(messages[i - 1].created_at) !== day;
           return (
             <div key={m.id}>
               {showDay && <div className="chat-day">{day}</div>}
               <div className={`chat-bubble ${mine ? "mine" : "theirs"}`}>
-                <span className="chat-text">{m.body}</span>
+                {inv ? (
+                  <span className="chat-text chat-invite">
+                    <span>{inv.text}</span>
+                    {mine ? (
+                      <Link to="/gioca">Apri il tavolo</Link>
+                    ) : (
+                      <Link to={`/gioca?partita=${inv.gameId}&contro=${m.sender}`}>⚔ Accetta la sfida</Link>
+                    )}
+                  </span>
+                ) : (
+                  <span className="chat-text">{m.body}</span>
+                )}
                 <span className="chat-time">{timeLabel(m.created_at)}</span>
               </div>
               {mine && i === lastMineIdx && m.read_at && <div className="chat-read">Letto</div>}

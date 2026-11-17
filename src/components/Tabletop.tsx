@@ -5,6 +5,10 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CardInfo } from "../types";
+import { useFriends } from "../friendsContext";
+import { parseInvite, PubCard } from "../onlineGame";
+import type { TableNet } from "../useTableNet";
+import { GameChat } from "./GameChat";
 import {
   copyAsToken,
   createToken,
@@ -13,6 +17,7 @@ import {
   mulligan,
   newGame,
   nextTurn,
+  reserveUids,
   shuffleLibrary,
   TableState,
   TCard,
@@ -29,6 +34,13 @@ interface Props {
   title: string;
   open: boolean;
   onClose: () => void;
+  /** Partita in due con un amico (altrimenti solitario). */
+  net?: TableNet;
+  /** Tavolo da riprendere (partita salvata). */
+  initial?: TableState | null;
+  onState?: (s: TableState) => void;
+  /** Abbandona la partita in due. */
+  onLeave?: () => void;
 }
 
 const LONG_PRESS_MS = 450;
@@ -48,9 +60,32 @@ interface Press {
   timer: number;
 }
 
-export function Tabletop({ names, lookup, onPlay, title, open, onClose }: Props) {
-  const [state, setState] = useState<TableState>(() => newGame(names, onPlay));
+export function Tabletop({
+  names,
+  lookup,
+  onPlay,
+  title,
+  open,
+  onClose,
+  net,
+  initial,
+  onState,
+  onLeave,
+}: Props) {
+  const [state, setState] = useState<TableState>(() => {
+    if (initial) {
+      reserveUids(initial);
+      return initial;
+    }
+    return newGame(names, onPlay);
+  });
+  const stateRef = useRef(state);
+  stateRef.current = state;
   const history = useRef<TableState[]>([]);
+  const fr = useFriends();
+  const [chatOpen, setChatOpen] = useState(false);
+  const [oppView, setOppView] = useState<{ card?: PubCard; zone?: "graveyard" | "exile" } | null>(null);
+  const myTurn = !!net && net.active === net.uid;
   const [menu, setMenu] = useState<{ uid: number; zone: Zone } | null>(null);
   const [viewer, setViewer] = useState<Zone | null>(null);
   const [more, setMore] = useState(false);
@@ -107,6 +142,44 @@ export function Tabletop({ names, lookup, onPlay, title, open, onClose }: Props)
     if (history.current.length > 80) history.current.shift();
     setState(next);
   }
+
+  // Partita in due: ogni cambiamento va all'amico (e viene salvato).
+  useEffect(() => {
+    net?.publish(state);
+    onState?.(state);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, net?.publish]);
+
+  // Mosse dell'amico che toccano il mio tavolo.
+  useEffect(() => {
+    if (!net) return;
+    return net.onRemote((m) => {
+      const s = stateRef.current;
+      if (m.t === "life") {
+        history.current.push(s);
+        setState({ ...s, life: s.life + m.d });
+      } else if (m.t === "pass") {
+        history.current.push(s);
+        setState(nextTurn(s));
+        setToast("Tocca a te: carte stappate e una carta pescata.");
+        if (navigator.vibrate) navigator.vibrate([30, 60, 30]);
+      } else if (m.t === "leave") {
+        setToast(`${net.friendName} ha lasciato la partita.`);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [net?.onRemote]);
+
+  // Messaggi dell'amico mentre la chat è chiusa: avviso in sovrimpressione.
+  useEffect(() => {
+    if (!net || chatOpen || !open) return;
+    return fr.onMessage((m, kind) => {
+      if (kind !== "new" || m.sender !== net.friendId) return;
+      const inv = parseInvite(m.body);
+      setToast(`💬 ${net.friendName}: ${inv ? "nuova sfida" : m.body.slice(0, 80)}`);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [net?.friendId, chatOpen, open]);
 
   function undo() {
     const prev = history.current.pop();
@@ -293,20 +366,55 @@ export function Tabletop({ names, lookup, onPlay, title, open, onClose }: Props)
         <span className="tt-title" title={title}>
           T{state.turn}
         </span>
-        <button
-          className="tt-btn primary"
-          onClick={() => commit(nextTurn(state))}
-          title="Nuovo turno: stappa tutto e pesca"
-        >
-          ▶ Turno
-        </button>
+        {net ? (
+          <button
+            className={`tt-btn ${myTurn ? "primary" : ""}`}
+            onClick={() => {
+              net.pass();
+              setToast(`Turno passato a ${net.friendName}.`);
+            }}
+            disabled={!myTurn || !net.peerOnline}
+            title={myTurn ? "Fine del tuo turno: tocca all'amico" : "Turno dell'amico"}
+          >
+            {net.active == null
+              ? "In attesa"
+              : myTurn
+                ? "Passa ▶"
+                : `Turno di ${shortName(net.friendName)}`}
+          </button>
+        ) : (
+          <button
+            className="tt-btn primary"
+            onClick={() => commit(nextTurn(state))}
+            title="Nuovo turno: stappa tutto e pesca"
+          >
+            ▶ Turno
+          </button>
+        )}
         <button className="tt-btn" onClick={() => commit(draw(state, 1))}>
           Pesca
         </button>
-        <button className="tt-btn" onClick={() => commit(untapAll(state))}>
-          Stappa
-        </button>
+        {!net && (
+          <button className="tt-btn" onClick={() => commit(untapAll(state))}>
+            Stappa
+          </button>
+        )}
         <span className="tt-spacer" />
+        {net && (
+          <button
+            className="tt-btn tt-chat-btn"
+            onClick={() => setChatOpen((c) => !c)}
+            title="Chat con l'amico"
+            aria-label="Chat con l'amico"
+          >
+            💬
+            {(fr.friends.find((f) => f.id === net.friendId)?.unread ?? 0) > 0 && (
+              <span className="tt-badge">
+                {fr.friends.find((f) => f.id === net.friendId)?.unread}
+              </span>
+            )}
+          </button>
+        )}
         <button
           className="tt-btn"
           onClick={undo}
@@ -320,6 +428,7 @@ export function Tabletop({ names, lookup, onPlay, title, open, onClose }: Props)
         </button>
         {more && (
           <div className="tt-more" onClick={() => setMore(false)}>
+            {net && <button onClick={() => commit(untapAll(state))}>↺ Stappa tutto</button>}
             <button onClick={() => commit(shuffleLibrary(state))}>🔀 Mescola il mazzo</button>
             <button
               onClick={() => {
@@ -334,7 +443,17 @@ export function Tabletop({ names, lookup, onPlay, title, open, onClose }: Props)
             </button>
             <button onClick={() => setViewer("library")}>👁 Guarda il mazzo</button>
             <button onClick={() => commit(createToken(state, "Pedina"))}>➕ Pedina generica</button>
-            <button onClick={restart}>🆕 Nuova partita</button>
+            <button onClick={restart}>{net ? "🆕 Ricomincia (solo il mio mazzo)" : "🆕 Nuova partita"}</button>
+            {net && onLeave && (
+              <button
+                onClick={() => {
+                  net.leave();
+                  onLeave();
+                }}
+              >
+                🏳 Abbandona la partita
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -349,12 +468,29 @@ export function Tabletop({ names, lookup, onPlay, title, open, onClose }: Props)
         <span className="tt-deckname" title={title}>
           {title}
         </span>
-        <LifeBox
-          label="Avversario"
-          value={state.oppLife}
-          onChange={(d) => commit({ ...state, oppLife: state.oppLife + d })}
-        />
+        {net ? (
+          <LifeBox
+            label={shortName(net.friendName)}
+            value={net.opp.table?.life ?? 20}
+            onChange={(d) => net.sendLife(d)}
+          />
+        ) : (
+          <LifeBox
+            label="Avversario"
+            value={state.oppLife}
+            onChange={(d) => commit({ ...state, oppLife: state.oppLife + d })}
+          />
+        )}
       </div>
+
+      {net && (
+        <OppArea
+          net={net}
+          cardW={cardW}
+          onCard={(card) => setOppView({ card })}
+          onZone={(zone) => setOppView({ zone })}
+        />
+      )}
 
       <div className="tt-main">
         {/* campo */}
@@ -480,6 +616,11 @@ export function Tabletop({ names, lookup, onPlay, title, open, onClose }: Props)
       <GhostInit ghostRef={ghostRef} press={press} cardW={cardW} cardH={cardH} active={!!dragCard} />
 
       {toast && <div className="tt-toast">{toast}</div>}
+
+      {net && chatOpen && (
+        <GameChat friendId={net.friendId} friendName={net.friendName} onClose={() => setChatOpen(false)} />
+      )}
+      {net && oppView && <OppViewer net={net} view={oppView} onPick={(card) => setOppView({ card })} onClose={() => setOppView(null)} />}
 
       {viewer && (
         <ZoneViewer
@@ -764,4 +905,203 @@ function ZoneViewer({
 
 function clamp(v: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, v));
+}
+
+function shortName(n: string): string {
+  const f = n.trim().split(/\s+/)[0] ?? n;
+  return f.length > 12 ? f.slice(0, 11) + "…" : f;
+}
+
+function oppImg(net: TableNet, c: PubCard, big = false): string | undefined {
+  if (c.img) return c.img;
+  const d = net.opp.cards.get(c.name.toLowerCase());
+  return big ? d?.big ?? d?.img : d?.img ?? d?.big;
+}
+
+function oppLabel(net: TableNet, c: PubCard): string {
+  return net.opp.cards.get(c.name.toLowerCase())?.printed ?? c.name;
+}
+
+// Il campo dell'amico, in alto e "girato" come se fosse seduto di fronte.
+function OppArea({
+  net,
+  cardW,
+  onCard,
+  onZone,
+}: {
+  net: TableNet;
+  cardW: number;
+  onCard: (c: PubCard) => void;
+  onZone: (z: "graveyard" | "exile") => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ w: 360, h: 160 });
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setSize({ w: el.clientWidth, h: el.clientHeight }));
+    ro.observe(el);
+    setSize({ w: el.clientWidth, h: el.clientHeight });
+    return () => ro.disconnect();
+  }, []);
+  const t = net.opp.table;
+  const w = Math.round(Math.max(34, Math.min(cardW * 0.8, size.h / 1.396 / 1.9)));
+  const h = Math.round(w * 1.396);
+  return (
+    <div className="tt-opp">
+      <div className="tt-opp-bar">
+        <span className="tt-opp-name">
+          <span
+            className={`friend-dot tt-dot ${net.peerOnline && net.linked ? "on" : ""}`}
+            title={net.peerOnline ? "Collegato" : "Non collegato"}
+          />{" "}
+          {shortName(net.friendName)}
+          {!net.linked ? (
+            <span className="muted"> · collegamento…</span>
+          ) : net.oppLeft ? (
+            <span className="muted"> · ha lasciato</span>
+          ) : !net.peerOnline ? (
+            <span className="muted"> · non collegato</span>
+          ) : null}
+          {net.opp.deck && <span className="muted"> · {net.opp.deck}</span>}
+        </span>
+        {t && (
+          <>
+            <span className="tt-chip" title="Carte in mano">
+              ✋ {t.hand}
+            </span>
+            <span className="tt-chip" title="Carte nel mazzo">
+              📚 {t.library}
+            </span>
+            <button className="tt-chip" onClick={() => onZone("graveyard")} title="Cimitero">
+              🪦 {t.graveyard.length}
+            </button>
+            <button className="tt-chip" onClick={() => onZone("exile")} title="Esilio">
+              ✨ {t.exile.length}
+            </button>
+          </>
+        )}
+      </div>
+      <div className="tt-opp-board" ref={ref}>
+        {!t && (
+          <div className="tt-hint">
+            {net.peerOnline
+              ? "Carico il tavolo dell'amico…"
+              : `Qui vedrai il campo di ${shortName(net.friendName)} quando apre la sfida.`}
+          </div>
+        )}
+        {t?.battlefield.map((c, i) => {
+          const left = clamp((1 - (c.x ?? 0)) * size.w - w, 0, Math.max(0, size.w - w));
+          const top = clamp((1 - (c.y ?? 0)) * size.h - h, 0, Math.max(0, size.h - h));
+          return (
+            <button
+              key={c.uid}
+              className={`tt-card tt-onboard tt-oppcard ${c.tapped ? "tapped" : ""}`}
+              style={{ width: w, height: h, left, top, zIndex: i + 1 }}
+              onClick={() => !c.faceDown && onCard(c)}
+            >
+              {c.faceDown ? (
+                <CardBack />
+              ) : oppImg(net, c) ? (
+                <img src={oppImg(net, c)} alt={oppLabel(net, c)} draggable={false} loading="lazy" />
+              ) : (
+                <div className="tt-textcard">
+                  <span>{oppLabel(net, c)}</span>
+                </div>
+              )}
+              {!!c.counters && (
+                <span className={`tt-counter ${c.counters < 0 ? "neg" : ""}`}>
+                  {c.counters > 0 ? `+${c.counters}` : c.counters}
+                </span>
+              )}
+              {c.token && <span className="tt-token">pedina</span>}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Carte dell'amico: solo da guardare (le muove lui).
+function OppViewer({
+  net,
+  view,
+  onPick,
+  onClose,
+}: {
+  net: TableNet;
+  view: { card?: PubCard; zone?: "graveyard" | "exile" };
+  onPick: (c: PubCard) => void;
+  onClose: () => void;
+}) {
+  if (view.card) {
+    const c = view.card;
+    const url = oppImg(net, c, true);
+    const info = net.opp.cards.get(c.name.toLowerCase());
+    return (
+      <div className="tt-sheet-bg" onClick={onClose}>
+        <div className="tt-sheet" onClick={(e) => e.stopPropagation()}>
+          <div className="tt-sheet-img">
+            {url ? (
+              <img src={url} alt={oppLabel(net, c)} draggable={false} />
+            ) : (
+              <div className="tt-textcard big">
+                <span>{oppLabel(net, c)}</span>
+              </div>
+            )}
+          </div>
+          <div className="tt-sheet-body">
+            <div className="tt-sheet-title">
+              {oppLabel(net, c)}
+              {c.token && <span className="muted small"> · pedina</span>}
+            </div>
+            <div className="muted small">
+              Carta di {net.friendName}
+              {info?.type ? ` · ${info.type}` : ""}
+              {c.tapped ? " · tappata" : ""}
+              {c.counters ? ` · segnalini ${c.counters > 0 ? "+" : ""}${c.counters}` : ""}
+            </div>
+            <p className="muted small">Le carte dell'amico le muove lui: se serve, chiediglielo in chat.</p>
+            <button className="tt-sheet-close" onClick={onClose}>
+              Chiudi
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  const zone = view.zone ?? "graveyard";
+  const list = (net.opp.table?.[zone] ?? []).slice().reverse();
+  return (
+    <div className="tt-sheet-bg" onClick={onClose}>
+      <div className="tt-sheet tt-viewer" onClick={(e) => e.stopPropagation()}>
+        <div className="tt-viewer-head">
+          <strong>
+            {ZONE_LABEL[zone]} di {shortName(net.friendName)} · {list.length}
+          </strong>
+          <button onClick={onClose}>Chiudi</button>
+        </div>
+        {list.length === 0 ? (
+          <div className="muted small" style={{ padding: 16 }}>
+            Nessuna carta.
+          </div>
+        ) : (
+          <div className="tt-viewer-grid">
+            {list.map((c) => (
+              <button key={c.uid} className="tt-viewer-card" onClick={() => onPick(c)}>
+                {oppImg(net, c) ? (
+                  <img src={oppImg(net, c)} alt={oppLabel(net, c)} draggable={false} loading="lazy" />
+                ) : (
+                  <div className="tt-textcard">
+                    <span>{oppLabel(net, c)}</span>
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }

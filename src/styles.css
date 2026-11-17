@@ -5247,6 +5247,165 @@ button.small-btn {
   flex: none;
 }
 
+/* ---- Tavolo in due (Gioca + Amici) ---- */
+.tt-opp {
+  flex: 0 0 34%;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.35);
+}
+.tt-opp-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  background: var(--panel-2);
+  font-size: 12px;
+  overflow: hidden;
+}
+.tt-opp-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tt-opp-name .muted {
+  font-weight: 400;
+}
+.tt-chip {
+  flex: none;
+  padding: 2px 7px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+button.tt-chip {
+  cursor: pointer;
+}
+.tt-opp-board {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 60%, rgba(255, 255, 255, 0.06), transparent 70%),
+    linear-gradient(200deg, #5a2d2d 0%, #46222a 55%, #3a1c26 100%);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.35);
+}
+.tt-oppcard {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+.tt-dot {
+  position: static;
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+}
+.tt-chat-btn {
+  position: relative;
+}
+.tt-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--bad);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+}
+.tt-chat {
+  position: fixed;
+  z-index: 550;
+  right: 8px;
+  bottom: calc(8px + env(safe-area-inset-bottom));
+  width: min(380px, calc(100vw - 16px));
+  height: min(60dvh, 460px);
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px 10px;
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+  user-select: text;
+  -webkit-user-select: text;
+}
+.tt-chat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.tt-chat-list {
+  flex: 1;
+  min-height: 0;
+}
+.tt-chat .chat-bubble {
+  font-size: 14px;
+}
+.chat-invite {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.chat-invite a,
+.chat-invite button {
+  align-self: flex-start;
+}
+.play-vs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+.play-vs select {
+  flex: 1;
+  min-width: 180px;
+}
+.play-challenge {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+}
+.play-challenge p {
+  margin: 0 0 4px;
+}
+.challenge-banner {
+  position: fixed;
+  left: 50%;
+  top: calc(64px + env(safe-area-inset-top));
+  transform: translateX(-50%);
+  z-index: 140;
+  width: min(440px, calc(100vw - 20px));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  font-size: 14px;
+}
+.challenge-banner span {
+  flex: 1;
+}
+
 /* ---- Segnapunti dal vivo (Gioca) ---- */
 .tint-W { --t1: #a7843a; --t2: #e0c47a; }
 .tint-U { --t1: #1f5596; --t2: #4f97dc; }
@@ -5908,6 +6067,16 @@ button.small-btn {
     transform: rotate(-200deg) scale(0.3);
     opacity: 0;
   }
+}
+.chat-head .primary-link {
+  padding: 7px 12px;
+  font-size: 13px;
+  margin-left: auto;
+}
+.chat-invite a {
+  font-weight: 700;
+  color: inherit;
+  text-decoration: underline;
 }
 
 /* ---------------------------------------------------------------------------

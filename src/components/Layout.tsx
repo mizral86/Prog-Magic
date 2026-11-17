@@ -5,6 +5,7 @@ import { useFriends } from "../friendsContext";
 import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { applyTheme, getTheme, isDark, ThemeChoice } from "../theme";
+import { ChallengeBanner } from "./ChallengeBanner";
 
 interface Tab {
   to: string;
@@ -55,6 +56,7 @@ export function Layout() {
         </div>
       </header>
 
+      <ChallengeBanner />
       <main className="content">
         <Outlet />
       </main>
