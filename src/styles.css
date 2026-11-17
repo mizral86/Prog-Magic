@@ -6649,3 +6649,55 @@ button.primary.danger {
   width: 100%;
   justify-content: center;
 }
+.avatar-colors {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.avatar-colors > .avatar-chip {
+  justify-self: start;
+}
+.avatar-color-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.avatar-chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 3px;
+  scrollbar-width: thin;
+}
+.avatar-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.avatar-chip.on {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+.avatar-chip-mana {
+  display: inline-flex;
+  gap: 1px;
+}
+.avatar-sheet {
+  overflow-x: hidden;
+}
+.avatar-colors,
+.avatar-color-group,
+.avatar-chips {
+  min-width: 0;
+}
