@@ -56,8 +56,17 @@ export class FakeFriends implements FriendsBackend {
     const db = load();
     if (db.profiles.some((p) => p.username === username && p.id !== uid))
       throw new FriendsError("Questo nome utente è già preso: scegline un altro.", "taken");
-    const p: Profile = { id: uid, username, display_name: displayName, last_seen: now() };
+    const old = db.profiles.find((x) => x.id === uid);
+    const p: Profile = { id: uid, username, display_name: displayName, last_seen: now(), avatar: old?.avatar ?? null };
     db.profiles = [...db.profiles.filter((x) => x.id !== uid), p];
+    save(db);
+    return p;
+  }
+  async saveAvatar(uid: string, avatar: string | null) {
+    const db = load();
+    const p = db.profiles.find((x) => x.id === uid);
+    if (!p) throw new FriendsError("Profilo non trovato.");
+    p.avatar = avatar;
     save(db);
     return p;
   }

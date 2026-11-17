@@ -36,6 +36,8 @@ interface FriendsValue {
   badge: number;
   backend: FriendsBackend | null;
   saveProfile: (username: string, displayName: string | null) => Promise<void>;
+  /** Cambia (o toglie, con null) l'immagine profilo. */
+  saveAvatar: (avatar: string | null) => Promise<void>;
   search: (q: string) => Promise<Profile[]>;
   sendRequest: (other: string) => Promise<void>;
   accept: (id: number) => Promise<void>;
@@ -242,6 +244,11 @@ export function FriendsProvider({ children }: { children: ReactNode }) {
       const p = await backend.saveProfile(uid, username, displayName);
       setMe(p);
       setStatus("ready");
+    },
+    async saveAvatar(avatar) {
+      if (!uid || !backend) return;
+      const p = await backend.saveAvatar(uid, avatar);
+      setMe(p);
     },
     async search(q) {
       if (!backend) return [];

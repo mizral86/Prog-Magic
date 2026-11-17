@@ -18,6 +18,7 @@ import {
 } from "../groups";
 import { champion, createData, currentRound, KINDS, kindLabel, start, TKind, Tournament } from "../tournament";
 import { RecordGame } from "../components/RecordGame";
+import UserAvatar from "../components/UserAvatar";
 import { TournamentView } from "../components/TournamentView";
 
 export default function GroupsPage() {
@@ -738,10 +739,7 @@ function Members({
           const online = fr.friends.find((f) => f.id === m.user_id)?.online || m.user_id === fr.uid;
           return (
             <div key={m.user_id} className="friend-row">
-              <span className="friend-avatar" aria-hidden>
-                {memberName(m)[0]?.toUpperCase()}
-                <span className={`friend-dot${online ? " on" : ""}`} />
-              </span>
+              <UserAvatar name={memberName(m)} avatar={m.profile?.avatar} online={online} />
               <div className="friend-names">
                 <div className="friends-name">
                   {memberName(m)} {m.user_id === fr.uid && <span className="muted small">(tu)</span>}
@@ -785,10 +783,11 @@ function Members({
         ) : (
           addable.map((f) => (
             <div key={f.id} className="friend-row">
-              <span className="friend-avatar" aria-hidden>
-                {(f.profile?.display_name || f.profile?.username || "?")[0].toUpperCase()}
-                <span className={`friend-dot${f.online ? " on" : ""}`} />
-              </span>
+              <UserAvatar
+                name={f.profile?.display_name || f.profile?.username || "?"}
+                avatar={f.profile?.avatar}
+                online={f.online}
+              />
               <div className="friend-names">
                 <div className="friends-name">{f.profile?.display_name || f.profile?.username}</div>
                 <div className="muted small">@{f.profile?.username}</div>
