@@ -325,28 +325,43 @@
    "archetypes": [
     {
      "name": "Jace, Multiverse Architect",
-     "note": "comandante · 9.600 mazzi su EDHREC",
+     "note": "comandante · 7672 mazzi su EDHREC",
      "deck": "Commander\n1 Jace, Multiverse Architect"
     },
     {
      "name": "Y'shtola, Night's Blessed",
-     "note": "comandante · 6.310 mazzi su EDHREC",
+     "note": "comandante · 5608 mazzi su EDHREC",
      "deck": "Commander\n1 Y'shtola, Night's Blessed"
     },
     {
      "name": "Giada, Font of Hope",
-     "note": "comandante · 5.590 mazzi su EDHREC",
+     "note": "comandante · 4804 mazzi su EDHREC",
      "deck": "Commander\n1 Giada, Font of Hope"
     },
     {
+     "name": "Vraska, Soul of Stone",
+     "note": "comandante · 4186 mazzi su EDHREC",
+     "deck": "Commander\n1 Vraska, Soul of Stone"
+    },
+    {
+     "name": "Hearthhull, the Worldseed",
+     "note": "comandante · 3823 mazzi su EDHREC",
+     "deck": "Commander\n1 Hearthhull, the Worldseed"
+    },
+    {
      "name": "Tam, the Possibility",
-     "note": "comandante · 4.960 mazzi su EDHREC",
+     "note": "comandante · 3820 mazzi su EDHREC",
      "deck": "Commander\n1 Tam, the Possibility"
     },
     {
-     "name": "Vraska, Soul of Stone",
-     "note": "comandante · 4.940 mazzi su EDHREC",
-     "deck": "Commander\n1 Vraska, Soul of Stone"
+     "name": "Teval, the Balanced Scale",
+     "note": "comandante · 3758 mazzi su EDHREC",
+     "deck": "Commander\n1 Teval, the Balanced Scale"
+    },
+    {
+     "name": "Edgar Markov",
+     "note": "comandante · 3598 mazzi su EDHREC",
+     "deck": "Commander\n1 Edgar Markov"
     }
    ]
   }
