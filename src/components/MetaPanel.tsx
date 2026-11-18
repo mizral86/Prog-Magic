@@ -4,12 +4,12 @@
 import { useState } from "react";
 import { FORMATS, Format } from "../decks";
 import {
+  checkMetaUpdate,
   EDHREC_URL,
   goldfishUrl,
-  META,
-  META_SOURCE,
-  META_UPDATED,
+  metaList,
   mtgtop8Url,
+  useMeta,
 } from "../metagame";
 
 const FORMAT_LABEL: Record<Format, string> = {
@@ -29,7 +29,24 @@ export function MetaPanel({
 }) {
   const [open, setOpen] = useState(false);
   const [format, setFormat] = useState<Format>("modern");
-  const list = META[format];
+  const meta = useMeta();
+  const list = metaList(meta, format);
+  const [checking, setChecking] = useState(false);
+  const [checkMsg, setCheckMsg] = useState<string | null>(null);
+
+  async function checkNow() {
+    setChecking(true);
+    setCheckMsg(null);
+    const r = await checkMetaUpdate(true);
+    setChecking(false);
+    setCheckMsg(
+      r === "updated"
+        ? "Mazzi aggiornati."
+        : r === "error"
+          ? "Controllo non riuscito: sei offline? Riprova più tardi."
+          : "Hai già i mazzi più recenti.",
+    );
+  }
 
   return (
     <div className="panel meta-panel" style={{ marginTop: 16 }}>
@@ -107,11 +124,17 @@ export function MetaPanel({
           </div>
 
           <p className="muted small meta-disclaimer">
-            Fotografia del metagame al <strong>{META_UPDATED}</strong> (fonte:{" "}
-            {META_SOURCE[format]}), non un dato live. <strong>+ Crea mazzo</strong>{" "}
-            importa la lista completa giocata nel torneo indicato. Per il
-            metagame di oggi usa i link qui sopra.
+            Mazzi aggiornati al <strong>{meta.updatedLabel}</strong> (fonte:{" "}
+            {meta.formats[format]?.source ?? "—"}). L'app controlla da sola ogni
+            giorno se ce ne sono di nuovi. <strong>+ Crea mazzo</strong> importa
+            la lista completa giocata nel torneo indicato.
           </p>
+          <div className="row" style={{ gap: 8, alignItems: "center" }}>
+            <button type="button" className="ghost" onClick={checkNow} disabled={checking}>
+              {checking ? "Controllo…" : "Controlla ora"}
+            </button>
+            {checkMsg && <span className="muted small">{checkMsg}</span>}
+          </div>
         </>
       )}
     </div>

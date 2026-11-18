@@ -9,6 +9,7 @@ import { AuthProvider } from "./auth";
 import { FriendsProvider } from "./friendsContext";
 import "./styles.css";
 import { applyTheme, getTheme } from "./theme";
+import { checkMetaUpdate } from "./metagame";
 
 applyTheme(getTheme());
 
@@ -35,3 +36,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 
 // Toglie l'animazione di apertura (index.html) quando l'app è pronta.
 (window as unknown as { __hideSplash?: () => void }).__hideSplash?.();
+
+// Una volta al giorno: ci sono mazzi del meta più nuovi sul sito? Se sì
+// vengono scaricati e usati subito (vedi metagame.ts).
+setTimeout(() => void checkMetaUpdate(), 3000);

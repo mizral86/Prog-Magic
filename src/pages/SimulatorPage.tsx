@@ -18,7 +18,7 @@ import { SAMPLE_A, SAMPLE_B } from "../sampleDecks";
 import { getCompareSlots } from "../compareTray";
 import { useDecks } from "../decks";
 import { deckToText } from "../deckIO";
-import { META, META_UPDATED } from "../metagame";
+import { metaList, useMeta } from "../metagame";
 import { FORMATS, Format } from "../decks";
 
 const FORMAT_LABEL: Record<Format, string> = {
@@ -537,6 +537,7 @@ interface DeckPanelProps {
 
 function DeckPanel({ title, name, setName, text, setText, result }: DeckPanelProps) {
   const { decks } = useDecks();
+  const meta = useMeta();
   const sideCount = result
     ? result.deck.side.reduce((s, e) => s + (e.card ? e.quantity : 0), 0)
     : 0;
@@ -545,12 +546,12 @@ function DeckPanel({ title, name, setName, text, setText, result }: DeckPanelPro
       <h2>{title}</h2>
       <div className="deck-sources">
         <label className="field deck-source">
-          Mazzi del meta · {META_UPDATED}
+          Mazzi del meta · {meta.updatedLabel}
           <select
             value=""
             onChange={(e) => {
               const [f, idx] = e.target.value.split(":");
-              const a = META[f as Format]?.[Number(idx)];
+              const a = metaList(meta, f as Format)[Number(idx)];
               if (a?.deck) {
                 setText(a.deck);
                 setName(`${a.name} (${FORMAT_LABEL[f as Format]})`);
@@ -560,7 +561,7 @@ function DeckPanel({ title, name, setName, text, setText, result }: DeckPanelPro
             <option value="">— scegli un mazzo del meta —</option>
             {FORMATS.map((f) => (
               <optgroup key={f} label={FORMAT_LABEL[f]}>
-                {META[f].map((a, i) =>
+                {metaList(meta, f).map((a, i) =>
                   a.deck ? (
                     <option key={i} value={`${f}:${i}`}>
                       {a.name}
