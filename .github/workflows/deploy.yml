@@ -4,21 +4,73 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Ogni giorno alle 04:30 UTC (05:30 in Italia, 06:30 con l'ora legale):
+  # ricalcola i mazzi del meta e, se sono cambiati, ripubblica il sito.
+  schedule:
+    - cron: "30 4 * * *"
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
+  meta:
+    # Solo per l'aggiornamento giornaliero o lanciato a mano.
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Scarica liste dei tornei e regole degli archetipi
+        run: |
+          # Solo gli ultimi due mesi di tornei (sparse checkout, pochi secondi).
+          git clone -q --depth 1 --filter=blob:none --sparse https://github.com/Jiliac/MTGODecklistCache /tmp/decks
+          cd /tmp/decks
+          git sparse-checkout set --no-cone \
+            "/Tournaments/*/$(date -u +%Y/%m)/" \
+            "/Tournaments/*/$(date -u -d "$(date -u +%Y-%m-01) -1 month" +%Y/%m)/"
+          git clone -q --depth 1 https://github.com/Badaro/MTGOFormatData /tmp/formats
+      - name: Ricalcola i mazzi del meta
+        run: node scripts/update-meta.mjs /tmp/decks /tmp/formats
+      - id: commit
+        name: Salva se sono cambiati
+        run: |
+          if git diff --quiet -- public/meta.json; then
+            echo "Nessuna novità nei mazzi del meta."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+            git add public/meta.json
+            git commit -m "Mazzi del meta aggiornati ($(date -u +%Y-%m-%d))"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    needs: meta
+    # Su push sempre; nel giro giornaliero solo se i mazzi sono cambiati.
+    if: |
+      always() && (
+        github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch' ||
+        needs.meta.outputs.changed == 'true'
+      )
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Prende anche il commit appena fatto dal job "meta".
+          ref: ${{ github.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -36,6 +88,7 @@ jobs:
 
   deploy:
     needs: build
+    if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
