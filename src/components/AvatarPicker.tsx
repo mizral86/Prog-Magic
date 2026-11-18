@@ -1,6 +1,7 @@
-// Scelta dell'immagine profilo. Scheda "Simboli": i simboli di mana pastello
-// dell'app per un colore, le gilde di Ravnica (due colori) e i trii (frammenti
-// di Alara e clan di Tarkir). Scheda "Planeswalker": illustrazioni dei
+// Scelta dell'immagine profilo. Scheda "Simboli": per ogni colore, gilda di
+// Ravnica e trio (frammenti di Alara e clan di Tarkir) l'illustrazione di una
+// carta iconica (art crop da Scryfall), con il simbolo di mana pastello
+// dell'app nell'angolo; se Scryfall non risponde resta il solo simbolo. Scheda "Planeswalker": illustrazioni dei
 // planeswalker (art crop da Scryfall, una per illustrazione, più recenti prima).
 
 import { FormEvent, useEffect, useRef, useState } from "react";
@@ -11,48 +12,51 @@ export interface ColorFilter {
   label: string;
   /** Colori del simbolo, es. "W", "WU", "WUB"; "C" = incolore. */
   colors: string;
+  /** Carta iconica di cui usare l'illustrazione, e il set dell'illustrazione preferita. */
+  card: string;
+  set: string;
 }
 
 export const COLOR_GROUPS: { title: string; items: ColorFilter[] }[] = [
   {
     title: "Un colore",
     items: [
-      { id: "w", label: "Bianco", colors: "W" },
-      { id: "u", label: "Blu", colors: "U" },
-      { id: "b", label: "Nero", colors: "B" },
-      { id: "r", label: "Rosso", colors: "R" },
-      { id: "g", label: "Verde", colors: "G" },
-      { id: "c", label: "Incolore", colors: "C" },
+      { id: "w", label: "Bianco", colors: "W", card: "Serra Angel", set: "dom" },
+      { id: "u", label: "Blu", colors: "U", card: "Counterspell", set: "mh2" },
+      { id: "b", label: "Nero", colors: "B", card: "Demonic Tutor", set: "uma" },
+      { id: "r", label: "Rosso", colors: "R", card: "Lightning Bolt", set: "m10" },
+      { id: "g", label: "Verde", colors: "G", card: "Llanowar Elves", set: "dom" },
+      { id: "c", label: "Incolore", colors: "C", card: "Emrakul, the Aeons Torn", set: "roe" },
     ],
   },
   {
     title: "Gilde di Ravnica",
     items: [
-      { id: "azorius", label: "Azorius", colors: "WU" },
-      { id: "dimir", label: "Dimir", colors: "UB" },
-      { id: "rakdos", label: "Rakdos", colors: "BR" },
-      { id: "gruul", label: "Gruul", colors: "RG" },
-      { id: "selesnya", label: "Selesnya", colors: "GW" },
-      { id: "orzhov", label: "Orzhov", colors: "WB" },
-      { id: "izzet", label: "Izzet", colors: "UR" },
-      { id: "golgari", label: "Golgari", colors: "BG" },
-      { id: "boros", label: "Boros", colors: "RW" },
-      { id: "simic", label: "Simic", colors: "GU" },
+      { id: "azorius", label: "Azorius", colors: "WU", card: "Isperia, Supreme Judge", set: "rtr" },
+      { id: "dimir", label: "Dimir", colors: "UB", card: "Lazav, Dimir Mastermind", set: "rtr" },
+      { id: "rakdos", label: "Rakdos", colors: "BR", card: "Rakdos, Lord of Riots", set: "rtr" },
+      { id: "gruul", label: "Gruul", colors: "RG", card: "Borborygmos Enraged", set: "gtc" },
+      { id: "selesnya", label: "Selesnya", colors: "GW", card: "Trostani, Selesnya's Voice", set: "rtr" },
+      { id: "orzhov", label: "Orzhov", colors: "WB", card: "Obzedat, Ghost Council", set: "gtc" },
+      { id: "izzet", label: "Izzet", colors: "UR", card: "Niv-Mizzet, Dracogenius", set: "rtr" },
+      { id: "golgari", label: "Golgari", colors: "BG", card: "Jarad, Golgari Lich Lord", set: "rtr" },
+      { id: "boros", label: "Boros", colors: "RW", card: "Aurelia, the Warleader", set: "gtc" },
+      { id: "simic", label: "Simic", colors: "GU", card: "Prime Speaker Zegana", set: "gtc" },
     ],
   },
   {
     title: "Tre colori",
     items: [
-      { id: "esper", label: "Esper", colors: "WUB" },
-      { id: "grixis", label: "Grixis", colors: "UBR" },
-      { id: "jund", label: "Jund", colors: "BRG" },
-      { id: "naya", label: "Naya", colors: "RGW" },
-      { id: "bant", label: "Bant", colors: "GWU" },
-      { id: "abzan", label: "Abzan", colors: "WBG" },
-      { id: "jeskai", label: "Jeskai", colors: "URW" },
-      { id: "sultai", label: "Sultai", colors: "BGU" },
-      { id: "mardu", label: "Mardu", colors: "RWB" },
-      { id: "temur", label: "Temur", colors: "GUR" },
+      { id: "esper", label: "Esper", colors: "WUB", card: "Esper Panorama", set: "ala" },
+      { id: "grixis", label: "Grixis", colors: "UBR", card: "Grixis Panorama", set: "ala" },
+      { id: "jund", label: "Jund", colors: "BRG", card: "Jund Panorama", set: "ala" },
+      { id: "naya", label: "Naya", colors: "RGW", card: "Naya Panorama", set: "ala" },
+      { id: "bant", label: "Bant", colors: "GWU", card: "Bant Panorama", set: "ala" },
+      { id: "abzan", label: "Abzan", colors: "WBG", card: "Anafenza, the Foremost", set: "ktk" },
+      { id: "jeskai", label: "Jeskai", colors: "URW", card: "Narset, Enlightened Master", set: "ktk" },
+      { id: "sultai", label: "Sultai", colors: "BGU", card: "Sidisi, Brood Tyrant", set: "ktk" },
+      { id: "mardu", label: "Mardu", colors: "RWB", card: "Zurgo Helmsmasher", set: "ktk" },
+      { id: "temur", label: "Temur", colors: "GUR", card: "Surrak Dragonclaw", set: "ktk" },
     ],
   },
 ];
@@ -77,6 +81,46 @@ interface ScryPage {
 }
 
 const SEARCH = "https://api.scryfall.com/cards/search";
+const COLLECTION = "https://api.scryfall.com/cards/collection";
+
+/** Illustrazioni delle carte iconiche: nome carta (minuscolo) → art crop. */
+let iconicArt: Map<string, string> | null = null;
+
+function artOf(c: ScryCard): string | undefined {
+  return c.image_uris?.art_crop ?? c.card_faces?.[0]?.image_uris?.art_crop;
+}
+
+async function fetchCollection(identifiers: object[]): Promise<{ data: ScryCard[]; not_found?: { name?: string }[] }> {
+  const res = await fetch(COLLECTION, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ identifiers }),
+  });
+  if (!res.ok) throw new Error(`Scryfall ha risposto ${res.status}.`);
+  return res.json();
+}
+
+/** Carica le illustrazioni iconiche (una richiesta; se un set non va, riprova solo col nome). */
+async function loadIconicArt(): Promise<Map<string, string>> {
+  if (iconicArt) return iconicArt;
+  const all = COLOR_GROUPS.flatMap((g) => g.items);
+  const out = new Map<string, string>();
+  const first = await fetchCollection(all.map((f) => ({ name: f.card, set: f.set })));
+  for (const c of first.data) {
+    const art = artOf(c);
+    if (c.name && art) out.set(c.name.toLowerCase(), art);
+  }
+  const missing = all.filter((f) => !out.has(f.card.toLowerCase()));
+  if (missing.length) {
+    const second = await fetchCollection(missing.map((f) => ({ name: f.card })));
+    for (const c of second.data) {
+      const art = artOf(c);
+      if (c.name && art) out.set(c.name.toLowerCase(), art);
+    }
+  }
+  iconicArt = out;
+  return out;
+}
 
 function firstUrl(text: string): string {
   // Il testo libero cerca nel nome (anche in italiano); il resto filtra i planeswalker.
@@ -154,6 +198,19 @@ export default function AvatarPicker({
     }
   }
 
+  const [arts, setArts] = useState<Map<string, string> | null>(iconicArt);
+  useEffect(() => {
+    if (arts) return;
+    let alive = true;
+    loadIconicArt()
+      .then((m) => alive && setArts(m))
+      .catch(() => alive && setArts(new Map()));
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (tab === "pw" && !cached && !items.length && !busy) void load(firstUrl(""), false, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -227,23 +284,38 @@ export default function AvatarPicker({
         {tab === "sym" ? (
           <>
             {err && <p className="account-error">{err}</p>}
+            {!arts && <p className="muted small">Carico le illustrazioni…</p>}
+            {arts && arts.size === 0 && (
+              <p className="muted small">Illustrazioni non disponibili adesso: puoi scegliere il simbolo.</p>
+            )}
             {COLOR_GROUPS.map((g) => (
               <section key={g.title}>
                 <div className="avatar-color-title">{g.title}</div>
                 <div className="avatar-grid avatar-grid-sym">
                   {g.items.map((f) => {
-                    const val = `sym:${f.colors}`;
+                    const sym = `sym:${f.colors}`;
+                    const art = arts?.get(f.card.toLowerCase());
+                    // Con l'illustrazione si salva quella; senza, il simbolo.
+                    const val = art ?? sym;
                     return (
                       <button
                         key={f.id}
                         type="button"
-                        className={`avatar-opt${current === val ? " on" : ""}`}
-                        disabled={!!saving}
+                        className={`avatar-opt${current === val || current === sym ? " on" : ""}`}
+                        disabled={!!saving || !arts}
                         onClick={() => void pick(val)}
-                        title={f.label}
+                        title={art ? `${f.label}: ${f.card}` : f.label}
                       >
-                        <span className="avatar-opt-img avatar-opt-sym" style={{ backgroundImage: `url("${symbolAvatarUrl(val)}")` }} />
+                        <span
+                          className={`avatar-opt-img${art ? "" : " avatar-opt-sym"}`}
+                          style={{ backgroundImage: `url("${art ?? symbolAvatarUrl(sym)}")` }}
+                        >
+                          {art && (
+                            <span className="avatar-opt-badge" style={{ backgroundImage: `url("${symbolAvatarUrl(sym)}")` }} />
+                          )}
+                        </span>
                         <span className="avatar-opt-name">{saving === val ? "Salvo…" : f.label}</span>
+                        {art && <span className="avatar-opt-card">{f.card}</span>}
                       </button>
                     );
                   })}
