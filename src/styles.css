@@ -6701,3 +6701,38 @@ button.primary.danger {
 .avatar-chips {
   min-width: 0;
 }
+.avatar-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.avatar-tabs button {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+}
+.avatar-tabs button.on {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+.avatar-grid-sym {
+  grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+  margin-top: 4px;
+}
+.avatar-opt-sym,
+.friend-avatar.is-sym,
+.account-avatar.is-sym,
+.account-initial.is-sym {
+  background-position: center;
+  box-shadow: none;
+}
+.avatar-opt-sym {
+  width: 60px;
+  height: 60px;
+}

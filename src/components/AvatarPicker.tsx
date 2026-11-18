@@ -1,15 +1,15 @@
-// Galleria per scegliere l'immagine profilo tra le illustrazioni dei
+// Scelta dell'immagine profilo. Scheda "Simboli": i simboli di mana pastello
+// dell'app per un colore, le gilde di Ravnica (due colori) e i trii (frammenti
+// di Alara e clan di Tarkir). Scheda "Planeswalker": illustrazioni dei
 // planeswalker (art crop da Scryfall, una per illustrazione, più recenti prima).
-// Si può filtrare per colori: un colore, gilde di Ravnica (coppie) e trii
-// (frammenti di Alara e clan di Tarkir).
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { ManaSymbol } from "./ManaSymbol";
+import { symbolAvatarUrl } from "../friends";
 
 export interface ColorFilter {
   id: string;
   label: string;
-  /** Colori esatti in sintassi Scryfall (c=…); "C" = incolore, "4+" = quattro o più. */
+  /** Colori del simbolo, es. "W", "WU", "WUB"; "C" = incolore. */
   colors: string;
 }
 
@@ -53,7 +53,6 @@ export const COLOR_GROUPS: { title: string; items: ColorFilter[] }[] = [
       { id: "sultai", label: "Sultai", colors: "BGU" },
       { id: "mardu", label: "Mardu", colors: "RWB" },
       { id: "temur", label: "Temur", colors: "GUR" },
-      { id: "four", label: "4-5 colori", colors: "4+" },
     ],
   },
 ];
@@ -79,15 +78,9 @@ interface ScryPage {
 
 const SEARCH = "https://api.scryfall.com/cards/search";
 
-function colorQuery(f: ColorFilter | null): string {
-  if (!f) return "";
-  if (f.colors === "4+") return " c>=4";
-  return ` c=${f.colors.toLowerCase()}`;
-}
-
-function firstUrl(text: string, f: ColorFilter | null = null): string {
+function firstUrl(text: string): string {
   // Il testo libero cerca nel nome (anche in italiano); il resto filtra i planeswalker.
-  const q = `t:planeswalker -is:digital${colorQuery(f)}${text.trim() ? ` ${text.trim()}` : ""}`;
+  const q = `t:planeswalker -is:digital${text.trim() ? ` ${text.trim()}` : ""}`;
   return `${SEARCH}?q=${encodeURIComponent(q)}&unique=art&order=released&dir=desc&include_multilingual=true`;
 }
 
@@ -122,7 +115,9 @@ export default function AvatarPicker({
   const req = useRef(0);
   // Testo della ricerca mostrata adesso ("" = tutti i planeswalker).
   const [shown, setShown] = useState("");
-  const [color, setColor] = useState<ColorFilter | null>(null);
+  const [tab, setTab] = useState<"sym" | "pw">(
+    current && !current.startsWith("sym:") ? "pw" : "sym",
+  );
 
   async function load(url: string, append: boolean, cache = false) {
     const id = ++req.current;
@@ -160,7 +155,11 @@ export default function AvatarPicker({
   }
 
   useEffect(() => {
-    if (!cached) void load(firstUrl(""), false, true);
+    if (tab === "pw" && !cached && !items.length && !busy) void load(firstUrl(""), false, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -169,13 +168,9 @@ export default function AvatarPicker({
 
   function search(e: FormEvent) {
     e.preventDefault();
-    show(text.trim(), color);
-  }
-
-  function show(t: string, f: ColorFilter | null) {
+    const t = text.trim();
     setShown(t);
-    setColor(f);
-    if (!t && !f && cached) {
+    if (!t && cached) {
       req.current++;
       setItems(cached.items);
       setNext(cached.next);
@@ -183,7 +178,7 @@ export default function AvatarPicker({
       setBusy(false);
       return;
     }
-    void load(firstUrl(t, f), false, !t && !f);
+    void load(firstUrl(t), false, !t);
   }
 
   async function pick(url: string | null) {
@@ -209,8 +204,55 @@ export default function AvatarPicker({
           </button>
         </div>
         <p className="muted small" style={{ margin: "0 0 8px" }}>
-          Scegli il tuo planeswalker: la sua illustrazione sarà la tua immagine per amici, chat e gruppi.
+          L'immagine scelta si vede nel tuo profilo, tra gli amici, in chat e nei gruppi.
         </p>
+        <div className="avatar-tabs" role="tablist">
+          <button type="button" role="tab" aria-selected={tab === "sym"} className={tab === "sym" ? "on" : ""} onClick={() => setTab("sym")}>
+            Simboli
+          </button>
+          <button type="button" role="tab" aria-selected={tab === "pw"} className={tab === "pw" ? "on" : ""} onClick={() => setTab("pw")}>
+            Planeswalker
+          </button>
+        </div>
+        {current && (
+          <button
+            type="button"
+            className="link-btn avatar-remove"
+            disabled={!!saving}
+            onClick={() => void pick(null)}
+          >
+            Togli immagine (usa l'iniziale)
+          </button>
+        )}
+        {tab === "sym" ? (
+          <>
+            {err && <p className="account-error">{err}</p>}
+            {COLOR_GROUPS.map((g) => (
+              <section key={g.title}>
+                <div className="avatar-color-title">{g.title}</div>
+                <div className="avatar-grid avatar-grid-sym">
+                  {g.items.map((f) => {
+                    const val = `sym:${f.colors}`;
+                    return (
+                      <button
+                        key={f.id}
+                        type="button"
+                        className={`avatar-opt${current === val ? " on" : ""}`}
+                        disabled={!!saving}
+                        onClick={() => void pick(val)}
+                        title={f.label}
+                      >
+                        <span className="avatar-opt-img avatar-opt-sym" style={{ backgroundImage: `url("${symbolAvatarUrl(val)}")` }} />
+                        <span className="avatar-opt-name">{saving === val ? "Salvo…" : f.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
+          </>
+        ) : (
+        <>
         <form className="avatar-search" onSubmit={search}>
           <input
             type="search"
@@ -223,50 +265,6 @@ export default function AvatarPicker({
             Cerca
           </button>
         </form>
-        <div className="avatar-colors">
-          <button
-            type="button"
-            className={`avatar-chip${!color ? " on" : ""}`}
-            onClick={() => show(text.trim(), null)}
-          >
-            Tutti i colori
-          </button>
-          {COLOR_GROUPS.map((g) => (
-            <div key={g.title} className="avatar-color-group">
-              <div className="avatar-color-title">{g.title}</div>
-              <div className="avatar-chips">
-                {g.items.map((f) => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    className={`avatar-chip${color?.id === f.id ? " on" : ""}`}
-                    onClick={() => show(text.trim(), color?.id === f.id ? null : f)}
-                    aria-pressed={color?.id === f.id}
-                  >
-                    {f.colors !== "4+" && (
-                      <span className="avatar-chip-mana" aria-hidden>
-                        {f.colors.split("").map((c, i) => (
-                          <ManaSymbol key={i} sym={c} size={15} />
-                        ))}
-                      </span>
-                    )}
-                    {f.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-        {current && (
-          <button
-            type="button"
-            className="link-btn avatar-remove"
-            disabled={!!saving}
-            onClick={() => void pick(null)}
-          >
-            Togli immagine (usa l'iniziale)
-          </button>
-        )}
         {err && <p className="account-error">{err}</p>}
 
         <div className="avatar-grid">
@@ -286,9 +284,11 @@ export default function AvatarPicker({
         </div>
         {busy && <p className="muted small">Carico i planeswalker…</p>}
         {!busy && next && (
-          <button type="button" className="ghost avatar-more" onClick={() => void load(next, true, !shown && !color)}>
+          <button type="button" className="ghost avatar-more" onClick={() => void load(next, true, !shown)}>
             Mostra altri
           </button>
+        )}
+        </>
         )}
       </div>
     </div>

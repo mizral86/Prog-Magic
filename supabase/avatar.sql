@@ -1,16 +1,18 @@
--- Menga Magic: immagine profilo (illustrazione di un planeswalker).
+-- Menga Magic: immagine profilo (simbolo di colori o illustrazione di un planeswalker).
 -- Da incollare una volta in Supabase → SQL Editor → New query → Run,
 -- DOPO friends.sql. Si può rieseguire senza problemi (non cancella nulla).
 --
--- Aggiunge ai profili la colonna "avatar": l'indirizzo dell'immagine scelta
--- dalla galleria (solo immagini di Scryfall, cards.scryfall.io). Chi vede il
--- tuo profilo (amici, richieste, gruppi) vede anche l'immagine.
+-- Aggiunge ai profili la colonna "avatar": il simbolo scelto (es. "sym:WU",
+-- un colore, una gilda o un trio) oppure l'indirizzo di un'immagine di
+-- Scryfall (cards.scryfall.io). Chi vede il tuo profilo (amici, richieste,
+-- gruppi) vede anche l'immagine.
 
 alter table public.profiles add column if not exists avatar text;
 
 alter table public.profiles drop constraint if exists profiles_avatar_url;
 alter table public.profiles add constraint profiles_avatar_url check (
   avatar is null
+  or avatar ~ '^sym:[WUBRGC]{1,3}$'
   or (avatar ~ '^https://cards\.scryfall\.io/[^"''()[:space:]]+$' and char_length(avatar) <= 300)
 );
 
