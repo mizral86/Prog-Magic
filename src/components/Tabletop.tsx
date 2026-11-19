@@ -690,7 +690,7 @@ function CardFace({ card, url, label }: { card: TCard; url?: string; label: stri
 function CardBack() {
   return (
     <div className="tt-back">
-      <span>MMG</span>
+      <span>MD</span>
     </div>
   );
 }
