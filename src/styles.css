@@ -6772,3 +6772,97 @@ button.primary.danger {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
+
+/* Chat: menu ⋯ (togli amico, segnala, blocca) */
+.chat-menu-wrap {
+  position: relative;
+}
+.chat-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 30;
+  min-width: 170px;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+.chat-menu button {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  color: var(--text);
+  text-align: left;
+  padding: 11px 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.chat-menu button + button {
+  border-top: 1px solid var(--border);
+}
+.chat-menu button.danger {
+  color: var(--bad);
+}
+.report-dialog {
+  max-width: 440px;
+  padding: 18px 16px 16px;
+  display: grid;
+  gap: 12px;
+}
+.report-dialog h2 {
+  margin: 0 36px 0 0;
+  font-size: 1.15rem;
+}
+.report-dialog p {
+  margin: 0;
+}
+.report-reasons {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.report-reasons legend {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.report-reasons label,
+.report-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+/* Account: elimina account */
+.account-delete {
+  border-color: color-mix(in srgb, var(--bad) 45%, var(--border));
+}
+.account-delete h2 {
+  margin: 0;
+}
+.account-delete ul {
+  margin: 0;
+  padding-left: 20px;
+}
+.account-delete label.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+}
+.report-dialog .field {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.report-dialog textarea {
+  width: 100%;
+  font: inherit;
+  box-sizing: border-box;
+}

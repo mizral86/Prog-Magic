@@ -3,7 +3,7 @@
 // I dati stanno nel localStorage del browser, condivisi tra le schede: due
 // schede con utenti diversi si scrivono come se fossero due telefoni.
 
-import type { Friendship, FriendsBackend, LiveHandlers, Message, Profile } from "../friends";
+import type { Friendship, FriendsBackend, LiveHandlers, Message, Profile, ReportReason } from "../friends";
 import { FriendsError } from "../friends";
 
 const KEY = "pmdev.fake";
@@ -14,6 +14,8 @@ interface Db {
   profiles: Profile[];
   friendships: Friendship[];
   messages: Message[];
+  blocks?: { blocker: string; blocked: string }[];
+  reports?: { reporter: string; reported: string; reason: string; details: string; at: string }[];
   seq: number;
 }
 
@@ -42,6 +44,12 @@ export function fakeUserId(name: string): string | null {
 
 export class FakeFriends implements FriendsBackend {
   constructor(private me: string) {}
+
+  private isBlocked(db: Db, a: string, b: string) {
+    return (db.blocks ?? []).some(
+      (k) => (k.blocker === a && k.blocked === b) || (k.blocker === b && k.blocked === a),
+    );
+  }
 
   private connected(db: Db, a: string, b: string) {
     return db.friendships.some(
@@ -83,6 +91,7 @@ export class FakeFriends implements FriendsBackend {
     return db.profiles.filter(
       (p) =>
         p.id !== this.me &&
+        !this.isBlocked(db, this.me, p.id) &&
         (p.username.startsWith(t) || db.users.find((u) => u.id === p.id)?.email === t),
     );
   }
@@ -92,12 +101,17 @@ export class FakeFriends implements FriendsBackend {
   async profiles(ids: string[]) {
     const db = load();
     return db.profiles.filter(
-      (p) => ids.includes(p.id) && (p.id === this.me || this.connected(db, this.me, p.id)),
+      (p) =>
+        ids.includes(p.id) &&
+        (p.id === this.me ||
+          this.connected(db, this.me, p.id) ||
+          (db.blocks ?? []).some((k) => k.blocker === this.me && k.blocked === p.id)),
     );
   }
   async request(uid: string, other: string) {
     const db = load();
     if (this.connected(db, uid, other)) throw new FriendsError("C'è già una richiesta tra voi due.");
+    if (this.isBlocked(db, uid, other)) throw new FriendsError("Operazione non permessa dal server.");
     db.friendships.push({
       id: db.seq++,
       requester: uid,
@@ -136,7 +150,8 @@ export class FakeFriends implements FriendsBackend {
         f.status === "accepted" &&
         ((f.requester === uid && f.addressee === other) || (f.requester === other && f.addressee === uid)),
     );
-    if (!ok) throw new FriendsError("Operazione non permessa (potete scrivervi solo da amici).");
+    if (!ok || this.isBlocked(db, uid, other))
+      throw new FriendsError("Operazione non permessa: potete scrivervi solo da amici.");
     const m: Message = { id: db.seq++, sender: uid, receiver: other, body, created_at: now(), read_at: null };
     db.messages.push(m);
     save(db);
@@ -189,5 +204,29 @@ export class FakeFriends implements FriendsBackend {
       window.clearInterval(t);
       localStorage.removeItem(ONLINE + uid);
     };
+  }
+  async block(other: string) {
+    const db = load();
+    db.blocks = [...(db.blocks ?? []).filter((k) => !(k.blocker === this.me && k.blocked === other)), { blocker: this.me, blocked: other }];
+    db.friendships = db.friendships.filter(
+      (f) => !((f.requester === this.me && f.addressee === other) || (f.requester === other && f.addressee === this.me)),
+    );
+    save(db);
+  }
+  async unblock(other: string) {
+    const db = load();
+    db.blocks = (db.blocks ?? []).filter((k) => !(k.blocker === this.me && k.blocked === other));
+    save(db);
+  }
+  async blocked() {
+    const db = load();
+    const ids = (db.blocks ?? []).filter((k) => k.blocker === this.me).map((k) => k.blocked);
+    return ids.map((id) => db.profiles.find((p) => p.id === id) ?? { id, username: "utente", display_name: null });
+  }
+  async report(other: string, reason: ReportReason, details: string, alsoBlock: boolean) {
+    const db = load();
+    db.reports = [...(db.reports ?? []), { reporter: this.me, reported: other, reason, details, at: now() }];
+    save(db);
+    if (alsoBlock) await this.block(other);
   }
 }

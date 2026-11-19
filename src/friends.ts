@@ -64,7 +64,24 @@ export interface FriendsBackend {
   live(uid: string, h: LiveHandlers): () => void;
   /** Annuncia "sono online" e segnala chi è online. */
   presence(uid: string, onChange: (online: Set<string>) => void): () => void;
+  /** Blocca: niente più messaggi, richieste né ricerca; toglie l'amicizia. */
+  block(other: string): Promise<void>;
+  unblock(other: string): Promise<void>;
+  /** Profili che hai bloccato (vuoto se la funzione non è attiva sul server). */
+  blocked(): Promise<Profile[]>;
+  /** Segnala un utente (con copia degli ultimi messaggi tra voi). */
+  report(other: string, reason: ReportReason, details: string, alsoBlock: boolean): Promise<void>;
 }
+
+export type ReportReason = "spam" | "molestie" | "inappropriato" | "truffa" | "altro";
+
+export const REPORT_REASONS: { id: ReportReason; label: string }[] = [
+  { id: "molestie", label: "Offese, minacce o molestie" },
+  { id: "inappropriato", label: "Contenuti inappropriati" },
+  { id: "spam", label: "Spam o pubblicità" },
+  { id: "truffa", label: "Truffa o richiesta di soldi" },
+  { id: "altro", label: "Altro" },
+];
 
 export class FriendsError extends Error {
   constructor(
@@ -83,6 +100,11 @@ interface PgError {
 function fail(e: PgError | null): never {
   const msg = e?.message ?? "Errore sconosciuto";
   const m = msg.toLowerCase();
+  if (/block_user|report_user|public\.blocks|"blocks"/.test(m) && /could not find|does not exist|schema cache/.test(m))
+    throw new FriendsError(
+      "Blocchi e segnalazioni non sono ancora attivi sul server: va eseguito una volta il file supabase/account.sql su Supabase.",
+    );
+  if (m.includes("troppe segnalazioni")) throw new FriendsError("Troppe segnalazioni oggi: riprova domani.");
   if (m.includes("avatar") && (e?.code === "PGRST204" || e?.code === "42703" || m.includes("column")))
     throw new FriendsError(
       "Le immagini profilo non sono ancora attive sul server: va eseguito una volta il file supabase/avatar.sql su Supabase.",
@@ -335,6 +357,36 @@ class SupabaseFriends implements FriendsBackend {
       document.removeEventListener("visibilitychange", announce);
       void this.sb.removeChannel(ch);
     };
+  }
+
+  async block(other: string) {
+    const { error } = await this.sb.rpc("block_user", { other });
+    if (error) fail(error);
+  }
+
+  async unblock(other: string) {
+    // Le regole RLS cancellano solo i blocchi messi da chi chiama.
+    const { error } = await this.sb.from("blocks").delete().eq("blocked", other);
+    if (error) fail(error);
+  }
+
+  async blocked() {
+    const { data, error } = await this.sb.from("blocks").select("blocked").order("created_at");
+    if (error) return []; // account.sql non ancora eseguito
+    const ids = ((data ?? []) as { blocked: string }[]).map((r) => r.blocked);
+    if (ids.length === 0) return [];
+    const ps = await this.profiles(ids);
+    return ids.map((id) => ps.find((p) => p.id === id) ?? { id, username: "utente", display_name: null });
+  }
+
+  async report(other: string, reason: ReportReason, details: string, alsoBlock: boolean) {
+    const { error } = await this.sb.rpc("report_user", {
+      other,
+      why: reason,
+      note: details.trim().slice(0, 1000) || null,
+      also_block: alsoBlock,
+    });
+    if (error) fail(error);
   }
 }
 
