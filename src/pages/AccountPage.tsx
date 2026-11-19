@@ -8,6 +8,7 @@ import { shownName } from "../friends";
 import { useFriends } from "../friendsContext";
 import AvatarPicker from "../components/AvatarPicker";
 import UserAvatar from "../components/UserAvatar";
+import ReportsAdmin from "../components/ReportsAdmin";
 
 type Mode = "login" | "signup" | "reset";
 
@@ -145,6 +146,8 @@ function Profile() {
         </p>
       </div>
 
+      <ReportsAdmin uid={user.id} />
+
       <form
         className="panel account-panel account-form"
         onSubmit={async (e) => {
@@ -165,11 +168,12 @@ function Profile() {
           <input
             type="password"
             autoComplete="new-password"
-            minLength={6}
+            minLength={8}
             required
             value={newPw}
             onChange={(e) => setNewPw(e.target.value)}
           />
+          <span className="muted small">Almeno 8 caratteri.</span>
         </label>
         <button type="submit" className="ghost" style={{ justifySelf: "start" }}>
           Salva password
@@ -368,11 +372,12 @@ function SignInForm() {
             <input
               type="password"
               autoComplete={mode === "signup" ? "new-password" : "current-password"}
-              minLength={6}
+              minLength={mode === "signup" ? 8 : 6}
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            {mode === "signup" && <span className="muted small">Almeno 8 caratteri.</span>}
           </label>
         )}
         <button type="submit" className="primary" disabled={busy}>

@@ -6866,3 +6866,55 @@ button.primary.danger {
   font: inherit;
   box-sizing: border-box;
 }
+
+/* Account: pannello segnalazioni (moderatori) */
+.reports-admin h2 {
+  margin: 0;
+}
+.report-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: grid;
+  gap: 6px;
+}
+.report-card.closed {
+  opacity: 0.65;
+}
+.report-details {
+  margin: 0;
+  font-style: italic;
+}
+.report-msgs {
+  display: grid;
+  gap: 4px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 6px 8px;
+  background: var(--panel-2);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.report-msg.reported {
+  color: var(--bad);
+}
+
+/* Schermata "Qualcosa è andato storto" */
+.error-panel {
+  display: grid;
+  gap: 12px;
+  max-width: 520px;
+}
+.error-panel .page-title {
+  margin: 0;
+}
+.error-detail {
+  display: block;
+  margin-top: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.page-loading {
+  padding: 32px 0;
+  text-align: center;
+}

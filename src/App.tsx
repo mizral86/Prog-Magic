@@ -1,14 +1,15 @@
+import { lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import SearchPage from "./pages/SearchPage";
-import CollectionPage from "./pages/CollectionPage";
-import DecksPage from "./pages/DecksPage";
-import SimulatorPage from "./pages/SimulatorPage";
-import PlayPage from "./pages/PlayPage";
-import ScanPage from "./pages/ScanPage";
-import AccountPage from "./pages/AccountPage";
-import FriendsPage from "./pages/FriendsPage";
-import GroupsPage from "./pages/GroupsPage";
+const CollectionPage = lazy(() => import("./pages/CollectionPage"));
+const DecksPage = lazy(() => import("./pages/DecksPage"));
+const SimulatorPage = lazy(() => import("./pages/SimulatorPage"));
+const PlayPage = lazy(() => import("./pages/PlayPage"));
+const ScanPage = lazy(() => import("./pages/ScanPage"));
+const AccountPage = lazy(() => import("./pages/AccountPage"));
+const FriendsPage = lazy(() => import("./pages/FriendsPage"));
+const GroupsPage = lazy(() => import("./pages/GroupsPage"));
 
 export default function App() {
   return (

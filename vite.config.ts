@@ -37,7 +37,19 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,png,webp,svg,woff2}"],
+        // I file dello scanner (circa 11 MB) non si scaricano all'installazione:
+        // si salvano la prima volta che si usa lo scanner (vedi sotto).
+        globIgnores: ["ocr/**"],
         runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.includes("/ocr/"),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "ocr",
+              expiration: { maxEntries: 10 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
           {
             // Immagini delle carte Scryfall: cache di lunga durata.
             urlPattern: /^https:\/\/cards\.scryfall\.io\/.*/i,
