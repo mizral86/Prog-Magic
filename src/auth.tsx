@@ -42,7 +42,12 @@ function italianError(msg: string): string {
   if (m.includes("invalid login credentials")) return "Email o password non corrette.";
   if (m.includes("email not confirmed")) return "Devi prima confermare l'email: controlla la posta.";
   if (m.includes("user already registered")) return "Esiste già un account con questa email: accedi.";
-  if (m.includes("password should be at least")) return "La password deve avere almeno 6 caratteri.";
+  if (m.includes("password should be at least")) {
+    const n = /at least (\d+)/.exec(m)?.[1] ?? "8";
+    return `La password deve avere almeno ${n} caratteri.`;
+  }
+  if (m.includes("password should contain")) return "La password deve contenere lettere e numeri.";
+  if (m.includes("weak") && m.includes("password")) return "Password troppo facile da indovinare: scegline un'altra.";
   if (m.includes("unable to validate email") || m.includes("invalid format"))
     return "L'indirizzo email non è valido.";
   if (m.includes("rate limit")) return "Troppi tentativi: riprova tra qualche minuto.";

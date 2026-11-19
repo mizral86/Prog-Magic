@@ -2,8 +2,10 @@
 
 import { useAuth } from "../auth";
 import { useFriends } from "../friendsContext";
-import { useState } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { useOpenReports } from "../moderation";
+import { Suspense, useEffect, useState } from "react";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import ErrorBoundary, { clearChunkReloadFlag } from "./ErrorBoundary";
 import { applyTheme, getTheme, isDark, ThemeChoice } from "../theme";
 import { ChallengeBanner } from "./ChallengeBanner";
 import UserAvatar from "./UserAvatar";
@@ -26,6 +28,12 @@ const TABS: Tab[] = [
 
 export function Layout() {
   const [theme, setTheme] = useState<ThemeChoice>(getTheme);
+  const location = useLocation();
+  // L'app è partita: se serve, in futuro si potrà ricaricare di nuovo per una versione nuova.
+  useEffect(() => {
+    const t = window.setTimeout(clearChunkReloadFlag, 10_000);
+    return () => window.clearTimeout(t);
+  }, []);
   const dark = isDark(theme);
   function toggleTheme() {
     const next: ThemeChoice = dark ? "light" : "dark";
@@ -59,7 +67,11 @@ export function Layout() {
 
       <ChallengeBanner />
       <main className="content">
-        <Outlet />
+        <ErrorBoundary resetKey={location.pathname}>
+          <Suspense fallback={<p className="muted page-loading">Caricamento…</p>}>
+            <Outlet />
+          </Suspense>
+        </ErrorBoundary>
       </main>
 
       <nav className="bottomnav">
@@ -156,14 +168,15 @@ function IconFriends() {
 function AccountButton() {
   const auth = useAuth();
   const fr = useFriends();
+  const reports = useOpenReports(auth.status === "in" ? auth.user?.id ?? null : null).count ?? 0;
   if (auth.status === "disabled") return null;
   const label =
-    auth.status === "in"
+    (auth.status === "in"
       ? `Profilo: ${auth.user?.email ?? ""}${auth.syncError ? " (sincronizzazione non riuscita)" : ""}`
-      : "Accedi";
+      : "Accedi") + (reports > 0 ? ` · ${reports} segnalazioni da vedere` : "");
   const initial = (auth.user?.email?.[0] ?? "").toUpperCase();
   return (
-    <Link to="/account" className="icon-btn account-btn" aria-label={label} title={label}>
+    <Link to="/account" className="icon-btn account-btn friends-btn" aria-label={label} title={label}>
       {auth.status === "in" && fr.me?.avatar && !auth.syncError ? (
         <UserAvatar name={initial} avatar={fr.me.avatar} className="account-initial" />
       ) : auth.status === "in" ? (
@@ -171,6 +184,7 @@ function AccountButton() {
       ) : (
         <IconUser />
       )}
+      {reports > 0 && <span className="friends-badge">{reports > 99 ? "99+" : reports}</span>}
     </Link>
   );
 }

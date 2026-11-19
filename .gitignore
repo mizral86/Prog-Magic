@@ -2,6 +2,8 @@
 node_modules
 
 # Build
+# File OCR copiati da node_modules (scripts/copy-ocr.mjs)
+public/ocr
 dist
 dist-ssr
 *.local

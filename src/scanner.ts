@@ -32,7 +32,15 @@ const nameCache = new Map<string, CardInfo | null>();
 function getWorker(): Promise<Worker> {
   if (!workerPromise) {
     workerPromise = import("tesseract.js").then(async (T) => {
-      const w = await T.createWorker("eng");
+      // Tutti i file dal sito stesso (public/ocr, vedi scripts/copy-ocr.mjs):
+      // niente CDN esterni e, dopo il primo uso, funziona anche offline.
+      const base = new URL(`${import.meta.env.BASE_URL}ocr/`, window.location.href).href;
+      const w = await T.createWorker("eng", T.OEM.LSTM_ONLY, {
+        workerPath: `${base}worker.min.js`,
+        corePath: base,
+        langPath: base,
+        workerBlobURL: false,
+      });
       return w;
     });
     workerPromise.catch(() => {
