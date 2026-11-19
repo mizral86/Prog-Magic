@@ -228,13 +228,13 @@ function SignInForm() {
         className="account-cover only-light"
         loading="lazy"
         src={`${import.meta.env.BASE_URL}menga-cover.webp`}
-        alt="Menga Magic"
+        alt="Menga Deck"
       />
       <img
         className="account-cover only-dark"
         loading="lazy"
         src={`${import.meta.env.BASE_URL}mmg-cover.webp`}
-        alt="MMG Menga Magic"
+        alt="Menga Deck"
       />
       <p className="muted">
         Accedi per salvare collezione, mazzi, wishlist e impostazioni sul tuo profilo e
