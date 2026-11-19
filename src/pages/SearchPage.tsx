@@ -247,12 +247,8 @@ export default function SearchPage() {
     <div className="page">
       {results === null && !loading && (
         <div className="hero-banner" aria-hidden="true">
-          <img className="only-light" loading="lazy" src={`${import.meta.env.BASE_URL}menga-banner.webp`} alt="" />
-          <img className="only-dark" loading="lazy" src={`${import.meta.env.BASE_URL}mmg-banner.webp`} alt="" />
-          <div className="hero-text only-dark">
-            <span className="hero-title">Menga Deck</span>
-            <span className="hero-sub">Play More Together</span>
-          </div>
+          <img className="only-light" loading="lazy" src={`${import.meta.env.BASE_URL}menga-banner-light.webp`} alt="" />
+          <img className="only-dark" loading="lazy" src={`${import.meta.env.BASE_URL}menga-banner-dark.webp`} alt="" />
         </div>
       )}
       <h1 className="page-title">Cerca carte</h1>

@@ -2684,19 +2684,18 @@ button.ghost.active {
   object-position: 50% 42%;
   display: block;
 }
-/* Tema chiaro: l'immagine "Menga Deck" ha già nome e motto disegnati,
-   quindi si mostra intera (3:2), senza sfumatura e senza testo sopra. */
-:root[data-mode="light"] .hero-banner {
-  aspect-ratio: 1200 / 798;
+/* Le immagini "Menga Deck" (chiara e scura) hanno già nome e motto
+   disegnati: si mostrano intere (3:2), senza sfumatura e senza testo sopra. */
+.hero-banner {
+  aspect-ratio: 1200 / 795;
   max-height: none;
   max-width: 640px;
   margin-inline: auto;
-  margin-bottom: 16px;
 }
-:root[data-mode="light"] .hero-banner img {
+.hero-banner img {
   object-position: 50% 50%;
 }
-:root[data-mode="light"] .hero-banner::after {
+.hero-banner::after {
   display: none;
 }
 .hero-banner::after {
@@ -2737,7 +2736,7 @@ button.ghost.active {
   border-radius: 22px;
   box-shadow: var(--sh-2);
 }
-/* Ogni tema ha la sua immagine: Menga Deck nel chiaro, MMG nel scuro. */
+/* Ogni tema ha la sua immagine: versione chiara e scura di Menga Deck. */
 :root:not([data-mode="light"]) .only-light,
 :root[data-mode="light"] .only-dark {
   display: none;
