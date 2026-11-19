@@ -1,5 +1,6 @@
 // Sezione "Cerca": ricerca carte su Scryfall con prezzi, filtri avanzati e dettaglio.
 
+import FanNotice from "../components/FanNotice";
 import { FormEvent, useMemo, useState } from "react";
 import { ManaCost } from "../components/ManaSymbol";
 import { searchCards, SortOrder } from "../scryfall";
@@ -620,6 +621,8 @@ export default function SearchPage() {
       {selected && (
         <CardDetail card={selected} onClose={() => setSelected(null)} />
       )}
+
+      <FanNotice />
     </div>
   );
 }
