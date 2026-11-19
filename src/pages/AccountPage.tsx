@@ -9,6 +9,7 @@ import { useFriends } from "../friendsContext";
 import AvatarPicker from "../components/AvatarPicker";
 import UserAvatar from "../components/UserAvatar";
 import ReportsAdmin from "../components/ReportsAdmin";
+import FanNotice from "../components/FanNotice";
 
 type Mode = "login" | "signup" | "reset";
 
@@ -28,6 +29,7 @@ export default function AccountPage() {
             Finché non è attivo, collezione e mazzi restano salvati solo su questo dispositivo.
           </p>
         </div>
+        <FanNotice />
       </div>
     );
   }
@@ -45,6 +47,7 @@ export default function AccountPage() {
     <div className="page">
       <h1 className="page-title">Account</h1>
       {auth.status === "in" ? <Profile /> : <SignInForm />}
+      <FanNotice />
     </div>
   );
 }
@@ -183,10 +186,6 @@ function Profile() {
 
       <DeleteAccount />
 
-      <p className="muted small account-legal">
-        <a href={`${import.meta.env.BASE_URL}privacy.html`}>Privacy</a> ·{" "}
-        <a href={`${import.meta.env.BASE_URL}termini.html`}>Termini</a>
-      </p>
     </>
   );
 }
@@ -421,10 +420,6 @@ function SignInForm() {
 
       {info && <p className="account-info">{info}</p>}
       {error && <p className="account-error">{error}</p>}
-      <p className="muted small account-legal">
-        <a href={`${import.meta.env.BASE_URL}privacy.html`}>Privacy</a> ·{" "}
-        <a href={`${import.meta.env.BASE_URL}termini.html`}>Termini</a>
-      </p>
     </div>
   );
 }
