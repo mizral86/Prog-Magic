@@ -4,7 +4,15 @@
 import { FormEvent, KeyboardEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../auth";
-import { Message, Profile, shownName, suggestUsername, validUsername } from "../friends";
+import {
+  Message,
+  Profile,
+  REPORT_REASONS,
+  ReportReason,
+  shownName,
+  suggestUsername,
+  validUsername,
+} from "../friends";
 import { FriendEntry, useFriends } from "../friendsContext";
 import { parseInvite } from "../onlineGame";
 import { FriendsTabs } from "./GroupsPage";
@@ -219,6 +227,14 @@ function FriendsHome() {
               <ActionButton className="ghost small-btn" onClick={() => fr.remove(e.friendship.id)}>
                 Rifiuta
               </ActionButton>
+              <ActionButton
+                className="link-btn small danger"
+                onClick={async () => {
+                  if (window.confirm(blockQuestion(e.profile))) await fr.block(e.id);
+                }}
+              >
+                Blocca
+              </ActionButton>
             </div>
           ))}
         </section>
@@ -269,6 +285,28 @@ function FriendsHome() {
               </div>
               <ActionButton className="ghost small-btn" onClick={() => fr.remove(e.friendship.id)}>
                 Annulla
+              </ActionButton>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {fr.blocked.length > 0 && (
+        <section className="panel friends-section">
+          <h2>Utenti bloccati</h2>
+          <p className="muted small">
+            Non possono scriverti, mandarti richieste né trovarti nella ricerca. Non ricevono avvisi
+            del blocco.
+          </p>
+          {fr.blocked.map((p) => (
+            <div key={p.id} className="friend-row">
+              <Avatar profile={p} />
+              <div className="friend-names">
+                <div className="friends-name">{shownName(p)}</div>
+                <div className="muted small">@{p.username}</div>
+              </div>
+              <ActionButton className="ghost small-btn" onClick={() => fr.unblock(p.id)}>
+                Sblocca
               </ActionButton>
             </div>
           ))}
@@ -437,6 +475,9 @@ function Chat({ friendId }: { friendId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const [reporting, setReporting] = useState(false);
+  const blockedNow = useRef(false);
   const listRef = useRef<HTMLDivElement>(null);
   const isFriend = !!entry;
   const { backend, uid } = fr;
@@ -521,8 +562,21 @@ function Chat({ friendId }: { friendId: string }) {
     }
   }
 
+  async function blockFriend() {
+    if (!entry) return;
+    setMenu(false);
+    if (!window.confirm(blockQuestion(entry.profile))) return;
+    try {
+      await fr.block(friendId);
+      navigate("/amici");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  }
+
   async function removeFriend() {
     if (!entry) return;
+    setMenu(false);
     if (!window.confirm(`Togliere ${shownName(entry.profile)} dagli amici? Non potrete più scrivervi.`))
       return;
     try {
@@ -568,10 +622,55 @@ function Chat({ friendId }: { friendId: string }) {
         <Link to={`/gioca?sfida=${friendId}`} className="primary-link small-btn" title="Gioca al Tavolo contro questo amico">
           ⚔ Sfida
         </Link>
-        <button type="button" className="link-btn chat-remove" onClick={removeFriend}>
-          Togli amico
-        </button>
+        <div className="chat-menu-wrap">
+          <button
+            type="button"
+            className="icon-btn"
+            aria-label="Altre azioni"
+            aria-expanded={menu}
+            onClick={() => setMenu((m) => !m)}
+          >
+            ⋯
+          </button>
+          {menu && (
+            <div className="chat-menu" role="menu">
+              <button type="button" role="menuitem" onClick={removeFriend}>
+                Togli amico
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setMenu(false);
+                  setReporting(true);
+                }}
+              >
+                Segnala
+              </button>
+              <button type="button" role="menuitem" className="danger" onClick={blockFriend}>
+                Blocca
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+
+      {reporting && (
+        <ReportDialog
+          profile={entry.profile}
+          onClose={() => {
+            setReporting(false);
+            if (blockedNow.current) {
+              void fr.refresh();
+              navigate("/amici");
+            }
+          }}
+          onSend={async (reason, details, alsoBlock) => {
+            await fr.report(friendId, reason, details, alsoBlock);
+            blockedNow.current = alsoBlock;
+          }}
+        />
+      )}
 
       <div className="chat-list" ref={listRef}>
         {messages === null && !error && <p className="muted small chat-note">Caricamento…</p>}
@@ -624,6 +723,110 @@ function Chat({ friendId }: { friendId: string }) {
         <button type="submit" className="primary" disabled={!text.trim() || sending}>
           Invia
         </button>
+      </form>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Blocca e segnala
+
+function blockQuestion(p: Profile | undefined | null): string {
+  return (
+    `Bloccare ${shownName(p)}? Non potrà più scriverti, mandarti richieste né trovarti nella ` +
+    "ricerca, e non sarete più amici. Puoi sbloccarlo in fondo alla pagina Amici."
+  );
+}
+
+function ReportDialog({
+  profile,
+  onClose,
+  onSend,
+}: {
+  profile: Profile | undefined;
+  onClose: () => void;
+  onSend: (reason: ReportReason, details: string, alsoBlock: boolean) => Promise<void>;
+}) {
+  const [reason, setReason] = useState<ReportReason | null>(null);
+  const [details, setDetails] = useState("");
+  const [alsoBlock, setAlsoBlock] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    if (!reason) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await onSend(reason, details, alsoBlock);
+      setDone(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <form className="modal report-dialog" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
+        <button type="button" className="modal-close" onClick={onClose} aria-label="Chiudi">
+          ✕
+        </button>
+        <h2>Segnala {shownName(profile)}</h2>
+        {done ? (
+          <>
+            <p>Grazie, segnalazione inviata. La controlleremo il prima possibile.</p>
+            <button type="button" className="primary" onClick={onClose}>
+              Chiudi
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="muted small">
+              Insieme alla segnalazione inviamo una copia degli ultimi messaggi tra voi, così possiamo
+              verificare. {shownName(profile)} non saprà chi l'ha segnalato.
+            </p>
+            <fieldset className="report-reasons">
+              <legend>Motivo</legend>
+              {REPORT_REASONS.map((r) => (
+                <label key={r.id}>
+                  <input
+                    type="radio"
+                    name="reason"
+                    checked={reason === r.id}
+                    onChange={() => setReason(r.id)}
+                  />
+                  {r.label}
+                </label>
+              ))}
+            </fieldset>
+            <label className="field account-field">
+              <span>Dettagli (facoltativo)</span>
+              <textarea
+                rows={3}
+                maxLength={1000}
+                value={details}
+                onChange={(e) => setDetails(e.target.value)}
+              />
+            </label>
+            <label className="report-block">
+              <input type="checkbox" checked={alsoBlock} onChange={(e) => setAlsoBlock(e.target.checked)} />
+              Blocca anche {shownName(profile)}
+            </label>
+            {error && <p className="account-error">{error}</p>}
+            <div className="row">
+              <button type="submit" className="primary danger" disabled={!reason || busy}>
+                {busy ? "Invio…" : "Invia segnalazione"}
+              </button>
+              <button type="button" className="ghost" onClick={onClose}>
+                Annulla
+              </button>
+            </div>
+          </>
+        )}
       </form>
     </div>
   );

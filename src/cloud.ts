@@ -260,6 +260,20 @@ export async function forgetLocal(uid: string | null) {
   set(DIRTY_AT, null);
 }
 
+/**
+ * Dopo l'eliminazione dell'account: il dispositivo smette di sincronizzare.
+ * Con keepData i dati restano qui come dati locali (senza account),
+ * altrimenti vengono cancellati.
+ */
+export function discardLocal(keepData: boolean) {
+  watchChanges(null);
+  clearTimeout(timer);
+  if (!keepData) clearData();
+  set(OWNER, null);
+  set(SYNCED_AT, null);
+  set(DIRTY_AT, null);
+}
+
 // ---------------------------------------------------------------------------
 // Osserva le scritture "pm.*" e le carica sul profilo dopo un attimo.
 

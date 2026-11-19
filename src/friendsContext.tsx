@@ -10,6 +10,7 @@ import {
   Friendship,
   Message,
   Profile,
+  ReportReason,
   setFriendsBackend,
 } from "./friends";
 
@@ -42,6 +43,11 @@ interface FriendsValue {
   sendRequest: (other: string) => Promise<void>;
   accept: (id: number) => Promise<void>;
   remove: (id: number) => Promise<void>;
+  /** Utenti che hai bloccato. */
+  blocked: Profile[];
+  block: (other: string) => Promise<void>;
+  unblock: (other: string) => Promise<void>;
+  report: (other: string, reason: ReportReason, details: string, alsoBlock: boolean) => Promise<void>;
   refresh: () => Promise<void>;
   /** Avvisa la chat aperta di messaggi nuovi o letti. */
   onMessage: (cb: (m: Message, kind: "new" | "update") => void) => () => void;
@@ -97,6 +103,7 @@ export function FriendsProvider({ children }: { children: ReactNode }) {
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [online, setOnline] = useState<Set<string>>(new Set());
   const [unread, setUnread] = useState<Record<string, number>>({});
+  const [blocked, setBlocked] = useState<Profile[]>([]);
   const listeners = useRef(new Set<(m: Message, kind: "new" | "update") => void>());
   const activeChat = useRef<string | null>(null);
 
@@ -142,8 +149,13 @@ export function FriendsProvider({ children }: { children: ReactNode }) {
     try {
       const fs = await backend.friendships();
       const others = fs.map((f) => (f.requester === uid ? f.addressee : f.requester));
-      const [ps, un] = await Promise.all([backend.profiles(others), backend.unread(uid)]);
+      const [ps, un, bl] = await Promise.all([
+        backend.profiles(others),
+        backend.unread(uid),
+        backend.blocked().catch(() => [] as Profile[]),
+      ]);
       setFriendships(fs);
+      setBlocked(bl);
       setProfiles(Object.fromEntries(ps.map((p) => [p.id, p])));
       if (activeChat.current) delete un[activeChat.current];
       setUnread(un);
@@ -268,6 +280,22 @@ export function FriendsProvider({ children }: { children: ReactNode }) {
       if (!backend) return;
       await backend.remove(id);
       await refresh();
+    },
+    blocked,
+    async block(other) {
+      if (!backend) return;
+      await backend.block(other);
+      await refresh();
+    },
+    async unblock(other) {
+      if (!backend) return;
+      await backend.unblock(other);
+      await refresh();
+    },
+    async report(other, reason, details, alsoBlock) {
+      if (!backend) return;
+      // Niente refresh qui: chi chiama aggiorna quando chiude la conferma.
+      await backend.report(other, reason, details, alsoBlock);
     },
     refresh,
     onMessage(cb) {

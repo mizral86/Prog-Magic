@@ -3,7 +3,8 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { cloudConfigured } from "./cloudConfig";
-import { flush, forgetLocal, lastSyncedAt, reconcile, supabase, watchChanges } from "./cloud";
+import { clearSavedGame } from "./onlineGame";
+import { discardLocal, flush, forgetLocal, lastSyncedAt, reconcile, supabase, watchChanges } from "./cloud";
 
 export type AuthStatus = "disabled" | "loading" | "out" | "in";
 
@@ -19,6 +20,8 @@ interface AuthValue {
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  /** Cancella l'account e tutti i dati sul server, poi esce. */
+  deleteAccount: (keepLocalCopy: boolean) => Promise<void>;
   syncNow: () => Promise<void>;
 }
 
@@ -159,6 +162,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
       }
       await sb.auth.signOut();
+      window.location.reload();
+    },
+    async deleteAccount(keepLocalCopy) {
+      const sb = supabase();
+      if (!sb) return;
+      const uid = uidRef.current;
+      const { error } = await sb.rpc("delete_my_account");
+      if (error) {
+        const m = error.message.toLowerCase();
+        if (m.includes("could not find the function") || m.includes("does not exist") || m.includes("schema cache"))
+          throw new Error(
+            "L'eliminazione dell'account non è ancora attiva sul server: va eseguito una volta il file supabase/account.sql su Supabase.",
+          );
+        throw new Error(italianError(error.message));
+      }
+      discardLocal(keepLocalCopy);
+      // Partita online salvata sul dispositivo per questo account.
+      if (uid) clearSavedGame(uid);
+      // L'account non esiste più: basta togliere la sessione da qui.
+      await sb.auth.signOut({ scope: "local" }).catch(() => undefined);
       window.location.reload();
     },
     async syncNow() {

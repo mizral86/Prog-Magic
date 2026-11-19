@@ -176,7 +176,108 @@ function Profile() {
         </button>
         {pwMsg && <p className="muted small">{pwMsg}</p>}
       </form>
+
+      <DeleteAccount />
+
+      <p className="muted small account-legal">
+        <a href={`${import.meta.env.BASE_URL}privacy.html`}>Privacy</a> ·{" "}
+        <a href={`${import.meta.env.BASE_URL}termini.html`}>Termini</a>
+      </p>
     </>
+  );
+}
+
+const CONFIRM_WORD = "ELIMINA";
+
+function DeleteAccount() {
+  const auth = useAuth();
+  const [open, setOpen] = useState(false);
+  const [keep, setKeep] = useState(false);
+  const [word, setWord] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!open) {
+    return (
+      <div className="panel account-panel account-delete">
+        <h2>Elimina account</h2>
+        <p className="muted small">
+          Cancella per sempre il profilo e tutti i dati salvati sul server.
+        </p>
+        <button type="button" className="ghost danger" style={{ justifySelf: "start" }} onClick={() => setOpen(true)}>
+          Elimina il mio account…
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      className="panel account-panel account-form account-delete"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (word.trim().toUpperCase() !== CONFIRM_WORD) return;
+        setBusy(true);
+        setError(null);
+        try {
+          await auth.deleteAccount(keep);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : String(err));
+          setBusy(false);
+        }
+      }}
+    >
+      <h2>Elimina account</h2>
+      <p className="small">Vengono cancellati subito e per sempre, senza possibilità di recupero:</p>
+      <ul className="small">
+        <li>accesso con email o Google</li>
+        <li>collezione, mazzi, raccoglitori, wishlist e impostazioni salvati sul profilo</li>
+        <li>nome utente, immagine profilo, amici, richieste e messaggi della chat</li>
+        <li>la tua presenza nei gruppi (i gruppi che hai creato passano al membro più vecchio)</li>
+      </ul>
+      <p className="muted small">
+        Le partite già registrate nei gruppi restano, con il tuo nome ma senza collegamento al
+        profilo. Le segnalazioni inviate restano per la sicurezza degli altri utenti.
+      </p>
+      <label className="check">
+        <input type="checkbox" checked={keep} onChange={(e) => setKeep(e.target.checked)} />
+        <span>
+          Tieni una copia di collezione e mazzi su questo dispositivo (senza account, solo qui)
+        </span>
+      </label>
+      <label className="field account-field">
+        Per confermare scrivi {CONFIRM_WORD}
+        <input
+          value={word}
+          onChange={(e) => setWord(e.target.value)}
+          autoCapitalize="characters"
+          autoComplete="off"
+          spellCheck={false}
+        />
+      </label>
+      {error && <p className="account-error">{error}</p>}
+      <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+        <button
+          type="submit"
+          className="primary danger"
+          disabled={busy || word.trim().toUpperCase() !== CONFIRM_WORD}
+        >
+          {busy ? "Elimino…" : "Elimina definitivamente"}
+        </button>
+        <button
+          type="button"
+          className="ghost"
+          disabled={busy}
+          onClick={() => {
+            setOpen(false);
+            setWord("");
+            setError(null);
+          }}
+        >
+          Annulla
+        </button>
+      </div>
+    </form>
   );
 }
 
