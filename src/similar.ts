@@ -125,12 +125,37 @@ const EFFECTS: Effect[] = [
 const KEYWORDS = [
   "flying", "deathtouch", "lifelink", "trample", "haste", "vigilance",
   "first strike", "double strike", "hexproof", "menace", "reach", "flash",
+  "indestructible", "ward", "prowess", "defender",
 ];
+
+// Nome italiano delle abilità chiave, per spiegare i suggerimenti.
+const KEYWORD_IT: Record<string, string> = {
+  ...GRANTABLE,
+  reach: "raggiungere",
+  flash: "lampo",
+  ward: "protezione dai bersagli",
+  prowess: "prodezza",
+  defender: "difensore",
+};
 
 export interface SimilarResult {
   cards: CardInfo[];
   /** Cosa abbiamo cercato, in italiano (es. "danni a qualsiasi bersaglio"). */
   reasons: string[];
+  /** Perché è stata suggerita ogni carta (per nome), una riga breve in italiano. */
+  why?: Record<string, string>;
+}
+
+/** Riga "perché" di una carta suggerita: effetto in comune, tipo e costo. */
+function explain(c: CardInfo, shared: string[], sameKind: string | null, cmc: number): string {
+  const parts = [...shared];
+  if (sameKind) parts.push(`stesso tipo (${sameKind})`);
+  const cc = Math.round(c.cmc);
+  if (cc === cmc) parts.push(`stesso costo (${cc})`);
+  else if (cc < cmc) parts.push(`costa meno (${cc} invece di ${cmc})`);
+  else parts.push(`costa di più (${cc} invece di ${cmc})`);
+  const s = parts.join(" · ");
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 /** Trova gli effetti principali della carta (al massimo due). */
@@ -161,15 +186,18 @@ export function hasAltCost(card: CardInfo): boolean {
 }
 
 /** Forma della carta, per confrontare prima carte dello stesso tipo. */
-function kindOf(card: CardInfo): { q: string; label: string } | null {
-  const c = card.categories;
-  if (c.includes("creature")) return { q: "t:creature", label: "creature" };
-  if (c.includes("instant") || c.includes("sorcery"))
-    return { q: "(t:instant or t:sorcery)", label: "istantanei e stregonerie" };
-  if (c.includes("planeswalker")) return { q: "t:planeswalker", label: "planeswalker" };
-  if (c.includes("enchantment")) return { q: "t:enchantment", label: "incantesimi" };
-  if (c.includes("artifact")) return { q: "t:artifact", label: "artefatti" };
-  if (c.includes("land")) return { q: "t:land", label: "terre" };
+function kindOf(card: CardInfo): { q: string; label: string; one: string } | null {
+  // Le categorie mancano se la carta arriva con dati ridotti: si usa la riga del tipo.
+  const t = (card.typeLine ?? "").toLowerCase().split(" // ")[0];
+  const c = card.categories as string[];
+  const has = (k: string) => c.includes(k) || t.includes(k);
+  if (has("creature")) return { q: "t:creature", label: "creature", one: "creatura" };
+  if (has("instant") || has("sorcery"))
+    return { q: "(t:instant or t:sorcery)", label: "istantanei e stregonerie", one: "istantaneo o stregoneria" };
+  if (has("planeswalker")) return { q: "t:planeswalker", label: "planeswalker", one: "planeswalker" };
+  if (has("enchantment")) return { q: "t:enchantment", label: "incantesimi", one: "incantesimo" };
+  if (has("artifact")) return { q: "t:artifact", label: "artefatti", one: "artefatto" };
+  if (has("land")) return { q: "t:land", label: "terre", one: "terra" };
   return null;
 }
 
@@ -190,17 +218,20 @@ export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
   const kind = kindOf(card);
 
   // "typed": tentativo ristretto allo stesso tipo di carta.
-  const attempts: { q: string; reasons: string[]; typed?: boolean }[] = [];
+  // "shared": cosa ha in comune con la carta di partenza chi viene trovato.
+  const attempts: { q: string; reasons: string[]; shared: string[]; typed?: boolean }[] = [];
   if (effects.length) {
     const all = effects.map((e) => e.q);
     const labels = effects.map((e) => e.label);
+    const sharedAll = labels.length > 1 ? [`stesso effetto: ${labels.join(" e ")}`] : [`stesso effetto: ${labels[0]}`];
+    const sharedOne = [`stesso effetto: ${labels[0]}`];
     if (kind) {
-      attempts.push({ q: [...all, kind.q, ...base, cmcRange].join(" "), reasons: [...labels, kind.label, costNote], typed: true });
-      attempts.push({ q: [effects[0].q, kind.q, ...base, cmcRange].join(" "), reasons: [labels[0], kind.label, costNote], typed: true });
+      attempts.push({ q: [...all, kind.q, ...base, cmcRange].join(" "), reasons: [...labels, kind.label, costNote], shared: sharedAll, typed: true });
+      attempts.push({ q: [effects[0].q, kind.q, ...base, cmcRange].join(" "), reasons: [labels[0], kind.label, costNote], shared: sharedOne, typed: true });
     }
-    attempts.push({ q: [...all, ...base, cmcRange].join(" "), reasons: [...labels, costNote] });
-    attempts.push({ q: [effects[0].q, ...base, cmcRange].join(" "), reasons: [labels[0], costNote] });
-    attempts.push({ q: [effects[0].q, ...base].join(" "), reasons: [labels[0], "qualsiasi costo"] });
+    attempts.push({ q: [...all, ...base, cmcRange].join(" "), reasons: [...labels, costNote], shared: sharedAll });
+    attempts.push({ q: [effects[0].q, ...base, cmcRange].join(" "), reasons: [labels[0], costNote], shared: sharedOne });
+    attempts.push({ q: [effects[0].q, ...base].join(" "), reasons: [labels[0], "qualsiasi costo"], shared: sharedOne });
   } else {
     // Nessun effetto riconosciuto: si usano solo le abilità chiave (volare,
     // tocco letale…), mai forza/costituzione o altre statistiche.
@@ -208,10 +239,11 @@ export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
     const kws = KEYWORDS.filter((k) => new RegExp(`(^|\\n|, )${k}\\b`).test(text)).slice(0, 2);
     if (kws.length) {
       const kq = kws.map((k) => `keyword:"${k}"`).join(" ");
-      const labels = kws.map((k) => `abilità ${k}`);
-      if (kind) attempts.push({ q: [kq, kind.q, ...base, cmcRange].join(" "), reasons: [...labels, kind.label, costNote], typed: true });
-      attempts.push({ q: [kq, ...base, cmcRange].join(" "), reasons: [...labels, costNote] });
-      attempts.push({ q: [kq, ...base].join(" "), reasons: [...labels, "qualsiasi costo"] });
+      const labels = kws.map((k) => `abilità ${KEYWORD_IT[k] ?? k}`);
+      const shared = [`stessa abilità: ${kws.map((k) => KEYWORD_IT[k] ?? k).join(" e ")}`];
+      if (kind) attempts.push({ q: [kq, kind.q, ...base, cmcRange].join(" "), reasons: [...labels, kind.label, costNote], shared, typed: true });
+      attempts.push({ q: [kq, ...base, cmcRange].join(" "), reasons: [...labels, costNote], shared });
+      attempts.push({ q: [kq, ...base].join(" "), reasons: [...labels, "qualsiasi costo"], shared });
     }
   }
 
@@ -222,6 +254,7 @@ export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
   const TYPED_MAX = 8;
   const TOTAL = 20;
   const out: CardInfo[] = [];
+  const why: Record<string, string> = {};
   const seen = new Set<string>();
   let reasons: string[] | null = null;
   let widened = false;
@@ -237,6 +270,10 @@ export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
       if (seen.has(c.name) || out.length >= limit) continue;
       seen.add(c.name);
       out.push(c);
+      // "Anche questa è…" solo se il tipo coincide davvero (vale anche per i
+      // tentativi aperti a ogni tipo, dove capita lo stesso).
+      const ck = kindOf(c);
+      why[c.name] = explain(c, a.shared, kind && ck?.q === kind.q ? kind.one : null, cmc);
       added++;
     }
     if (added && !reasons) reasons = a.reasons;
@@ -245,6 +282,7 @@ export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
   if (reasons) {
     return {
       cards: out,
+      why,
       reasons: widened ? [...reasons, "poi carte di ogni tipo con lo stesso effetto"] : reasons,
     };
   }
