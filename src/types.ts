@@ -50,6 +50,8 @@ export interface CardInfo {
   generic: number;
   /** Testo oracle (usato per dedurre i ruoli: rimozione, counter, ecc.). */
   oracleText: string;
+  /** Solo per le carte bifronti: testo del fronte (il retro è un'altra carta). */
+  frontText?: string;
   /** Abilità di mana (dork/rock/ramp), se presente. */
   manaAbility?: ManaAbility;
   /** Forza/costituzione (creature); undefined se non creatura. `*` → 0. */

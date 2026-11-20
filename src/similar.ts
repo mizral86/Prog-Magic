@@ -85,6 +85,12 @@ const EFFECTS: Effect[] = [
   { re: /search your library for (a|up to \w+) basic land/, q: 'o:/search your library for (a|up to \\w+) basic land/', label: "cerca terre (ramp)" },
   { re: /\{t\}: add /, q: 'o:"{T}: Add"', label: "produce mana" },
   { re: /search your library for an? (card|creature|instant|sorcery|artifact|enchantment)/, q: 'o:/search your library for an? (card|creature|instant|sorcery|artifact|enchantment)/', label: "cerca una carta nel mazzo" },
+  // Odio per il cimitero (Boggart Trawler, Bojuka Bog, Relic of Progenitus).
+  {
+    re: /exile (target player's|each opponent's|each player's|all cards from (target player's|all|all opponents') ?) ?graveyards?|exile (all|each) graveyards|exile (up to \w+ )?target (\w+ )?cards? from (a|a single|an opponent's) graveyard/,
+    q: "o:/exile (target player's|each opponent's|each player's|all cards from [^.]*|all|each) graveyards?|exile (up to [a-z]+ )?target ([a-z]+ )?cards? from (a|a single|an opponent's) graveyard/",
+    label: "esilia il cimitero (odio per il cimitero)",
+  },
   { re: /return target [^.]*card from your graveyard to (the battlefield|your hand)/, q: 'o:/from your graveyard to (the battlefield|your hand)/', label: "recupera dal cimitero" },
   { re: /draw (two|three|four|x) cards/, q: 'o:/draw (two|three|four|x) cards/', label: "pesca più carte" },
   // Pesca "d'impulso": esilia dalla cima e puoi giocarle (Tempered in
@@ -159,8 +165,13 @@ function explain(c: CardInfo, shared: string[], sameKind: string | null, cmc: nu
 }
 
 /** Trova gli effetti principali della carta (al massimo due). */
+/** Testo che conta per capire cosa fa la carta: per le bifronti solo il fronte. */
+function rulesText(card: CardInfo): string {
+  return (card.frontText ?? card.oracleText ?? "").toLowerCase();
+}
+
 export function detectEffects(card: CardInfo): Effect[] {
-  let text = (card.oracleText ?? "").toLowerCase();
+  let text = rulesText(card);
   // Il nome della carta nel testo non deve contare.
   for (const n of card.name.toLowerCase().split(" // ")) {
     if (n) text = text.split(n).join("~");
@@ -182,7 +193,7 @@ const ALT_COST =
   /\b(evoke|foretell|suspend|prototype|disguise|blitz|dash|emerge|delve|convoke|improvise|affinity for|spectacle|surge|madness|miracle|ninjutsu)\b|rather than pay this spell's mana cost|without paying its mana cost/;
 
 export function hasAltCost(card: CardInfo): boolean {
-  return ALT_COST.test((card.oracleText ?? "").toLowerCase());
+  return ALT_COST.test(rulesText(card));
 }
 
 /** Forma della carta, per confrontare prima carte dello stesso tipo. */
@@ -235,7 +246,7 @@ export async function findSimilar(card: CardInfo): Promise<SimilarResult> {
   } else {
     // Nessun effetto riconosciuto: si usano solo le abilità chiave (volare,
     // tocco letale…), mai forza/costituzione o altre statistiche.
-    const text = (card.oracleText ?? "").toLowerCase();
+    const text = rulesText(card);
     const kws = KEYWORDS.filter((k) => new RegExp(`(^|\\n|, )${k}\\b`).test(text)).slice(0, 2);
     if (kws.length) {
       const kq = kws.map((k) => `keyword:"${k}"`).join(" ");
