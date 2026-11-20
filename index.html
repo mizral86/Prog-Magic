@@ -71,23 +71,9 @@
         animation: sp-flash 0.9s 1.15s ease-out forwards;
       }
       #splash .sp-logo {
-        position: absolute; left: 50%; top: 42%; width: min(46vmin, 230px); height: auto; aspect-ratio: 1;
+        position: absolute; left: 50%; top: 42%; width: min(78vmin, 360px); height: auto; aspect-ratio: 1;
         transform: translate(-50%, -50%) scale(0.3); opacity: 0; filter: brightness(1.8) blur(4px);
         animation: sp-logo 0.8s 1.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-      }
-      #splash .sp-title {
-        position: absolute; left: 0; right: 0; top: calc(42% + min(23vmin, 115px) + 4vmin);
-        display: grid; justify-items: center; gap: 2.4vmin; text-align: center;
-      }
-      #splash .sp-name {
-        font: 400 min(15vmin, 72px)/1.1 "Kaushan Script", "Brush Script MT", cursive;
-        color: var(--s-ink); text-shadow: 0 0 4vmin var(--s-glow); padding: 0 0.2em;
-        opacity: 0; animation: sp-write 0.9s 1.7s cubic-bezier(0.3, 0.7, 0.2, 1) forwards;
-      }
-      #splash .sp-tag {
-        font: 600 min(4.2vmin, 15px)/1 "Cinzel", Georgia, serif; letter-spacing: 0.28em;
-        text-transform: uppercase; color: var(--s-tag);
-        opacity: 0; animation: sp-rise 0.6s 2.15s ease-out forwards;
       }
       @keyframes sp-spiral {
         0% { opacity: 0; transform: rotate(var(--a)) translateY(-48vmin) scale(1.2); }
@@ -103,11 +89,6 @@
       @keyframes sp-logo {
         to { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: brightness(1) blur(0) drop-shadow(0 0 3vmin var(--s-glow)); }
       }
-      @keyframes sp-write {
-        from { opacity: 1; clip-path: inset(0 100% 0 0); filter: blur(2px); }
-        to { opacity: 1; clip-path: inset(0 0 0 0); filter: blur(0); }
-      }
-      @keyframes sp-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
       @media (prefers-reduced-motion: reduce) {
         #splash *, #splash { animation-duration: 0.01s !important; animation-delay: 0s !important; }
       }
@@ -122,11 +103,7 @@
       <span class="sp-orb" style="--c: var(--R); --a: 216deg"></span>
       <span class="sp-orb" style="--c: var(--G); --a: 288deg"></span>
       <span class="sp-flash"></span>
-      <img class="sp-logo" src="/logo-splash.webp" alt="" />
-      <div class="sp-title">
-        <span class="sp-name">Menga Deck</span>
-        <span class="sp-tag">Play More Together</span>
-      </div>
+      <img class="sp-logo" src="/logo-splash.webp" alt="Menga Deck" />
     </div>
     <script>
       // Un tocco la salta; si chiude quando l'app è pronta (minimo 2,8 s).
