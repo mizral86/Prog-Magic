@@ -1,9 +1,30 @@
 // Risultati del simulatore interattivo: win-rate reale + log di una partita.
 
 import { Fragment, useEffect, useState } from "react";
-import { BattleResult, TOKEN_A, TOKEN_B } from "../sim/battle";
+import {
+  BattleLogLine,
+  BattleResult,
+  PHASE_LABEL,
+  PhaseId,
+  TOKEN_A,
+  TOKEN_B,
+} from "../sim/battle";
 import { CardInfo } from "../types";
 import { CardThumb } from "./CardThumb";
+
+// Preferenza solo di questo dispositivo (mm.*: non si sincronizza).
+const DETAIL_KEY = "mm.simLogDettagliato";
+function loadDetailed(): boolean {
+  try {
+    return localStorage.getItem(DETAIL_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+// Nel log compatto l'etichetta compare solo per le fasi "nuove": pescata,
+// prima principale e combattimento si capiscono già dal testo.
+const NEWS_PHASES = new Set<PhaseId>(["upkeep", "main2", "end"]);
 
 interface Props {
   result: BattleResult;
@@ -19,7 +40,18 @@ export function BattleResultView({ result, nameA, nameB, lookup }: Props) {
   useEffect(() => setPick(0), [result]);
   const scenarios = result.scenarios ?? [];
   const scen = scenarios[pick] ?? scenarios[0];
-  const lines = scen ? scen.lines : result.sampleLog;
+  const [detailed, setDetailed] = useState(loadDetailed);
+  const toggleDetailed = (v: boolean) => {
+    setDetailed(v);
+    try {
+      localStorage.setItem(DETAIL_KEY, v ? "1" : "0");
+    } catch {
+      /* ignora */
+    }
+  };
+  const allLines: BattleLogLine[] = scen ? scen.lines : result.sampleLog;
+  // Compatto: solo ciò che succede. Dettagliato: tutte le fasi, anche vuote.
+  const lines = detailed ? allLines : allLines.filter((l) => !l.extra);
   const nameOf = (w: "A" | "B") => (w === "A" ? nameA : nameB);
   const pct = (w: number, g: number) =>
     g > 0 ? `${Math.round((w / g) * 100)}%` : "—";
@@ -130,18 +162,37 @@ export function BattleResultView({ result, nameA, nameB, lookup }: Props) {
             ))}
           </select>
         )}
+        <label className="bl-detail-toggle small">
+          <input
+            type="checkbox"
+            checked={detailed}
+            onChange={(e) => toggleDetailed(e.target.checked)}
+          />
+          Log dettagliato (tutte le fasi del turno)
+        </label>
         <div className="battle-log">
           {lines.map((line, i) => (
-            <div key={i} className={`bl-line${line.head ? " bl-head" : ""}`}>
-              <span className="bl-text">{render(line.text)}</span>
-              {line.cards && line.cards.length > 0 && (
-                <span className="bl-thumbs">
-                  {line.cards.map((n, j) => (
-                    <CardThumb key={j} name={n} lookup={lookup} size={30} />
-                  ))}
-                </span>
-              )}
-            </div>
+            <Fragment key={i}>
+              {line.phase &&
+                line.phase !== lines[i - 1]?.phase &&
+                (detailed || NEWS_PHASES.has(line.phase)) && (
+                  <div className={`bl-phase bl-ph-${line.phase}`}>
+                    {PHASE_LABEL[line.phase]}
+                  </div>
+                )}
+              <div
+                className={`bl-line${line.head ? " bl-head" : ""}${line.extra ? " bl-extra" : ""}`}
+              >
+                <span className="bl-text">{render(line.text)}</span>
+                {line.cards && line.cards.length > 0 && (
+                  <span className="bl-thumbs">
+                    {line.cards.map((n, j) => (
+                      <CardThumb key={j} name={n} lookup={lookup} size={30} />
+                    ))}
+                  </span>
+                )}
+              </div>
+            </Fragment>
           ))}
         </div>
       </div>
@@ -151,10 +202,12 @@ export function BattleResultView({ result, nameA, nameB, lookup }: Props) {
         iniziali e mulligan, terre, vita, creature, combattimento con blocchi,
         rimozioni, spazzavia, counter, burn, ramp, prospero, rapidità, lampo,
         volare, legame vitale, tocco letale, cautela, attacchi alla mano,
-        trigger "quando entra" e "ogni volta che una creatura entra") ma deduce
-        gli effetti dai ruoli/numeri delle carte: non conosce ogni testo
-        specifico, le abilità attivate o i trigger complessi (es. blink), e i
-        planeswalker sono approssimati a creature.
+        trigger "quando entra" e "ogni volta che una creatura entra", fasi del
+        turno con i trigger di mantenimento, pescata e sottofase finale, seconda
+        fase principale dopo il combattimento) ma deduce gli effetti dai
+        ruoli/numeri delle carte: non conosce ogni testo specifico, le abilità
+        attivate o i trigger complessi (es. blink), e i planeswalker sono
+        approssimati a creature.
       </div>
     </div>
   );

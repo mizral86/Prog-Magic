@@ -8,9 +8,12 @@
 //   - burn (danno diretto al giocatore)
 //   - counter (reattivo, sul turno avversario)
 //   - pescata extra, guadagno vita, ramp
+//   - fasi del turno: stappo, mantenimento, pescata, principale 1,
+//     combattimento, principale 2, finale (con i trigger "all'inizio del
+//     mantenimento / della pescata / della sottofase finale" più semplici)
 //
-// SEMPLIFICAZIONI: niente testo specifico delle carte, niente abilità
-// attivate/trigger complessi, planeswalker approssimati a creature (costituzione
+// SEMPLIFICAZIONI: niente abilità attivate, trigger con condizioni ("if…")
+// ignorati, planeswalker approssimati a creature (costituzione
 // = lealtà). Il mana colorato è verificato in modo approssimato. Produce una
 // win-rate REALE nei limiti di questo modello, non una simulazione di MTG
 // completa.
@@ -39,7 +42,30 @@ export interface BattleLogLine {
   text: string;
   cards?: string[];
   head?: boolean;
+  /** Fase del turno in cui è successo. */
+  phase?: PhaseId;
+  /** Dettaglio: mostrato solo con il log dettagliato. */
+  extra?: boolean;
 }
+
+/** Fasi del turno simulate, in ordine. */
+export type PhaseId =
+  | "untap"
+  | "upkeep"
+  | "draw"
+  | "main1"
+  | "combat"
+  | "main2"
+  | "end";
+export const PHASE_LABEL: Record<PhaseId, string> = {
+  untap: "Stappo",
+  upkeep: "Mantenimento",
+  draw: "Pescata",
+  main1: "Principale 1",
+  combat: "Combattimento",
+  main2: "Principale 2",
+  end: "Finale",
+};
 
 /** Una partita di esempio da mostrare (scelta in proporzione alle vittorie). */
 export interface BattleScenario {
@@ -120,6 +146,115 @@ interface Profile {
   flash: boolean;
   /** Potenziamento a una creatura (es. Crescita Mutagena: +2). */
   pump: number;
+  /** Abilità "all'inizio del mantenimento / pescata / sottofase finale". */
+  phaseTrig: PhaseTrigger[];
+}
+
+// Abilità innescata all'inizio di una fase. `whose`: di chi deve essere il
+// turno ("you" = di chi controlla la carta, "opp" = dell'avversario, "each" =
+// di chiunque). Gli effetti "that player" colpiscono il giocatore di turno.
+interface PhaseTrigger {
+  when: "upkeep" | "draw" | "end";
+  whose: "you" | "opp" | "each";
+  draw: number;
+  thatDraw: number;
+  gain: number;
+  loseSelf: number;
+  /** L'avversario di chi controlla la carta perde vita (danni o perdita). */
+  drain: number;
+  thatLose: number;
+  token?: {
+    n: number;
+    power: number;
+    toughness: number;
+    name: string;
+    flying: boolean;
+  };
+  /** Rivela la prima carta e la metti in mano, perdi vita pari al suo costo (Bob). */
+  revealToHand: boolean;
+  loseRevealedCmc: boolean;
+}
+
+const COLOR_WORDS = /\b(white|blue|black|red|green|colorless|and)\b/g;
+const cap = (w: string) => w.charAt(0).toUpperCase() + w.slice(1);
+
+function parsePhaseTrigger(line: string): PhaseTrigger | null {
+  const m = line.match(
+    /^at the beginning of (your|each|each player's|each opponent's|the|that player's) (upkeep|draw step|end step)(?: of [^,]+)?, (.*)$/,
+  );
+  if (!m) return null;
+  const body = m[3];
+  // Condizioni ("if you control…"): non sappiamo valutarle, meglio non inventare.
+  if (/^if /.test(body)) return null;
+  const whose: PhaseTrigger["whose"] =
+    m[1] === "your" ? "you" : m[1] === "each opponent's" ? "opp" : "each";
+  const when: PhaseTrigger["when"] =
+    m[2] === "upkeep" ? "upkeep" : m[2] === "draw step" ? "draw" : "end";
+  const n = (re: RegExp) => {
+    const x = body.match(re);
+    return x ? wordNum(x[1] ?? x[2]) : 0;
+  };
+  const t: PhaseTrigger = {
+    when,
+    whose,
+    draw: Math.min(
+      3,
+      n(
+        new RegExp(
+          `(?:^|you |may |then |and |, )draws? ${NUM} (?:additional )?cards?`,
+        ),
+      ),
+    ),
+    thatDraw: n(new RegExp(`that player draws ${NUM} (?:additional )?cards?`)),
+    gain: n(/(?:^|you |may |and |, |then )gain (\d+) life/),
+    loseSelf: n(/you lose (\d+) life/) + n(/deals? (\d+) damage to you\b/),
+    drain:
+      n(
+        /each opponent loses (\d+) life|target (?:opponent|player) loses (\d+) life/,
+      ) +
+      n(
+        /deals? (\d+) damage to (?:each opponent|any target|target opponent|target player|target creature or player)/,
+      ),
+    thatLose:
+      n(/that player loses (\d+) life/) +
+      n(/deals? (\d+) damage to that player/),
+    revealToHand:
+      /(?:reveal|look at) the top card of your library[^.]*put (?:that card|it) into your hand/.test(
+        body,
+      ),
+    loseRevealedCmc:
+      /lose life equal to its (?:mana value|converted mana cost)/.test(body),
+  };
+  const tk = body.match(
+    new RegExp(
+      `create ${NUM} (?:tapped )?(\\d+)/(\\d+) ([a-z ]+?) (?:artifact )?creature tokens?([^.]*)`,
+    ),
+  );
+  if (tk) {
+    const kind = tk[4]
+      .replace(COLOR_WORDS, "")
+      .trim()
+      .split(/\s+/)
+      .map(cap)
+      .join(" ");
+    t.token = {
+      n: wordNum(tk[1]),
+      power: parseInt(tk[2], 10),
+      toughness: parseInt(tk[3], 10),
+      name: `Pedina ${kind || "creatura"}`,
+      flying: /^ with [^.]*flying/.test(tk[5]),
+    };
+  }
+  const any =
+    t.draw ||
+    t.thatDraw ||
+    t.gain ||
+    t.loseSelf ||
+    t.drain ||
+    t.thatLose ||
+    t.token ||
+    t.revealToHand;
+  return any ? t : null;
 }
 
 function wordNum(w: string): number {
@@ -268,6 +403,52 @@ function profileOf(card: CardInfo): Profile {
     lifelink: isCreature && kw(all, "lifelink"),
     deathtouch: isCreature && kw(all, "deathtouch"),
     vigilance: isCreature && kw(all, "vigilance"),
+    phaseTrig: all
+      .map(parsePhaseTrigger)
+      .filter((x): x is PhaseTrigger => x !== null),
+  };
+}
+
+// Profilo di una pedina creatura creata da un'abilità.
+function tokenProfile(
+  name: string,
+  power: number,
+  toughness: number,
+  flying: boolean,
+): Profile {
+  return {
+    name,
+    cmc: 0,
+    pips: {},
+    isLand: false,
+    entersTapped: false,
+    producedMana: [],
+    isCreature: true,
+    isPlaneswalker: false,
+    power,
+    toughness,
+    removal: false,
+    boardwipe: false,
+    counter: false,
+    burn: 0,
+    draw: 0,
+    lifegain: 0,
+    handAttack: false,
+    handAttackDraw: false,
+    isSpell: false,
+    drain: 0,
+    onAllyEnterGain: 0,
+    onAllyEnterDrain: 0,
+    flying,
+    reach: false,
+    lifelink: false,
+    deathtouch: false,
+    vigilance: false,
+    prowess: false,
+    haste: false,
+    flash: false,
+    pump: 0,
+    phaseTrig: [],
   };
 }
 
@@ -442,22 +623,200 @@ function deckColors(deck: Profile[]): Color[] {
 // ---------------------------------------------------------------------------
 // Logging (solo per la partita di esempio)
 // ---------------------------------------------------------------------------
-type Log = { on: boolean; lines: BattleLogLine[] };
+type Log = {
+  on: boolean;
+  lines: BattleLogLine[];
+  /** Fase in corso e indice della prima riga scritta in questa fase. */
+  phase?: PhaseId;
+  mark?: number;
+};
 function say(log: Log, text: string, cards?: string[], head?: boolean) {
-  if (log.on) log.lines.push({ text, cards, head });
+  if (log.on)
+    log.lines.push({ text, cards, head, phase: head ? undefined : log.phase });
+}
+/** Riga di dettaglio: si vede solo con il log dettagliato. */
+function detail(log: Log, text: string) {
+  if (log.on) log.lines.push({ text, phase: log.phase, extra: true });
+}
+function enterPhase(log: Log, id: PhaseId) {
+  if (!log.on) return;
+  endPhase(log);
+  log.phase = id;
+  log.mark = log.lines.length;
+}
+// Chiude la fase: se non è successo nulla lo scrive (solo nel dettagliato).
+function endPhase(log: Log) {
+  if (!log.on || !log.phase) return;
+  if (log.lines.length === log.mark)
+    log.lines.push({
+      text: "niente da segnalare",
+      phase: log.phase,
+      extra: true,
+    });
+  log.phase = undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Abilità innescate all'inizio di mantenimento, pescata e sottofase finale.
+// ---------------------------------------------------------------------------
+// "⟦A⟧ 12, ⟦B⟧ 9" sempre nello stesso ordine.
+const A_FIRST = (x: Player, y: Player) =>
+  (x.name === TOKEN_A ? [x, y] : [y, x])
+    .map((p) => `${p.name} ${p.life}`)
+    .join(", ");
+
+function phaseTriggers(
+  when: PhaseTrigger["when"],
+  active: Player,
+  other: Player,
+  log: Log,
+) {
+  for (const owner of [active, other]) {
+    const foe = owner === active ? other : active;
+    const sources = [...owner.statics, ...owner.creatures.map((c) => c.p)];
+    for (const src of sources)
+      for (const t of src.phaseTrig) {
+        if (t.when !== when) continue;
+        if (t.whose === "you" && owner !== active) continue;
+        if (t.whose === "opp" && owner === active) continue;
+        const mine: string[] = []; // effetti su chi controlla la carta
+        const others: string[] = []; // effetti sull'altro giocatore
+        const on = (p: Player, txt: string) =>
+          p === owner ? mine.push(txt) : others.push(`${p.name} ${txt}`);
+        if (t.revealToHand && owner.top < owner.library.length) {
+          const c = owner.library[owner.top++];
+          owner.hand.push(c);
+          on(owner, `mette in mano ${c.name}`);
+          if (t.loseRevealedCmc && c.cmc > 0) {
+            owner.life -= c.cmc;
+            on(owner, `perde ${c.cmc} vita`);
+          }
+        }
+        if (t.draw > 0) {
+          let k = 0;
+          for (; k < t.draw && draw(owner); k++);
+          if (k > 0) on(owner, `pesca ${k === 1 ? "una carta" : `${k} carte`}`);
+        }
+        if (t.thatDraw > 0) {
+          let k = 0;
+          for (; k < t.thatDraw && draw(active); k++);
+          if (k > 0)
+            on(active, `pesca ${k === 1 ? "una carta" : `${k} carte`}`);
+        }
+        if (t.gain > 0) {
+          owner.life += t.gain;
+          on(owner, `guadagna ${t.gain} vita`);
+        }
+        if (t.loseSelf > 0) {
+          owner.life -= t.loseSelf;
+          on(owner, `perde ${t.loseSelf} vita`);
+        }
+        if (t.drain > 0) {
+          foe.life -= t.drain;
+          on(foe, `perde ${t.drain} vita`);
+        }
+        if (t.thatLose > 0) {
+          active.life -= t.thatLose;
+          on(active, `perde ${t.thatLose} vita`);
+        }
+        if (t.token) {
+          const tp = tokenProfile(
+            t.token.name,
+            t.token.power,
+            t.token.toughness,
+            t.token.flying,
+          );
+          for (let k = 0; k < t.token.n; k++) {
+            allyEnters(owner, foe, tp, log);
+            owner.creatures.push({
+              p: tp,
+              sick: true,
+              tapped: false,
+              damage: 0,
+              pump: 0,
+            });
+          }
+          on(
+            owner,
+            `crea ${t.token.n > 1 ? `${t.token.n} ` : ""}${t.token.name} ${t.token.power}/${t.token.toughness}`,
+          );
+        }
+        if (mine.length + others.length > 0) {
+          const parts = [
+            ...(mine.length ? [`${owner.name} ${mine.join(", ")}`] : []),
+            ...others,
+          ];
+          say(
+            log,
+            `${src.name}: ${parts.join("; ")} (vita ${A_FIRST(active, other)})`,
+            [src.name],
+          );
+        }
+      }
+  }
 }
 
 // ---------------------------------------------------------------------------
 // Fase principale: gioca terra + lancia magie (con counter reattivi avversari).
 // ---------------------------------------------------------------------------
-function mainPhase(me: Player, opp: Player, myColors: Color[], log: Log) {
-  // Gioca una terra (preferisci una che aggiunge un colore mancante, untapped).
-  playLand(me, log);
+// Mana del turno, condiviso tra le due fasi principali (e i counter avversari).
+interface TurnMana {
+  left: number;
+  src: Record<Color, number>;
+  oppLeft: number;
+  oppSrc: Record<Color, number>;
+  landPlayed: boolean;
+}
 
+function startTurnMana(me: Player, opp: Player, log: Log): TurnMana {
+  // Gioca una terra (preferisci una che aggiunge un colore mancante, untapped).
+  const landPlayed = playLand(me, log);
   const { total, src } = mana(me);
-  let manaLeft = total;
-  const oppMana = mana(opp); // per i counter reattivi
-  let oppManaLeft = oppMana.total;
+  const o = mana(opp);
+  if (log.on)
+    detail(
+      log,
+      `${me.name} ha ${total} mana disponibile, ${me.hand.length} carte in mano`,
+    );
+  return { left: total, src, oppLeft: o.total, oppSrc: o.src, landPlayed };
+}
+
+// Cosa conviene lanciare DOPO il combattimento (seconda fase principale):
+// creature senza rapidità (non attaccano comunque), burn che non serve a
+// liberare la strada (dopo i danni del combattimento può finire una creatura
+// ferita o il giocatore), pescate e vita.
+function betterInMain2(c: Profile, opp: Player, landPlayed: boolean) {
+  if (c.manaAbility || c.removal || c.boardwipe || c.pump > 0) return false;
+  if (c.isCreature)
+    return !c.haste && !(c.onAllyEnterGain > 0 || c.onAllyEnterDrain > 0);
+  if (c.burn > 0) return opp.life > c.burn && bestBurnTarget(opp, c.burn) < 0;
+  if (c.draw > 0) return landPlayed; // senza terra giocata, pesca subito
+  return c.lifegain > 0 || c.drain > 0;
+}
+
+function mainPhase(
+  me: Player,
+  opp: Player,
+  myColors: Color[],
+  log: Log,
+  tm: TurnMana,
+  second: boolean,
+) {
+  if (second && !tm.landPlayed) {
+    // Una pescata può aver portato la terra che mancava.
+    tm.landPlayed = playLand(me, log);
+    if (tm.landPlayed) {
+      const l = me.lands[me.lands.length - 1];
+      if (!l.enteredTapped) {
+        tm.left++;
+        for (const c of l.colors) tm.src[c]++;
+      }
+    }
+  }
+  const src = tm.src;
+  let manaLeft = tm.left;
+  const oppMana = { src: tm.oppSrc };
+  let oppManaLeft = tm.oppLeft;
 
   while (true) {
     // scegli la magia migliore lanciabile
@@ -476,6 +835,8 @@ function mainPhase(me: Player, opp: Player, myColors: Color[], log: Log) {
       }
     }
     if (best === -1) break;
+    // La migliore va lanciata dopo il combattimento: tieni il mana per lei.
+    if (!second && betterInMain2(me.hand[best], opp, tm.landPlayed)) break;
 
     const spell = me.hand.splice(best, 1)[0];
     manaLeft -= spell.cmc;
@@ -505,6 +866,8 @@ function mainPhase(me: Player, opp: Player, myColors: Color[], log: Log) {
 
     resolve(spell, me, opp, myColors, log);
   }
+  tm.left = manaLeft;
+  tm.oppLeft = oppManaLeft;
   me.manaLeft = manaLeft;
   me.srcLeft = src;
 }
@@ -572,7 +935,7 @@ function holdForProwess(c: Profile, me: Player, opp: Player): boolean {
   return !readyAttackers(me).some((x) => x.p.prowess);
 }
 
-function playLand(me: Player, log: Log) {
+function playLand(me: Player, log: Log): boolean {
   const current = new Set<Color>();
   for (const l of me.lands) for (const c of l.colors) current.add(c);
   const needed = new Set<Color>();
@@ -606,7 +969,9 @@ function playLand(me: Player, log: Log) {
       `${me.name} gioca ${land.name}${land.entersTapped ? " (tappata)" : ""}`,
       [land.name],
     );
+    return true;
   }
+  return false;
 }
 
 // Punteggio euristico di priorità per lanciare una magia.
@@ -628,6 +993,7 @@ function spellScore(c: Profile, me: Player, opp: Player): number {
   if (!c.isSpell && (c.onAllyEnterGain > 0 || c.onAllyEnterDrain > 0))
     // prima delle creature, così i loro ingressi la attivano
     return me.hand.some((x) => x.isCreature) ? 60 : 20;
+  if (!c.isSpell && c.phaseTrig.length > 0) return 30; // es. Phyrexian Arena
   if (c.lifegain > 0) return me.life < 10 ? 35 : 6;
   if (c.draw > 0) return 15;
   if (c.pump > 0) return 12;
@@ -821,7 +1187,9 @@ function resolve(
   if (
     !spell.isCreature &&
     !spell.isSpell &&
-    (spell.onAllyEnterGain > 0 || spell.onAllyEnterDrain > 0)
+    (spell.onAllyEnterGain > 0 ||
+      spell.onAllyEnterDrain > 0 ||
+      spell.phaseTrig.length > 0)
   ) {
     me.statics.push(spell);
     say(log, `${me.name} lancia ${spell.name}`, [spell.name]);
@@ -865,13 +1233,23 @@ function shouldAttack(
 
 function combat(att: Player, def: Player, log: Log) {
   const potential = att.creatures.filter((c) => !c.sick && !c.tapped);
-  if (potential.length === 0) return;
+  if (potential.length === 0) {
+    if (att.creatures.length > 0)
+      detail(log, `${att.name} non ha creature pronte ad attaccare`);
+    return;
+  }
   const blockers = def.creatures.filter((c) => !c.tapped);
   const teamPower = potential.reduce((s, c) => s + pw(c), 0);
   const attackers = potential.filter((a) =>
     shouldAttack(a, blockers, def, potential.length, teamPower),
   );
-  if (attackers.length === 0) return;
+  if (attackers.length === 0) {
+    detail(
+      log,
+      `${att.name} non attacca: i bloccanti avversari sono troppo forti`,
+    );
+    return;
+  }
   for (const a of attackers) if (!a.p.vigilance) a.tapped = true;
   const usedBlocker = new Set<Creature>();
   const blockOf = new Map<Creature, Creature>();
@@ -1010,16 +1388,24 @@ function playMatch(
     const myColors = activeIsA ? colorsA : colorsB;
     const turnNo = Math.ceil(turn / 2);
 
-    // Untap
-    for (const l of me.lands) l.enteredThisTurn = false;
-    for (const mp of me.manaPerms) mp.sick = false;
-    for (const c of me.creatures) {
-      c.sick = false;
-      c.tapped = false;
-      c.damage = 0;
-    }
-    for (const c of [...me.creatures, ...opp.creatures]) c.pump = 0;
+    // Qualcuno è a 0 vita (o meno): la partita finisce subito.
+    const over = () => {
+      if (A.life > 0 && B.life > 0) return null;
+      endPhase(log);
+      const winner: "A" | "B" | "draw" =
+        A.life <= 0 && B.life <= 0 ? "draw" : A.life <= 0 ? "B" : "A";
+      say(
+        log,
+        winner === "draw"
+          ? `Entrambi a 0 vita: pareggio al turno ${turnNo}.`
+          : `${winner === "A" ? A.name : B.name} vince al turno ${turnNo}.`,
+        undefined,
+        true,
+      );
+      return { winner, lifeA: A.life, lifeB: B.life, turns: turnNo, startA };
+    };
 
+    endPhase(log);
     say(
       log,
       `Turno ${turnNo} · ${me.name} (vita ${me.life}, avversario ${opp.life})`,
@@ -1027,9 +1413,32 @@ function playMatch(
       true,
     );
 
-    // Pesca (salta la primissima mossa di chi inizia)
+    // Stappo
+    enterPhase(log, "untap");
+    for (const l of me.lands) l.enteredThisTurn = false;
+    for (const mp of me.manaPerms) mp.sick = false;
+    for (const c of me.creatures) {
+      c.sick = false;
+      c.tapped = false;
+    }
+    if (log.on && me.lands.length + me.creatures.length > 0)
+      detail(
+        log,
+        `${me.name} stappa ${me.lands.length} ${me.lands.length === 1 ? "terra" : "terre"}${me.creatures.length ? ` e ${me.creatures.length} ${me.creatures.length === 1 ? "creatura" : "creature"}` : ""}`,
+      );
+
+    // Mantenimento
+    enterPhase(log, "upkeep");
+    phaseTriggers("upkeep", me, opp, log);
+    let end = over();
+    if (end) return end;
+
+    // Pescata (salta la primissima di chi inizia)
+    enterPhase(log, "draw");
     const isFirstEver = turn === 1 && startA === activeIsA;
-    if (!isFirstEver) {
+    if (isFirstEver)
+      detail(log, `${me.name} inizia: niente pescata al primo turno`);
+    else {
       if (!draw(me)) {
         say(
           log,
@@ -1037,6 +1446,7 @@ function playMatch(
           undefined,
           true,
         );
+        endPhase(log);
         return {
           winner: activeIsA ? "B" : "A",
           lifeA: A.life,
@@ -1049,23 +1459,50 @@ function playMatch(
         me.hand[me.hand.length - 1].name,
       ]);
     }
+    phaseTriggers("draw", me, opp, log);
+    if ((end = over())) return end;
 
-    mainPhase(me, opp, myColors, log);
+    // Prima fase principale, combattimento, seconda fase principale
+    enterPhase(log, "main1");
+    const tm = startTurnMana(me, opp, log);
+    mainPhase(me, opp, myColors, log, tm, false);
+    if ((end = over())) return end;
+    enterPhase(log, "combat");
     combat(me, opp, log);
-    if (opp.life > 0) flashStep(opp, me, activeIsA ? colorsB : colorsA, log);
+    if ((end = over())) return end;
+    enterPhase(log, "main2");
+    mainPhase(me, opp, myColors, log, tm, true);
+    if ((end = over())) return end;
 
-    if (opp.life <= 0) {
-      say(log, `${me.name} vince al turno ${turnNo}.`, undefined, true);
-      return {
-        winner: activeIsA ? "A" : "B",
-        lifeA: A.life,
-        lifeB: B.life,
-        turns: turnNo,
-        startA,
-      };
+    // Sottofase finale: trigger, lampo dell'avversario, poi finiscono i
+    // bonus "fino a fine turno" e i danni sulle creature.
+    enterPhase(log, "end");
+    phaseTriggers("end", me, opp, log);
+    if ((end = over())) return end;
+    flashStep(opp, me, activeIsA ? colorsB : colorsA, log);
+    const all = [...me.creatures, ...opp.creatures];
+    if (all.some((c) => c.pump > 0))
+      detail(log, "Finiscono i bonus fino a fine turno");
+    for (const c of all) {
+      c.pump = 0;
+      c.damage = 0;
+    }
+    if (me.hand.length > 7) {
+      const n = me.hand.length - 7;
+      // Scarta prima le terre in eccesso e le magie più costose.
+      for (let k = 0; k < n; k++) {
+        const lands = countLands(me.hand);
+        let wi = 0;
+        for (let i = 1; i < me.hand.length; i++)
+          if (bottomScore(me.hand[i], lands) < bottomScore(me.hand[wi], lands))
+            wi = i;
+        me.hand.splice(wi, 1);
+      }
+      say(log, `${me.name} scarta ${n} carte (massimo 7 in mano)`);
     }
     activeIsA = !activeIsA;
   }
+  endPhase(log);
 
   // Turni esauriti: decide la vita.
   const winner = A.life > B.life ? "A" : B.life > A.life ? "B" : "draw";
