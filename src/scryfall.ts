@@ -10,6 +10,8 @@ const COLLECTION_URL = "https://api.scryfall.com/cards/collection";
 const CHUNK = 75;
 
 // Oggetto carta di Scryfall (solo i campi che ci servono).
+const DOUBLE_FACED = new Set(["transform", "modal_dfc", "double_faced_token", "reversible_card"]);
+
 interface ScryCardFace {
   mana_cost?: string;
   type_line?: string;
@@ -41,6 +43,8 @@ interface ScryCard {
   produced_mana?: string[];
   image_uris?: ImageUris;
   card_faces?: ScryCardFace[];
+  /** Forma della carta: "transform", "modal_dfc" (bifronti), "split", "adventure"… */
+  layout?: string;
   all_parts?: { id: string; component: string; name: string; type_line?: string }[];
   rarity?: string;
   set?: string;
@@ -216,6 +220,12 @@ function toCardInfo(card: ScryCard): CardInfo {
     card.oracle_text ??
     card.card_faces?.map((f) => f.oracle_text ?? "").join("\n") ??
     "";
+  // Carte bifronti (Boggart Trawler // Boggart Bog): il retro è un'altra carta
+  // (spesso una terra), quindi per capire cosa fa conta solo il fronte.
+  const frontText =
+    card.layout && DOUBLE_FACED.has(card.layout) && card.card_faces?.[0]
+      ? card.card_faces[0].oracle_text ?? ""
+      : undefined;
 
   return {
     name: card.name,
@@ -236,6 +246,7 @@ function toCardInfo(card: ScryCard): CardInfo {
     pips,
     generic,
     oracleText,
+    frontText,
     manaAbility: deriveManaAbility(
       card.produced_mana,
       isLand,
