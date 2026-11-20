@@ -282,6 +282,9 @@ export function DeckCardSheet({
                           <span className="muted small">
                             {c.typeLine} · {formatPrice(c)}
                           </span>
+                          {similar.why?.[c.name] && (
+                            <span className="sim-why">💡 {similar.why[c.name]}</span>
+                          )}
                         </span>
                       </button>
                       <span className="sim-btns">

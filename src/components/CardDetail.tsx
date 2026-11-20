@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CardInfo } from "../types";
-import { getPrintings } from "../scryfall";
+import { cardByFuzzyName, cardById, getPrintings } from "../scryfall";
 import { bestPrice, formatMoney, formatPrice } from "../prices";
 import { useCollection } from "../collection";
 import { useWishlist } from "../wishlist";
@@ -99,7 +99,17 @@ function CardDetailView({
     setSimilarLoading(true);
     setSimilarError(null);
     try {
-      onSimilar(await findSimilar(shown));
+      // Dalla Collezione la carta arriva con dati ridotti (senza testo regole
+      // né costo): prima si scaricano quelli completi, altrimenti non si
+      // capisce cosa fa (Fatal Push dava "Non riesco a capire…").
+      let base: CardInfo = shown;
+      if (!base.oracleText || !base.manaCost) {
+        const full =
+          (base.scryfallId ? await cardById(base.scryfallId) : null) ??
+          (await cardByFuzzyName(base.name));
+        if (full) base = full;
+      }
+      onSimilar(await findSimilar(base));
     } catch (err) {
       setSimilarError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -317,6 +327,9 @@ function CardDetailView({
                             {c.manaCost && <ManaCost cost={c.manaCost} size={14} />}
                           </span>
                           <span className="sr-type">{c.typeLine}</span>
+                          {similar.why?.[c.name] && (
+                            <span className="sim-why">💡 {similar.why[c.name]}</span>
+                          )}
                         </span>
                         <span className="sr-price">{formatPrice(c)}</span>
                       </button>
