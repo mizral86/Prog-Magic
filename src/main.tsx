@@ -10,7 +10,9 @@ import { FriendsProvider } from "./friendsContext";
 import "./styles.css";
 import { applyTheme, getTheme } from "./theme";
 import { checkMetaUpdate } from "./metagame";
+import { installStorageGuard } from "./storageGuard";
 
+installStorageGuard();
 applyTheme(getTheme());
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

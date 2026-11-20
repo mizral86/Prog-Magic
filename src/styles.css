@@ -6932,3 +6932,21 @@ button.primary.danger {
 .fan-notice a {
   color: inherit;
 }
+
+/* Avviso memoria piena */
+.storage-warning {
+  margin: 8px 12px 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--bad);
+  background: color-mix(in srgb, var(--bad) 12%, var(--panel));
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+}
+.storage-warning-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}

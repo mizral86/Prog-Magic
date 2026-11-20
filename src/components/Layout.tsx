@@ -6,6 +6,7 @@ import { useOpenReports } from "../moderation";
 import { Suspense, useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import ErrorBoundary, { clearChunkReloadFlag } from "./ErrorBoundary";
+import StorageWarning from "./StorageWarning";
 import { applyTheme, getTheme, isDark, ThemeChoice } from "../theme";
 import { ChallengeBanner } from "./ChallengeBanner";
 import UserAvatar from "./UserAvatar";
@@ -66,6 +67,7 @@ export function Layout() {
       </header>
 
       <ChallengeBanner />
+      <StorageWarning />
       <main className="content">
         <ErrorBoundary resetKey={location.pathname}>
           <Suspense fallback={<p className="muted page-loading">Caricamento…</p>}>
