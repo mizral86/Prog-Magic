@@ -51,6 +51,8 @@ function italianError(msg: string): string {
   if (m.includes("unable to validate email") || m.includes("invalid format"))
     return "L'indirizzo email non è valido.";
   if (m.includes("rate limit")) return "Troppi tentativi: riprova tra qualche minuto.";
+  if (m.includes("user_data_size"))
+    return "Collezione e mazzi superano lo spazio del profilo (6 MB): togli qualcosa che non usi.";
   if (m.includes("provider is not enabled")) return "L'accesso con Google non è ancora attivo.";
   if (m.includes("failed to fetch") || m.includes("network")) return "Connessione assente: riprova.";
   return msg;

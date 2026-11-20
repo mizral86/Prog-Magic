@@ -83,6 +83,10 @@ interface PgError {
 function fail(e: PgError | null): never {
   const msg = e?.message ?? "Errore sconosciuto";
   const m = msg.toLowerCase();
+  // Limiti di supabase/limits.sql: il messaggio è già in italiano.
+  if (e?.code === "P0001") throw new FriendsError(msg);
+  if (e?.code === "23514" && m.includes("tournaments_data_size"))
+    throw new FriendsError("Il torneo è diventato troppo grande per essere salvato.");
   if (
     e?.code === "42P01" ||
     e?.code === "PGRST205" ||

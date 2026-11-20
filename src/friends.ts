@@ -105,6 +105,10 @@ function fail(e: PgError | null): never {
       "Blocchi e segnalazioni non sono ancora attivi sul server: va eseguito una volta il file supabase/account.sql su Supabase.",
     );
   if (m.includes("troppe segnalazioni")) throw new FriendsError("Troppe segnalazioni oggi: riprova domani.");
+  // Limiti di supabase/limits.sql: il messaggio è già in italiano.
+  if (e?.code === "P0001") throw new FriendsError(msg);
+  if (e?.code === "23514" && m.includes("display_name"))
+    throw new FriendsError("Il nome da mostrare può avere al massimo 40 caratteri.");
   if (m.includes("avatar") && (e?.code === "PGRST204" || e?.code === "42703" || m.includes("column")))
     throw new FriendsError(
       "Le immagini profilo non sono ancora attive sul server: va eseguito una volta il file supabase/avatar.sql su Supabase.",
