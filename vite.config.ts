@@ -13,7 +13,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.png", "apple-touch-icon.png"],
       manifest: {
-        name: "Menga Deck — Play More Together",
+        name: "Menga Deck – Più di un deck, una storia",
         short_name: "Menga Deck",
         description:
           "Collezione, mazzi e simulazione di partite per Magic: The Gathering.",
