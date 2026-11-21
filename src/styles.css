@@ -7107,3 +7107,9 @@ button.primary.danger {
   margin-top: 4px;
   flex: none;
 }
+.usage-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
