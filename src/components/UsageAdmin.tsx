@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { isAdmin } from "../moderation";
-import { useUsageStats } from "../usage";
+import { loadRegisteredUsers, RegisteredUser, useUsageStats } from "../usage";
 
 const PERIODS = [
   { days: 1, label: "Oggi" },
@@ -65,7 +65,7 @@ function allDays(days: number): string[] {
 export default function UsageAdmin({ uid }: { uid: string }) {
   const [admin, setAdmin] = useState(false);
   const [days, setDays] = useState(7);
-  const [tab, setTab] = useState<"giorni" | "sezioni" | "persone">("persone");
+  const [tab, setTab] = useState<"iscritti" | "giorni" | "sezioni" | "persone">("iscritti");
   const [picked, setPicked] = useState<string | null>(null);
   const { stats, error, reload } = useUsageStats(days, admin);
 
@@ -112,6 +112,9 @@ export default function UsageAdmin({ uid }: { uid: string }) {
           </div>
 
           <div className="view-toggle account-tabs" role="tablist">
+            <button type="button" aria-pressed={tab === "iscritti"} onClick={() => setTab("iscritti")}>
+              Iscritti
+            </button>
             <button type="button" aria-pressed={tab === "persone"} onClick={() => setTab("persone")}>
               Chi
             </button>
@@ -119,7 +122,7 @@ export default function UsageAdmin({ uid }: { uid: string }) {
               Giorno per giorno
             </button>
             <button type="button" aria-pressed={tab === "sezioni"} onClick={() => setTab("sezioni")}>
-              Sezioni
+              Sezioni più usate
             </button>
           </div>
 
@@ -137,6 +140,7 @@ export default function UsageAdmin({ uid }: { uid: string }) {
                       <div className="muted small">
                         {u.sessions} {u.sessions === 1 ? "apertura" : "aperture"}
                         {u.devices > 1 && ` · ${u.devices} dispositivi`} · ultimo uso {fmtWhen(u.last_seen)}
+                        {topText(u.top_sections)}
                       </div>
                     </div>
                     <span className="usage-time">{fmtDuration(u.seconds)}</span>
@@ -167,6 +171,8 @@ export default function UsageAdmin({ uid }: { uid: string }) {
               )}
             </>
           )}
+
+          {tab === "iscritti" && <RegisteredList />}
 
           {tab === "giorni" && (
             <DaysChart
@@ -262,5 +268,60 @@ function SectionBars({ sections }: { sections: Record<string, number> }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+function topText(top: string[] | null): string {
+  if (!top?.length) return "";
+  return ` · usa di più ${top.map((k) => SECTION_NAMES[k] ?? k).join(" e ")}`;
+}
+
+function fmtDate(iso: string | null): string {
+  if (!iso) return "mai";
+  return new Date(iso).toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" });
+}
+
+/** Tutti gli account registrati, anche chi non ha usato l'app dopo lo script delle statistiche. */
+function RegisteredList() {
+  const [list, setList] = useState<RegisteredUser[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    loadRegisteredUsers()
+      .then(setList)
+      .catch((e) => setError(e instanceof Error ? e.message : String(e)));
+  }, []);
+  if (error) return <p className="account-error">{error}</p>;
+  if (!list) return <p className="muted small">Caricamento…</p>;
+  const week = Date.now() - 7 * 86_400_000;
+  const activeWeek = list.filter((u) => u.last_active && new Date(u.last_active).getTime() > week).length;
+  return (
+    <>
+      <p className="usage-picked">
+        <b>{list.length}</b> {list.length === 1 ? "account registrato" : "account registrati"} · {activeWeek} attivi
+        negli ultimi 7 giorni
+      </p>
+      <ul className="usage-users">
+        {list.map((u, i) => (
+          <li key={(u.email ?? "") + i}>
+            <div>
+              <b>{u.display_name || (u.username ? `@${u.username}` : u.email ?? "Account")}</b>
+              {(u.display_name || u.username) && (
+                <span className="muted small"> {u.display_name && u.username ? `@${u.username} · ` : ""}{u.email}</span>
+              )}
+              <div className="muted small">
+                iscritto il {fmtDate(u.created_at)} · ultima attività{" "}
+                {u.last_active ? fmtWhen(u.last_active) : "mai"}
+                {!u.confirmed && " · email non confermata"}
+                {topText(u.top_sections)}
+              </div>
+            </div>
+            <span className="usage-time">{u.seconds ? fmtDuration(u.seconds) : "–"}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="muted small">
+        Il tempo a destra conta solo da quando sono attive le statistiche (21 novembre 2026).
+      </p>
+    </>
   );
 }
