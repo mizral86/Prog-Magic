@@ -4,7 +4,7 @@
 // StorageWarning) invece di perdere le modifiche in silenzio.
 
 /** Chiavi che si possono cancellare senza perdere dati: si riscaricano. */
-const DISPOSABLE = ["mm.meta.v1", "mm.meta.check"];
+const DISPOSABLE = ["mm.meta.v1", "mm.meta.check", "mm.rulings.v1"];
 
 export const STORAGE_FULL_EVENT = "mm:storage-full";
 
