@@ -7149,4 +7149,9 @@ button.primary.danger {
 }
 .ruling-more {
   margin-top: 6px;
+.usage-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
 }
