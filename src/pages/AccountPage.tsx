@@ -10,6 +10,8 @@ import AvatarPicker from "../components/AvatarPicker";
 import UserAvatar from "../components/UserAvatar";
 import ReportsAdmin from "../components/ReportsAdmin";
 import FanNotice from "../components/FanNotice";
+import UsageAdmin from "../components/UsageAdmin";
+import { setUsageEnabled, usageEnabled } from "../usage";
 
 type Mode = "login" | "signup" | "reset";
 
@@ -47,6 +49,7 @@ export default function AccountPage() {
     <div className="page">
       <h1 className="page-title">Account</h1>
       {auth.status === "in" ? <Profile /> : <SignInForm />}
+      <UsageOptOut />
       <FanNotice />
     </div>
   );
@@ -150,6 +153,7 @@ function Profile() {
       </div>
 
       <ReportsAdmin uid={user.id} />
+      <UsageAdmin uid={user.id} />
 
       <form
         className="panel account-panel account-form"
@@ -428,4 +432,30 @@ function formatWhen(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
   return d.toLocaleString("it-IT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+/** Interruttore per non inviare le statistiche di utilizzo da questo dispositivo. */
+function UsageOptOut() {
+  const [on, setOn] = useState(usageEnabled);
+  return (
+    <div className="panel account-panel">
+      <label className="usage-optout">
+        <input
+          type="checkbox"
+          checked={on}
+          onChange={(e) => {
+            setUsageEnabled(e.target.checked);
+            setOn(e.target.checked);
+          }}
+        />
+        <span>
+          Aiuta a migliorare l'app con statistiche di utilizzo
+          <span className="muted small" style={{ display: "block" }}>
+            Solo quanto tempo l'app resta aperta e in quali sezioni, per capire quanto viene usata. Niente
+            pubblicità né servizi esterni. <a href={`${import.meta.env.BASE_URL}privacy.html#statistiche`}>Dettagli</a>
+          </span>
+        </span>
+      </label>
+    </div>
+  );
 }

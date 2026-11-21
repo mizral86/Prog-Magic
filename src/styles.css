@@ -6982,3 +6982,128 @@ button.primary.danger {
   white-space: normal;
   margin-top: 2px;
 }
+
+/* ---- Statistiche di utilizzo (moderatori) ---- */
+.usage-admin .account-tabs {
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.usage-cards .value {
+  font-size: 19px;
+}
+.usage-users {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+}
+.usage-users li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+.usage-users li > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.usage-guests b {
+  color: var(--muted);
+}
+.usage-time {
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.usage-days h3 {
+  margin: 0 0 4px;
+}
+.usage-picked {
+  margin: 0 0 8px;
+  font-variant-numeric: tabular-nums;
+}
+.usage-bars {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  height: 140px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+.usage-bar {
+  flex: 1 1 0;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.usage-bar-fill {
+  display: block;
+  width: 100%;
+  min-height: 1px;
+  background: var(--accent);
+  opacity: 0.55;
+  border-radius: 4px 4px 0 0;
+}
+.usage-bar.is-picked .usage-bar-fill,
+.usage-bar:hover .usage-bar-fill {
+  opacity: 1;
+}
+.usage-bar-label {
+  position: absolute;
+  bottom: -17px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.usage-sections {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.usage-sections li {
+  display: grid;
+  grid-template-columns: 84px 1fr 118px;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.usage-sec-track {
+  height: 10px;
+  background: var(--panel-3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.usage-sec-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+}
+.usage-sec-val {
+  white-space: nowrap;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.usage-optout {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  font-size: 14px;
+  gap: 10px;
+  cursor: pointer;
+}
+.usage-optout input {
+  margin-top: 4px;
+  flex: none;
+}

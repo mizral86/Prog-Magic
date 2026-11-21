@@ -10,6 +10,7 @@ import StorageWarning from "./StorageWarning";
 import { applyTheme, getTheme, isDark, ThemeChoice } from "../theme";
 import { ChallengeBanner } from "./ChallengeBanner";
 import UserAvatar from "./UserAvatar";
+import { startUsageTracking, trackSection } from "../usage";
 
 interface Tab {
   to: string;
@@ -35,6 +36,9 @@ export function Layout() {
     const t = window.setTimeout(clearChunkReloadFlag, 10_000);
     return () => window.clearTimeout(t);
   }, []);
+  // Statistiche di utilizzo (spente se l'utente le ha disattivate in Account).
+  useEffect(() => startUsageTracking(), []);
+  useEffect(() => trackSection(location.pathname), [location.pathname]);
   const dark = isDark(theme);
   function toggleTheme() {
     const next: ThemeChoice = dark ? "light" : "dark";
