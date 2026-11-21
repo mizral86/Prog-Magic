@@ -222,6 +222,7 @@ export interface UsageStats {
     seconds: number;
     devices: number;
     last_seen: string;
+    top_sections: string[] | null;
   }[];
   guests: { devices: number; sessions: number; seconds: number };
 }
@@ -250,4 +251,29 @@ export function useUsageStats(days: number, enabled: boolean) {
   }, [days, enabled]);
   useEffect(reload, [reload]);
   return { stats, error, reload };
+}
+
+export interface RegisteredUser {
+  email: string | null;
+  username: string | null;
+  display_name: string | null;
+  created_at: string;
+  last_sign_in: string | null;
+  last_active: string | null;
+  confirmed: boolean;
+  sessions: number;
+  seconds: number;
+  top_sections: string[] | null;
+}
+
+export async function loadRegisteredUsers(): Promise<RegisteredUser[]> {
+  const sb = supabase();
+  if (!sb) return [];
+  const { data, error } = await sb.rpc("admin_registered_users");
+  if (error) {
+    if (/admin_registered_users|function/i.test(error.message))
+      throw new Error("Per vedere gli iscritti riesegui supabase/usage.sql nell'SQL Editor di Supabase.");
+    throw new Error(error.message);
+  }
+  return (data ?? []) as RegisteredUser[];
 }

@@ -164,7 +164,16 @@ begin
           'sessions', count(*),
           'seconds', sum(s.active_seconds),
           'devices', count(distinct s.device_id),
-          'last_seen', max(s.last_seen)
+          'last_seen', max(s.last_seen),
+          -- Le due sezioni dove passa più tempo nel periodo.
+          'top_sections', (
+            select jsonb_agg(k order by tot desc) from (
+              select e.key as k, sum((e.value)::integer) as tot
+              from s s3, jsonb_each_text(s3.sections) e
+              where s3.user_id = s.user_id
+              group by e.key order by tot desc limit 2
+            ) q
+          )
         ) as u
         from s left join public.profiles p on p.id = s.user_id
         where s.user_id is not null
@@ -192,3 +201,50 @@ grant execute on function public.admin_usage_stats(integer) to authenticated;
 
 -- Quando un account viene eliminato, le sue sessioni restano solo come
 -- numeri anonimi (user_id torna vuoto grazie a "on delete set null").
+
+-- Tutti gli account registrati (anche chi non ha ancora usato l'app dopo
+-- questo script), con iscrizione, ultimo accesso e tempo d'uso totale.
+-- "Ultima attività" usa anche lo stato online degli Amici, che esiste da prima.
+drop function if exists public.admin_registered_users();
+create function public.admin_registered_users()
+returns jsonb
+language plpgsql stable security definer set search_path = public
+as $$
+begin
+  if not public.is_app_admin() then
+    raise exception 'Solo per i moderatori';
+  end if;
+  return coalesce((
+    select jsonb_agg(r order by (r->>'last_active') desc nulls last)
+    from (
+      select jsonb_build_object(
+        'email', u.email,
+        'username', p.username,
+        'display_name', p.display_name,
+        'created_at', u.created_at,
+        'last_sign_in', u.last_sign_in_at,
+        'last_active', greatest(u.last_sign_in_at, p.last_seen, x.last_seen),
+        'confirmed', u.email_confirmed_at is not null,
+        'sessions', coalesce(x.sessions, 0),
+        'seconds', coalesce(x.seconds, 0),
+        'top_sections', (
+          select jsonb_agg(k order by tot desc) from (
+            select e.key as k, sum((e.value)::integer) as tot
+            from public.usage_sessions us, jsonb_each_text(us.sections) e
+            where us.user_id = u.id
+            group by e.key order by tot desc limit 2
+          ) q
+        )
+      ) as r
+      from auth.users u
+      left join public.profiles p on p.id = u.id
+      left join (
+        select user_id, count(*) as sessions, sum(active_seconds) as seconds, max(last_seen) as last_seen
+        from public.usage_sessions where user_id is not null group by user_id
+      ) x on x.user_id = u.id
+    ) t
+  ), '[]'::jsonb);
+end;
+$$;
+revoke execute on function public.admin_registered_users() from public, anon;
+grant execute on function public.admin_registered_users() to authenticated;
