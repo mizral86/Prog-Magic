@@ -9,6 +9,7 @@ import { useWishlist } from "../wishlist";
 import { ManaCost } from "./ManaSymbol";
 import { findSimilar, SimilarResult } from "../similar";
 import { AddToDeckBox } from "./AddToDeckBox";
+import { CardRulings } from "./CardRulings";
 
 interface CardDetailProps {
   card: CardInfo;
@@ -286,6 +287,12 @@ function CardDetailView({
                 </select>
               </label>
             )}
+
+            <CardRulings
+              name={card.name}
+              printedName={card.printedName}
+              scryfallId={card.scryfallId}
+            />
 
             <h3 className="mini-title" ref={similarRef}>Carte simili</h3>
             {!similar && (
