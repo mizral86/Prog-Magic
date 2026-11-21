@@ -67,7 +67,9 @@ export default function UsageAdmin({ uid }: { uid: string }) {
   const [days, setDays] = useState(7);
   const [tab, setTab] = useState<"iscritti" | "giorni" | "sezioni" | "persone">("iscritti");
   const [picked, setPicked] = useState<string | null>(null);
-  const { stats, error, reload } = useUsageStats(days, admin);
+  // Chiuso finché non si preme il pulsante: niente dati scaricati né mostrati.
+  const [open, setOpen] = useState(false);
+  const { stats, error, reload } = useUsageStats(days, admin && open);
 
   useEffect(() => {
     let alive = true;
@@ -83,9 +85,26 @@ export default function UsageAdmin({ uid }: { uid: string }) {
   const avg = s && s.sessions ? s.seconds / s.sessions : 0;
   const perDevice = s && s.devices ? s.seconds / s.devices : 0;
 
+  if (!open) {
+    return (
+      <section className="panel account-panel usage-admin">
+        <h2>Statistiche di utilizzo</h2>
+        <p className="muted small">Le vedi solo tu perché sei moderatore.</p>
+        <button type="button" className="ghost" onClick={() => setOpen(true)}>
+          📊 Apri le statistiche
+        </button>
+      </section>
+    );
+  }
+
   return (
     <section className="panel account-panel usage-admin">
-      <h2>Statistiche di utilizzo</h2>
+      <div className="usage-head">
+        <h2>Statistiche di utilizzo</h2>
+        <button type="button" className="ghost small" onClick={() => setOpen(false)}>
+          Chiudi
+        </button>
+      </div>
       <p className="muted small">
         Lo vedi solo tu perché sei moderatore. Conta il tempo con l'app aperta in primo piano.
       </p>
