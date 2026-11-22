@@ -911,6 +911,11 @@ Automatico ⇒ Automatic
 = guardi la partita giocata dall'euristica; ⇒ = watch the game played by the heuristic;
 Segnapunti ⇒ Life counter
 = punti vita e segnalini per giocare dal vivo con gli amici, un solo telefono al centro del tavolo. ⇒ = life totals and counters to play in person with friends, one phone in the middle of the table.
+= punti vita e segnalini per giocare dal vivo con gli amici, un solo telefono al centro del tavolo; ⇒ = life totals and counters to play in person with friends, one phone in the middle of the table;
+Impara ⇒ Learn
+= le regole di Magic in brevi lezioni con esempi e quiz. ⇒ = the rules of Magic in short lessons with examples and quizzes.
+🎓 Impara ⇒ 🎓 Learn
+📖 Come funzionano le fasi del turno ⇒ 📖 How the turn phases work
 🃏 Tavolo ⇒ 🃏 Table
 👁 Automatico ⇒ 👁 Automatic
 ❤️ Segnapunti ⇒ ❤️ Life counter
