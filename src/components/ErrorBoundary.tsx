@@ -3,6 +3,7 @@
 // continua a funzionare e cambiando pagina l'errore si azzera.
 
 import { Component, ReactNode } from "react";
+import { ReportErrorButton } from "./Feedback";
 
 interface Props {
   /** Cambia quando cambia pagina: azzera l'errore. */
@@ -70,6 +71,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             <button type="button" className="ghost" onClick={() => window.location.reload()}>
               Ricarica l'app
             </button>
+            {!offline && <ReportErrorButton error={error} />}
           </div>
           <details className="muted small">
             <summary>Dettagli per chi sviluppa</summary>

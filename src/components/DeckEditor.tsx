@@ -23,6 +23,7 @@ import { DeckCardSheet } from "./DeckCardSheet";
 import { AddCardSearch, BOARD_TITLE, CoverPicker, neededByName, OwnBadge } from "./DeckParts";
 import { DeckStatsTab } from "./DeckStatsTab";
 import { DeckInfoTab } from "./DeckInfoTab";
+import { DeckMatchesTab } from "./DeckMatchesTab";
 
 export const FORMAT_LABEL: Record<Format, string> = {
   standard: "Standard",
@@ -34,7 +35,7 @@ export const FORMAT_LABEL: Record<Format, string> = {
   commander: "Commander",
 };
 
-type Tab = "cards" | "stats" | "info";
+type Tab = "cards" | "stats" | "games" | "info";
 const TAB_KEY = "pm.deckTab";
 
 export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => void }) {
@@ -43,7 +44,7 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
   const [tab, setTabState] = useState<Tab>(() => {
     try {
       const t = localStorage.getItem(TAB_KEY);
-      return t === "stats" || t === "info" ? t : "cards";
+      return t === "stats" || t === "games" || t === "info" ? t : "cards";
     } catch {
       return "cards";
     }
@@ -155,6 +156,7 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
           [
             ["cards", "🂠", "Carte"],
             ["stats", "📊", "Statistiche"],
+            ["games", "🏆", "Partite"],
             ["info", "ℹ", "Info"],
           ] as const
         ).map(([t, icon, label]) => (
@@ -176,6 +178,7 @@ export function DeckEditor({ deckId, onBack }: { deckId: string; onBack: () => v
 
       {tab === "cards" && <CardsTab deck={deck} onOpen={(c) => setSheet({ id: c.id, board: c.board })} />}
       {tab === "stats" && <DeckStatsTab deck={deck} enrichBusy={enrichBusy} />}
+      {tab === "games" && <DeckMatchesTab deck={deck} />}
       {tab === "info" && (
         <DeckInfoTab deck={deck} onBack={onBack} onCover={() => setCoverOpen(true)} />
       )}

@@ -7,6 +7,8 @@ const base = process.env.VITE_BASE || "/";
 
 export default defineConfig({
   base,
+  // Data della versione: finisce nei dettagli tecnici di "Segnala un problema".
+  define: { __BUILD_TIME__: JSON.stringify(new Date().toISOString().slice(0, 16)) },
   plugins: [
     react(),
     VitePWA({

@@ -11,6 +11,8 @@ import UserAvatar from "../components/UserAvatar";
 import ReportsAdmin from "../components/ReportsAdmin";
 import FanNotice from "../components/FanNotice";
 import UsageAdmin from "../components/UsageAdmin";
+import FeedbackAdmin from "../components/FeedbackAdmin";
+import { FeedbackPanel } from "../components/Feedback";
 import { setUsageEnabled, usageEnabled } from "../usage";
 import { getLang, locale, setLang } from "../i18n";
 
@@ -33,6 +35,7 @@ export default function AccountPage() {
           </p>
         </div>
         <LanguagePicker />
+        <FeedbackPanel />
         <FanNotice />
       </div>
     );
@@ -52,6 +55,7 @@ export default function AccountPage() {
       <h1 className="page-title">Account</h1>
       {auth.status === "in" ? <Profile /> : <SignInForm />}
       <LanguagePicker />
+      <FeedbackPanel />
       <UsageOptOut />
       <FanNotice />
     </div>
@@ -156,6 +160,7 @@ function Profile() {
       </div>
 
       <ReportsAdmin uid={user.id} />
+      <FeedbackAdmin uid={user.id} />
       <UsageAdmin uid={user.id} />
 
       <form
