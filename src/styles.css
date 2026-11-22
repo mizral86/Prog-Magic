@@ -7156,3 +7156,23 @@ button.primary.danger {
   align-items: center;
   gap: 10px;
 }
+
+/* ---- Lingua dell'app (Account) ---- */
+.lang-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.lang-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+.lang-row .segmented button {
+  padding: 7px 14px;
+  font-size: 13.5px;
+}
+.lang-note {
+  margin: 8px 0 0;
+}

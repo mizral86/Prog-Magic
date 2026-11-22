@@ -1,0 +1,1438 @@
+// Traduzioni inglesi dell'interfaccia: "testo italiano ⇒ testo inglese", una per riga.
+// Le righe con {0}, {1}… sono modelli: le parti tra graffe cambiano (numeri, nomi).
+// Il testo italiano va scritto come appare nell'app (spazi multipli contano come uno).
+// Una frase mancante resta in italiano: basta aggiungerla qui.
+
+// ── Barra e navigazione ──
+Cerca ⇒ Search
+Collezione ⇒ Collection
+Scansiona ⇒ Scan
+Mazzi ⇒ Decks
+Simula ⇒ Simulate
+Gioca ⇒ Play
+Scansiona carte ⇒ Scan cards
+Passa al tema chiaro ⇒ Switch to light theme
+Passa al tema scuro ⇒ Switch to dark theme
+Tema chiaro ⇒ Light theme
+Tema scuro ⇒ Dark theme
+Amici ({0} novità) ⇒ Friends ({0} new)
+Amici ⇒ Friends
+(sincronizzazione non riuscita) ⇒ (sync failed)
+Accedi ⇒ Sign in
+Profilo: {0}{1} ⇒ Profile: {0}{1}
+· {0} segnalazioni da vedere ⇒ · {0} reports to review
+Caricamento… ⇒ Loading…
+Menga Deck — Collezione e mazzi ⇒ Menga Deck — Collection and decks
+
+// ── Lingua ──
+Lingua ⇒ Language
+Lingua dell'app ⇒ App language
+Italiano ⇒ Italian
+Inglese ⇒ English
+Cambia la lingua dei testi dell'app. Le carte restano nella lingua della loro stampa. ⇒ Changes the language of the app's text. Cards stay in the language they were printed in.
+
+// ── Account ──
+L'accesso con profilo non è ancora attivo su questa installazione: manca il collegamento al progetto Supabase. ⇒ Profile sign-in is not active on this installation yet: the link to the Supabase project is missing.
+Finché non è attivo, collezione e mazzi restano salvati solo su questo dispositivo. ⇒ Until it is active, your collection and decks are saved only on this device.
+Profilo ⇒ Profile
+Cambia immagine profilo ⇒ Change profile picture
+Scegli un planeswalker come immagine ⇒ Pick a planeswalker as your picture
+Scegli un nome utente in Amici per avere un'immagine profilo ⇒ Pick a username in Friends to get a profile picture
+Sincronizzazione in corso… ⇒ Syncing…
+Sincronizzazione non riuscita: ⇒ Sync failed:
+✓ Collezione, mazzi, wishlist e impostazioni salvati sul profilo ⇒ ✓ Collection, decks, wishlist and settings saved to your profile
+In attesa della prima sincronizzazione… ⇒ Waiting for the first sync…
+Sincronizza ora ⇒ Sync now
+Esci ⇒ Sign out
+Uscendo, i dati del profilo vengono tolti da questo dispositivo e restano salvati sull'account: li ritrovi accedendo di nuovo, anche da un altro telefono o computer. ⇒ When you sign out, your profile data is removed from this device and stays saved in your account: you get it back by signing in again, even from another phone or computer.
+Password aggiornata. ⇒ Password updated.
+Cambia password ⇒ Change password
+Nuova password ⇒ New password
+Almeno 8 caratteri. ⇒ At least 8 characters.
+Salva password ⇒ Save password
+Elimina account ⇒ Delete account
+Cancella per sempre il profilo e tutti i dati salvati sul server. ⇒ Permanently deletes your profile and all data saved on the server.
+Elimina il mio account… ⇒ Delete my account…
+Vengono cancellati subito e per sempre, senza possibilità di recupero: ⇒ These are deleted immediately and forever, with no way to recover them:
+accesso con email o Google ⇒ sign-in with email or Google
+collezione, mazzi, raccoglitori, wishlist e impostazioni salvati sul profilo ⇒ collection, decks, binders, wishlist and settings saved to your profile
+nome utente, immagine profilo, amici, richieste e messaggi della chat ⇒ username, profile picture, friends, requests and chat messages
+la tua presenza nei gruppi (i gruppi che hai creato passano al membro più vecchio) ⇒ your membership in groups (groups you created pass to the oldest member)
+Le partite già registrate nei gruppi restano, con il tuo nome ma senza collegamento al profilo. Le segnalazioni inviate restano per la sicurezza degli altri utenti. ⇒ Games already recorded in groups stay, with your name but no link to your profile. Reports you sent stay for the safety of other users.
+Tieni una copia di collezione e mazzi su questo dispositivo (senza account, solo qui) ⇒ Keep a copy of your collection and decks on this device (no account, only here)
+Per confermare scrivi ⇒ To confirm, type
+Elimino… ⇒ Deleting…
+Elimina definitivamente ⇒ Delete permanently
+Ti ho mandato un'email a {0}: apri il link di conferma e poi accedi. ⇒ I sent an email to {0}: open the confirmation link and then sign in.
+Se l'indirizzo è registrato, riceverai un'email con il link per entrare e cambiare password. ⇒ If the address is registered, you will get an email with a link to sign in and change your password.
+Accedi per salvare collezione, mazzi, wishlist e impostazioni sul tuo profilo e ritrovarli su ogni dispositivo. ⇒ Sign in to save your collection, decks, wishlist and settings to your profile and find them on every device.
+Crea account ⇒ Create account
+Mandami il link ⇒ Send me the link
+Password dimenticata? ⇒ Forgot your password?
+← Torna all'accesso ⇒ ← Back to sign in
+Continua con Google ⇒ Continue with Google
+Aiuta a migliorare l'app con statistiche di utilizzo ⇒ Help improve the app with usage statistics
+Solo quanto tempo l'app resta aperta e in quali sezioni, per capire quanto viene usata. Niente pubblicità né servizi esterni. ⇒ Only how long the app stays open and in which sections, to understand how much it is used. No ads and no third-party services.
+Dettagli ⇒ Details
+o ⇒ or
+oppure ⇒ or
+
+// ── Errori di accesso e sincronizzazione ──
+Il tuo account ha già dei dati salvati, diversi da quelli di questo dispositivo. ⇒ Your account already has saved data, different from the data on this device.
+OK: usa i dati dell'account (quelli di questo dispositivo vengono sostituiti). ⇒ OK: use the account's data (the data on this device will be replaced).
+Annulla: carica sull'account i dati di questo dispositivo. ⇒ Cancel: upload this device's data to the account.
+Email o password non corrette. ⇒ Wrong email or password.
+Devi prima confermare l'email: controlla la posta. ⇒ You need to confirm your email first: check your inbox.
+Esiste già un account con questa email: accedi. ⇒ An account with this email already exists: sign in.
+La password deve avere almeno {0} caratteri. ⇒ The password must be at least {0} characters long.
+La password deve contenere lettere e numeri. ⇒ The password must contain letters and numbers.
+Password troppo facile da indovinare: scegline un'altra. ⇒ Password too easy to guess: pick another one.
+L'indirizzo email non è valido. ⇒ The email address is not valid.
+Troppi tentativi: riprova tra qualche minuto. ⇒ Too many attempts: try again in a few minutes.
+Collezione e mazzi superano lo spazio del profilo (6 MB): togli qualcosa che non usi. ⇒ Collection and decks exceed the profile space (6 MB): remove something you don't use.
+L'accesso con Google non è ancora attivo. ⇒ Google sign-in is not active yet.
+Connessione assente: riprova. ⇒ No connection: try again.
+Non riesco a salvare le ultime modifiche sul profilo ({0}). Riprova quando sei connesso. ⇒ I can't save the latest changes to your profile ({0}). Try again when you are online.
+L'eliminazione dell'account non è ancora attiva sul server: va eseguito una volta il file supabase/account.sql su Supabase. ⇒ Account deletion is not active on the server yet: the file supabase/account.sql must be run once on Supabase.
+
+// ── Avviso fan content e pie' di pagina ──
+Menga Deck è un contenuto non ufficiale consentito dalla Fan Content Policy di Wizards of the Coast. Non è approvato né sponsorizzato da Wizards. Alcuni materiali usati sono proprietà di Wizards of the Coast. ©Wizards of the Coast LLC. ⇒ Menga Deck is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.
+Dati e immagini delle carte da Scryfall · ⇒ Card data and images from Scryfall ·
+Termini ⇒ Terms
+
+// ── Immagine profilo ──
+Un colore ⇒ One color
+Bianco ⇒ White
+Blu ⇒ Blue
+Nero ⇒ Black
+Rosso ⇒ Red
+Verde ⇒ Green
+Incolore ⇒ Colorless
+Gilde di Ravnica ⇒ Ravnica guilds
+Tre colori ⇒ Three colors
+Scryfall ha risposto {0}. ⇒ Scryfall answered {0}.
+Scryfall ha risposto {0}. Riprova tra poco. ⇒ Scryfall answered {0}. Try again shortly.
+Scryfall ha risposto {0} {1}. Riprova tra poco. ⇒ Scryfall answered {0} {1}. Try again shortly.
+Nessun planeswalker trovato con questi filtri. ⇒ No planeswalker found with these filters.
+Scegli l'immagine profilo ⇒ Choose your profile picture
+Immagine profilo ⇒ Profile picture
+Chiudi ⇒ Close
+L'immagine scelta si vede nel tuo profilo, tra gli amici, in chat e nei gruppi. ⇒ The picture you choose shows on your profile, among friends, in chat and in groups.
+Simboli ⇒ Symbols
+Togli immagine (usa l'iniziale) ⇒ Remove picture (use your initial)
+Carico le illustrazioni… ⇒ Loading artwork…
+Illustrazioni non disponibili adesso: puoi scegliere il simbolo. ⇒ Artwork not available right now: you can pick a symbol.
+Salvo… ⇒ Saving…
+Cerca un planeswalker (es. Jace, Chandra…) ⇒ Search a planeswalker (e.g. Jace, Chandra…)
+Cerca un planeswalker ⇒ Search a planeswalker
+Carico i planeswalker… ⇒ Loading planeswalkers…
+Mostra altri ⇒ Show more
+
+// ── Ricerca ──
+Creatura ⇒ Creature
+Istantaneo ⇒ Instant
+Stregoneria ⇒ Sorcery
+Artefatto ⇒ Artifact
+Incantesimo ⇒ Enchantment
+Terra ⇒ Land
+Battaglia ⇒ Battle
+Qualsiasi ⇒ Any
+Comune ⇒ Common
+Non comune ⇒ Uncommon
+Rara ⇒ Rare
+Mitica ⇒ Mythic
+Pertinenza ⇒ Relevance
+Costo (CMC) ⇒ Cost (MV)
+Rarità ⇒ Rarity
+Uscita ⇒ Release
+Cerca carte ⇒ Search cards
+Nome carta (es. Fulmine o Lightning Bolt) ⇒ Card name (e.g. Lightning Bolt or Fulmine)
+▾ Ricerca avanzata ⇒ ▾ Advanced search
+▸ Ricerca avanzata ⇒ ▸ Advanced search
+Colori ⇒ Colors
+esattamente ⇒ exactly
+che includono ⇒ including
+al massimo ⇒ at most
+Meno mana generico ⇒ Less generic mana
+Mana generico ⇒ Generic mana
+Più mana generico ⇒ More generic mana
+Ibridi ⇒ Hybrid
+Tocca i simboli per comporre il costo (es. 2 + rosso + rosso) ⇒ Tap the symbols to build the cost (e.g. 2 + red + red)
+Togli il mana generico ⇒ Remove generic mana
+Togli questo simbolo ⇒ Remove this symbol
+Testo contiene ⇒ Text contains
+es. "draw a card", vola, distruggi… ⇒ e.g. "draw a card", flying, destroy…
+Azzera filtri ⇒ Reset filters
+(vuota) ⇒ (empty)
+Nessun risultato per ⇒ No results for
+Tipo ⇒ Type
+Ordina per ⇒ Sort by
+Ordina ⇒ Sort
+Costo ⇒ Cost
+Formato ⇒ Format
+Qualsiasi formato ⇒ Any format
+Edizione ⇒ Set
+Lista ⇒ List
+Griglia ⇒ Grid
+Vista ⇒ View
+risultati ⇒ results
+Carica altri ⇒ Load more
+
+// ── Scheda carta ──
+Torna a {0} ⇒ Back to {0}
+Ingrandisci la carta ⇒ Enlarge the card
+Tocca per ingrandire ⇒ Tap to enlarge
+⤢ Ingrandisci ⇒ ⤢ Enlarge
+Prezzo ⇒ Price
+In collezione: ⇒ In collection:
++ Aggiungi ⇒ + Add
+− Normale ⇒ − Normal
+Togli dalla wishlist ⇒ Remove from wishlist
+Aggiungi alla wishlist ⇒ Add to wishlist
+♥ In wishlist ⇒ ♥ In wishlist
+Nessuno ⇒ None
+Carte simili ⇒ Similar cards
+Cerco… ⇒ Searching…
+💡 Suggerisci carte che fanno la stessa cosa ⇒ 💡 Suggest cards that do the same thing
+Cercate in tutti i colori: {0}. ⇒ Searched in all colors: {0}.
+Non riesco a capire cosa fa questa carta dal suo testo. ⇒ I can't work out what this card does from its text.
+Nessuna carta trovata. ⇒ No cards found.
+Sposta copie da ⇒ Move copies from
+Edizione da cui spostare ⇒ Set to move from
+normali · ⇒ normal ·
+foil) a ⇒ foil) to
+⇄ 1 normale ⇒ ⇄ 1 normal
+⇄ Tutte le normali ( ⇒ ⇄ All normal (
+Stampe / edizioni ⇒ Printings / sets
+Le edizioni con ✓ sono nella tua collezione. Puoi avere più edizioni della stessa carta. ⇒ Sets with ✓ are in your collection. You can own several sets of the same card.
+Carico le stampe… ⇒ Loading printings…
+Nessuna stampa trovata. ⇒ No printings found.
+Scorri per muoverti · tocca per rimpicciolire ⇒ Scroll to move · tap to shrink
+Tocca la carta per ingrandire ⇒ Tap the card to enlarge
+{0} ingrandita ⇒ {0} enlarged
+Raccoglitore ⇒ Binder
+Condizione ⇒ Condition
+Lingua della carta ⇒ Card language
+
+// ── Regole della carta ──
+Regole e casistiche ⇒ Rulings
+Carico le regole della carta… ⇒ Loading the card's rulings…
+Riprova ⇒ Retry
+Nessuna regola particolare per questa carta. ⇒ No special rulings for this card.
+Mostra meno ⇒ Show less
+Mostra tutte ({0}) ⇒ Show all ({0})
+Testo originale in inglese. ⇒ Original English text.
+Regole ufficiali in inglese. ⇒ Official rulings in English.
+
+// ── Sfida ──
+ti sfida al Tavolo! ⇒ challenges you at the Table!
+Dopo ⇒ Later
+
+// ── Strumenti collezione ──
+La collezione è vuota. ⇒ The collection is empty.
+Aggiorno i prezzi: {0} di {1}… ⇒ Updating prices: {0} of {1}…
+Prezzi di oggi aggiornati in automatico ({0} stampe). ⇒ Today's prices updated automatically ({0} printings).
+Prezzi aggiornati ({0} stampe). ⇒ Prices updated ({0} printings).
+Aggiornamento automatico dei prezzi non riuscito: ⇒ Automatic price update failed:
+🔍 Aggiungi carta ⇒ 🔍 Add card
+＋ Importa lista ⇒ ＋ Import list
+🗂 Sfoglia i set ⇒ 🗂 Browse sets
+📄 Importa CSV ⇒ 📄 Import CSV
+⬇ Esporta CSV ⇒ ⬇ Export CSV
+Aggiorno… ⇒ Updating…
+↻ Aggiorna prezzi ⇒ ↻ Update prices
+Nome della carta, anche in italiano… ⇒ Card name, also in Italian…
+Cerca una carta da aggiungere ⇒ Search a card to add
+aggiunge la stampa mostrata. Tocca la carta per scegliere un'altra edizione. ⇒ adds the printing shown. Tap the card to pick another set.
+✓ Aggiunta: ⇒ ✓ Added:
+· ne hai {0} ⇒ · you have {0}
+Nessuna carta riconosciuta nel testo. ⇒ No cards recognised in the text.
+· {0} non trovate: {1}{2} ⇒ · {0} not found: {1}{2}
+Aggiunte {0} copie alla collezione{1} ⇒ Added {0} copies to the collection{1}
+Incolla una decklist (formato Arena/MTGO o testo semplice). Le quantità vengono sommate; sideboard incluso. ⇒ Paste a decklist (Arena/MTGO format or plain text). Quantities are added up; sideboard included.
+Importazione… ⇒ Importing…
+Importa ⇒ Import
+Leggo il file… ⇒ Reading the file…
+· {0} righe non riconosciute: {1}{2} ⇒ · {0} lines not recognised: {1}{2}
+Riconosco le carte: {0} di {1}… ⇒ Recognising cards: {0} of {1}…
+Carica un CSV esportato da un'altra app di collezione (per esempio ManaBox) o da un foglio di calcolo. Servono le colonne ⇒ Load a CSV exported from another collection app (for example ManaBox) or from a spreadsheet. It needs the columns
+, oppure ⇒ , or
+. Le colonne ⇒ . The columns
+sono lette se ci sono. Le quantità vengono sommate a quelle che hai già. ⇒ are read if present. Quantities are added to the ones you already have.
+Collezione e mazzi restano solo in questo browser. Scarica un backup ogni tanto, oppure usalo per spostare tutto su un altro dispositivo. ⇒ Collection and decks stay only in this browser. Download a backup now and then, or use it to move everything to another device.
+Scarica backup ⇒ Download backup
+Ripristina da file… ⇒ Restore from file…
+Il ripristino sostituisce collezione e mazzi attuali. ⇒ Restoring replaces your current collection and decks.
+Ripristina ⇒ Restore
+Annulla ⇒ Cancel
+Caricamento set… ⇒ Loading sets…
+Filtra set per nome o codice (es. Ravnica, MH3)… ⇒ Filter sets by name or code (e.g. Ravnica, MH3)…
+Solo i set di cui ho carte ⇒ Only sets I own cards from
+Nessun set per " ⇒ No sets for "
+Mostrati i 200 set più recenti — usa il filtro per trovarne altri. ⇒ Showing the 200 most recent sets — use the filter to find others.
+← Set ⇒ ← Sets
+Caricamento carte… ⇒ Loading cards…
+Hai ⇒ You have
+carte su ⇒ cards out of
+{0} di {1} carte ⇒ {0} of {1} cards
+Mostra ⇒ Show
+Tutte ⇒ All
+Mancanti ⇒ Missing
+Possedute ⇒ Owned
+♡ Tutte le mancanti in wishlist ⇒ ♡ All missing to wishlist
+Il file è vuoto o non ha righe di carte. ⇒ The file is empty or has no card rows.
+Nel CSV manca una colonna "Scryfall ID" o "Name". ⇒ The CSV has no "Scryfall ID" or "Name" column.
+Il file non è un backup valido. ⇒ The file is not a valid backup.
+Il file non è un backup di Menga Deck. ⇒ The file is not a Menga Deck backup.
+
+// ── Pagina Collezione ──
+Raccoglitore vuoto ⇒ Empty binder
+Apri una carta della collezione e scegli questo raccoglitore nella sua scheda. ⇒ Open a card from the collection and pick this binder on its page.
+📷 Scansiona carte ⇒ 📷 Scan cards
+Collezione vuota ⇒ Empty collection
+Aggiungi carte da ⇒ Add cards from
+(apri una carta → ⇒ (open a card →
+), oppure ⇒ ), or
+importa una lista ⇒ import a list
+sfoglia un set ⇒ browse a set
+qui sopra. I dati restano salvati sul dispositivo. ⇒ above. Data stays saved on the device.
+📷 Scansiona ⇒ 📷 Scan
+Carte totali ⇒ Total cards
+Stampe uniche ⇒ Unique printings
+Valore stimato ⇒ Estimated value
+· {0} senza prezzo ⇒ · {0} without price
+Statistiche per colore e rarità ⇒ Stats by color and rarity
+Per colore (copie) ⇒ By color (copies)
+Per rarità (copie) ⇒ By rarity (copies)
+Filtra per nome, tipo o edizione… ⇒ Filter by name, type or set…
+Ordina la collezione ⇒ Sort the collection
+Aggiunte di recente ⇒ Recently added
+Nome ⇒ Name
+Svuotare tutta la collezione? L'azione è irreversibile. ⇒ Empty the whole collection? This cannot be undone.
+Svuota ⇒ Empty
+Rimuovi ⇒ Remove
+Valore ⇒ Value
+Prezzo (alto) ⇒ Price (high)
+Prezzo (basso) ⇒ Price (low)
+Quantità ⇒ Quantity
+Copie ⇒ Copies
+
+// ── Raccoglitori e wishlist ──
+Raccoglitori ⇒ Binders
+＋ Raccoglitore ⇒ ＋ Binder
+Nome, es. Raccoglitore rosso, Commander, Scambi… ⇒ Name, e.g. Red binder, Commander, Trades…
+Crea ⇒ Create
+Eliminare " ⇒ Delete "
+"? Le carte restano nella collezione. ⇒ "? The cards stay in the collection.
+Elimina ⇒ Delete
+Per mettere una carta qui: aprila e scegli il raccoglitore. ⇒ To put a card here: open it and pick the binder.
+Rinomina ⇒ Rename
+Non trovo {0} su Scryfall. ⇒ I can't find {0} on Scryfall.
+{0} spostata nella collezione. ⇒ {0} moved to the collection.
+Wishlist vuota ⇒ Empty wishlist
+Apri una carta e premi ⇒ Open a card and press
+, oppure da un mazzo usa ⇒ , or from a deck use
+Metti le mancanti in wishlist ⇒ Put missing cards in wishlist
+Carte da prendere ⇒ Cards to get
+Carte diverse ⇒ Different cards
+Costo stimato ⇒ Estimated cost
+✓ Presa ⇒ ✓ Got it
+
+// ── Spike e cali di prezzo ──
+Mese scorso ⇒ Last month
+rispetto a un mese fa ⇒ compared to a month ago
+Inizio anno ⇒ Start of year
+rispetto all'inizio dell'anno ⇒ compared to the start of the year
+Inserimento ⇒ Added
+rispetto a quando l'hai aggiunta ⇒ compared to when you added it
+📈 Spike e cali di prezzo ⇒ 📈 Price spikes and drops
+Periodo di confronto ⇒ Comparison period
+Soglia ⇒ Threshold
+Valore della collezione ⇒ Collection value
+▲ Spike ⇒ ▲ Spikes
+▼ Cali ⇒ ▼ Drops
+Conta una variazione di almeno ⇒ Counts a change of at least
+a copia (prezzi EUR Cardmarket da Scryfall). Scryfall non dà i prezzi passati, quindi lo storico lo registra l'app: i prezzi si aggiornano da soli una volta al giorno quando apri la Collezione. Finché lo storico non copre tutto il periodo, il confronto parte dal primo prezzo registrato (data in corsivo). ⇒ per copy (Cardmarket EUR prices from Scryfall). Scryfall doesn't provide past prices, so the app records the history itself: prices update on their own once a day when you open the Collection. Until the history covers the whole period, the comparison starts from the first recorded price (date in italics).
+{0} {1} ancora un prezzo precedente per questo confronto. ⇒ {0} {1} a previous price for this comparison yet.
+stampa non ha ⇒ printing doesn't have
+stampe non hanno ⇒ printings don't have
+Nessun rialzo significativo. ⇒ No significant rises.
+Nessun calo significativo. ⇒ No significant drops.
+dal {0} ⇒ since {0}
+
+// ── Scansione ──
+Non riesco ad aprire la fotocamera. Consenti l'accesso alla fotocamera per questo sito nelle impostazioni del browser, oppure usa "Scatta o scegli una foto". ⇒ I can't open the camera. Allow camera access for this site in your browser settings, or use "Take or choose a photo".
+Vai alla collezione → ⇒ Go to collection →
+Una carta alla volta ⇒ One card at a time
+Più carte da una foto ⇒ Several cards from one photo
+Inquadra una carta alla volta, dritta e ben illuminata, con il ⇒ Frame one card at a time, straight and well lit, with the
+nome ⇒ name
+nella fascia in alto della cornice. Le carte riconosciute finiscono subito nella collezione. ⇒ in the band at the top of the frame. Recognised cards go straight into the collection.
+Avvio… ⇒ Starting…
+📷 Avvia fotocamera ⇒ 📷 Start camera
+Leggo la carta… ⇒ Reading the card…
+Preparo il riconoscimento… ⇒ Preparing recognition…
+Scansiona ora ⇒ Scan now
+Spegni ⇒ Turn off
+Scatta o scegli una foto ⇒ Take or choose a photo
+Non ho riconosciuto la carta ⇒ I didn't recognise the card
+(ho letto "{0}") ⇒ (I read "{0}")
+. Avvicinati, evita i riflessi e tieni il nome dentro la fascia in alto. ⇒ . Get closer, avoid glare and keep the name inside the top band.
+Aggiunta alla collezione ⇒ Added to collection
+· foil ⇒ · foil
+Cambia stampa ⇒ Change printing
+carte in questa sessione ⇒ cards in this session
+3×3 · pagina da 9 ⇒ 3×3 · 9-pocket page
+3×4 · da 12 ⇒ 3×4 · 12-pocket
+2×2 · da 4 ⇒ 2×2 · 4-pocket
+Non riesco ad aprire questa immagine. Prova con un'altra foto. ⇒ I can't open this image. Try another photo.
+Lettura non riuscita. Controlla la connessione e riprova. ⇒ Reading failed. Check your connection and try again.
+alla collezione ⇒ to the collection
+Fotografa più carte insieme: sparse su un tavolo (meglio su una superficie liscia e senza che si sovrappongano) o una ⇒ Photograph several cards together: spread on a table (best on a smooth surface and not overlapping) or a
+pagina del raccoglitore ⇒ binder page
+. Riconosco tutte le carte e poi scegli quante copie hai di ognuna, anche quelle nascoste nella tasca. ⇒ . I recognise all the cards and then you choose how many copies you have of each, including those hidden in the pocket.
+📷 Scatta foto ⇒ 📷 Take photo
+🖼 Dalla galleria ⇒ 🖼 From gallery
+Carte sparse ⇒ Loose cards
+Pagina a griglia ⇒ Grid page
+Righe ⇒ Rows
+Colonne ⇒ Columns
+Pagine nella foto ⇒ Pages in the photo
+1 pagina ⇒ 1 page
+2 pagine ⇒ 2 pages
+↻ Ruota ⇒ ↻ Rotate
+Trascina i quattro angoli sui bordi delle carte: ogni casella della griglia deve contenere una carta. ⇒ Drag the four corners onto the edges of the cards: each grid cell must hold one card.
+Non ho trovato carte da solo. ⇒ I didn't find any cards on my own.
+Carte segnate: {0}. ⇒ Cards marked: {0}.
+Tocca una carta senza riquadro per aggiungerla; tocca un riquadro per spostarlo, girarlo, cambiarne la misura o toglierlo. Per le pagine del raccoglitore funziona meglio ⇒ Tap a card without a box to add it; tap a box to move it, rotate it, resize it or remove it. For binder pages it works better with
+Ferma ( ⇒ Stop (
+Rileggi la foto ⇒ Re-read the photo
+Riconosci {0} carte ⇒ Recognise {0} cards
+Cambia foto ⇒ Change photo
+Leggo la carta ⇒ Reading card
+Riconosciute ⇒ Recognised
+Meno {0} ⇒ Less {0}
+Più {0} ⇒ More {0}
+Foto da scansionare ⇒ Photo to scan
+Sposta l'angolo della griglia ⇒ Move the grid corner
+Riquadro ⇒ Box
+Ruota a sinistra ⇒ Rotate left
+Ruota a destra ⇒ Rotate right
+Rimpicciolisci ⇒ Shrink
+Ingrandisci ⇒ Enlarge
+Togli ⇒ Remove
+Carta {0} nella foto ⇒ Card {0} in the photo
+Leggo… ⇒ Reading…
+In attesa ⇒ Waiting
+· ne hai già {0} ⇒ · you already have {0}
+Carico… ⇒ Loading…
+Cambia edizione ⇒ Change set
+Non è questa ⇒ Not this one
+Non riconosciuta ⇒ Not recognised
+Ho letto "{0}". ⇒ I read "{0}".
+Se è una tasca vuota lasciala così. ⇒ If it's an empty pocket, leave it as is.
+Cerca la carta a mano ⇒ Search the card manually
+Cerca la carta ⇒ Search the card
+Togli {0} ⇒ Remove {0}
+Aggiungi {0} ⇒ Add {0}
+
+// ── Mazzi ──
++ Crea ⇒ + Create
+Nessun mazzo ⇒ No decks
+Crea il tuo primo mazzo qui sopra, poi aggiungi carte con la ricerca o incollando una lista. ⇒ Create your first deck above, then add cards with search or by pasting a list.
+Nuovo mazzo ⇒ New deck
+Nome del nuovo mazzo ⇒ New deck name
+← Indietro ⇒ ← Back
+Mazzo non trovato. ⇒ Deck not found.
+Tutti i mazzi ⇒ All decks
+· side {0} ⇒ · side {0}
+Cambia immagine del mazzo ⇒ Change deck image
+Carte ⇒ Cards
+Statistiche ⇒ Stats
+per tipo ⇒ by type
+per costo ⇒ by cost
+per nome ⇒ by name
+Terre ⇒ Lands
+Costo {0} ⇒ Cost {0}
+Costo 7+ ⇒ Cost 7+
+Vuoto: tocca “Aggiungi carta”. ⇒ Empty: tap “Add card”.
+Vuoto. Usa “→ Side” su una carta del main per spostarla qui. ⇒ Empty. Use “→ Side” on a main card to move it here.
+Vuota. Metti qui le carte che stai valutando: non contano nel mazzo. ⇒ Empty. Put the cards you're considering here: they don't count in the deck.
+Apri {0} ⇒ Open {0}
+{0} copie: {1} ⇒ {0} copies: {1}
+Sposta una copia in {0} ⇒ Move one copy to {0}
+Aggiungi carta ⇒ Add card
+Mazzo ⇒ Deck
+✓ Aggiunta a {0} ({1}) ⇒ ✓ Added to {0} ({1})
+Aggiungi al mazzo ⇒ Add to deck
+Creature ⇒ Creatures
+Istantanei ⇒ Instants
+Stregonerie ⇒ Sorceries
+Artefatti ⇒ Artifacts
+Incantesimi ⇒ Enchantments
+Battaglie ⇒ Battles
+Planeswalker ⇒ Planeswalkers
+Altro ⇒ Other
+Cerca una carta da aggiungere al mazzo ⇒ Search a card to add to the deck
+Chiudi la ricerca ⇒ Close search
+✕ Chiudi ⇒ ✕ Close
+aggiungono una copia al mazzo. Tocca la carta per vederla e sceglierne l'edizione. ⇒ add one copy to the deck. Tap the card to see it and pick its set.
+· nel mazzo: {0} ⇒ · in deck: {0}
+Controllo le pedine delle carte… ⇒ Checking the cards' tokens…
+Nessuna carta del mazzo crea pedine. ⇒ No card in the deck creates tokens.
+Creata da: {0} ⇒ Created by: {0}
+Immagine del mazzo ⇒ Deck image
+Scegli l'illustrazione di una carta del mazzo. Per un'altra illustrazione della stessa carta, aprila e cambia edizione. ⇒ Pick the artwork of a card in the deck. For another artwork of the same card, open it and change set.
+Automatica ⇒ Automatic
+Aggiungi qualche carta al mazzo per scegliere l'immagine. ⇒ Add a few cards to the deck to pick the image.
+Nella collezione: {0}{1}. Tocca per aggiungerne una copia. ⇒ In collection: {0}{1}. Tap to add a copy.
+su {0} ⇒ of {0}
+Aggiungi {0} alla collezione (ne hai {1}) ⇒ Add {0} to the collection (you have {1})
+manca {0} ⇒ missing {0}
+prezzo non disponibile ⇒ price not available
+Una copia in meno ⇒ One copy less
+Una copia in più ⇒ One copy more
+Sposta in ⇒ Move to
+(ne ha {0}) ⇒ (has {0})
+1 copia ⇒ 1 copy
+Tutte ( ⇒ All (
+★ Copertina del mazzo ⇒ ★ Deck cover
+☆ Usa come copertina ⇒ ☆ Use as cover
+✕ Togli dal mazzo ⇒ ✕ Remove from deck
+foil di questa edizione ⇒ foil of this set
+({0} in tutte le edizioni) ⇒ ({0} across all sets)
++ Aggiungi alla collezione ⇒ + Add to collection
+Carico il testo della carta… ⇒ Loading the card text…
+Aggiungi a {0} ⇒ Add to {0}
+Edizione nel mazzo ⇒ Set in the deck
+Tocca un'edizione per usarla in questo mazzo (cambia immagine e prezzo). ⇒ Tap a set to use it in this deck (changes image and price).
+Aggiunte {0} carte alla wishlist. ⇒ Added {0} cards to the wishlist.
+Importate {0} voci. ⇒ Imported {0} entries.
+Non trovate: {0} ⇒ Not found: {0}
+carte, main + side) ⇒ cards, main + side)
+Da procurare ⇒ To get
+✓ niente ⇒ ✓ nothing
+carte senza prezzo. ⇒ cards without price.
+Ti mancano ⇒ You're missing
+♡ Metti le mancanti in wishlist ⇒ ♡ Put missing cards in wishlist
+Nome del mazzo ⇒ Deck name
+🖼 Cambia immagine ⇒ 🖼 Change image
+Legalità · ⇒ Legality ·
+✓ Nessun problema rilevato ⇒ ✓ No issues found
+Strumenti ⇒ Tools
+⚔ Simula come Mazzo A ⇒ ⚔ Simulate as Deck A
+⚔ Simula come Mazzo B ⇒ ⚔ Simulate as Deck B
+Importa lista ⇒ Import list
+Esporta lista ⇒ Export list
+Importo… ⇒ Importing…
+Sostituisci main e side con questa lista ⇒ Replace main and side with this list
+Eliminare il mazzo "{0}"? ⇒ Delete the deck "{0}"?
+Elimina mazzo ⇒ Delete deck
+Note ⇒ Notes
+Modifica ⇒ Edit
+Scrivi ⇒ Write
+Righe con ⇒ Lines starting with
+diventano titoli, con ⇒ become headings, with
+elenchi, ⇒ lists,
+è in grassetto. ⇒ is bold.
+Salva ⇒ Save
+Strategia, condizioni di vittoria, piano di side… ⇒ Strategy, win conditions, sideboard plan…
+Prova mazzo ⇒ Test deck
+Servono almeno 7 carte nel main. ⇒ The main deck needs at least 7 cards.
+🃏 Pesca la mano iniziale ⇒ 🃏 Draw the opening hand
+carte in mano · ⇒ cards in hand ·
+terre · ⇒ lands ·
+nel grimorio ⇒ in library
+· mulligan {0}: metti {1} carte in fondo ⇒ · mulligan {0}: put {1} cards on the bottom
++ Pesca ⇒ + Draw
+↺ Mulligan ⇒ ↺ Mulligan
+Nuova mano ⇒ New hand
+Ultima modifica ⇒ Last edited
+Creato ⇒ Created
+Multicolore ⇒ Multicolor
+Generico ⇒ Generic
+Main ( ⇒ Main (
+terre) ⇒ lands)
+Curva di mana ⇒ Mana curve
+Curva di mana delle magie del main ⇒ Mana curve of the main deck spells
+Colore ⇒ Color
+Media ⇒ Average
+Totale ⇒ Total
+Costi di mana ⇒ Mana costs
+Nessun simbolo di mana. ⇒ No mana symbols.
+Conta anche il mana generico ⇒ Count generic mana too
+Produzione di mana ⇒ Mana production
+Carico i dati delle terre… ⇒ Loading land data…
+Nessuna carta produce mana. ⇒ No card produces mana.
+Copie del main che producono ogni colore (terre e acceleratori). ⇒ Main deck copies producing each color (lands and accelerants).
+Tipi (copie main) ⇒ Types (main copies)
+Tipi di creatura ⇒ Creature types
+Nessuna creatura nel main. ⇒ No creatures in the main deck.
+Pedine usate dal mazzo ⇒ Tokens used by the deck
+Terre e mano iniziale ⇒ Lands and opening hand
+Grafico a torta ⇒ Pie chart
+CMC medio (magie) ⇒ Average MV (spells)
+curva alta: valuta più terre/ramp ⇒ high curve: consider more lands/ramp
+curva bassa e aggressiva ⇒ low, aggressive curve
+curva equilibrata ⇒ balanced curve
+CMC medio {0} ⇒ Average MV {0}
+, {0} magie economiche di pesca/mana ⇒ , {0} cheap draw/mana spells
+giuste: ~{0} consigliate ({1}) ⇒ right: ~{0} recommended ({1})
+poche: ~{0} consigliate ({1}) ⇒ too few: ~{0} recommended ({1})
+troppe: ~{0} consigliate ({1}) ⇒ too many: ~{0} recommended ({1})
+Mano iniziale con 2-4 terre ⇒ Opening hand with 2-4 lands
+0-1 terre {0}% · 5 o più terre {1}% ⇒ 0-1 lands {0}% · 5 or more lands {1}%
+Fonti {0} ⇒ Sources {0}
+{0} per {1} magie ⇒ {0} for {1} spells
+poche fonti per la domanda ⇒ few sources for the demand
+{0}: bandita in {1}. ⇒ {0}: banned in {1}.
+{0}: non legale in {1}. ⇒ {0}: not legal in {1}.
+{0}: ristretta (max 1) in {1}. ⇒ {0}: restricted (max 1) in {1}.
+{0}: {1} copie (max {2} in {3}). ⇒ {0}: {1} copies (max {2} in {3}).
+Commander richiede 100 carte nel main (ora {0}). ⇒ Commander requires 100 cards in the main deck (now {0}).
+Il main deve avere almeno 60 carte (ora {0}). ⇒ The main deck must have at least 60 cards (now {0}).
+Il sideboard può avere al massimo 15 carte (ora {0}). ⇒ The sideboard can have at most 15 cards (now {0}).
+
+// ── Mazzi del meta ──
+Mazzi aggiornati. ⇒ Decks updated.
+Controllo non riuscito: sei offline? Riprova più tardi. ⇒ Check failed: are you offline? Try again later.
+Hai già i mazzi più recenti. ⇒ You already have the latest decks.
+Top mazzi per formato (meta) ⇒ Top decks by format (meta)
+Vedi ⇒ View
+Crea un mazzo con questa lista (main + sideboard) ⇒ Create a deck with this list (main + sideboard)
+Crea un mazzo vuoto con questo nome ⇒ Create an empty deck with this name
++ Crea mazzo ⇒ + Create deck
+Metagame aggiornato: ⇒ Metagame updated:
+Mazzi aggiornati al ⇒ Decks updated on
+(fonte: ⇒ (source:
+). L'app controlla da sola ogni giorno se ce ne sono di nuovi. ⇒ ). The app checks by itself every day for new ones.
+importa la lista completa giocata nel torneo indicato. ⇒ imports the full list played in the tournament shown.
+Controllo… ⇒ Checking…
+Controlla ora ⇒ Check now
+
+// ── Simulazione ──
+Risoluzione carte su Scryfall… ⇒ Resolving cards on Scryfall…
+Simulazione pre-side ({0} partite/mazzo)… ⇒ Pre-sideboard simulation ({0} games/deck)…
+Simulazione post-side… ⇒ Post-sideboard simulation…
+Inserisci entrambe le liste (mazzo principale non vuoto). ⇒ Enter both lists (main deck not empty).
+Troppe poche carte risolte per simulare. Controlla i nomi (vedi carte non trovate). ⇒ Too few cards resolved to simulate. Check the names (see cards not found).
+Post-side sim fallita: ⇒ Post-sideboard sim failed:
+Inserisci entrambe le liste. ⇒ Enter both lists.
+Troppe poche carte risolte. Controlla i nomi. ⇒ Too few cards resolved. Check the names.
+Simulazione match ⇒ Match simulation
+Incolla due mazzi (con eventuale ⇒ Paste two decks (with an optional
+), l'app li risolve su Scryfall e gira migliaia di simulazioni Monte Carlo. Poi stima il matchup, spiega i numeri, suggerisce le giocate e un piano di sideboard, e mostra un replay illustrato di una partita rappresentativa. ⇒ ), the app resolves them on Scryfall and runs thousands of Monte Carlo simulations. Then it estimates the matchup, explains the numbers, suggests plays and a sideboard plan, and shows an illustrated replay of a representative game.
+Mazzo A ⇒ Deck A
+Mazzo B ⇒ Deck B
+Simulazione… ⇒ Simulating…
+In corso… ⇒ Running…
+⚔️ Partite reali ⇒ ⚔️ Real games
+In gioco per primo (no pesca T1) ⇒ On the play (no draw T1)
+Confronto pre-side (stima) ⇒ Pre-sideboard comparison (estimate)
+Confronto post-side (stima) ⇒ Post-sideboard comparison (estimate)
+Suggerimenti & sideboard ⇒ Tips & sideboard
+Consigli euristici basati su velocità relativa e ruoli delle carte (rimozioni, counter, spazzavia, minacce…). Punto di partenza, non oro colato. ⇒ Heuristic advice based on relative speed and card roles (removal, counters, sweepers, threats…). A starting point, not gospel.
+Statistiche di consistenza ⇒ Consistency stats
+Replay illustrato (partita media) ⇒ Illustrated replay (average game)
+Come leggere i numeri. ⇒ How to read the numbers.
+Le simulazioni sono "goldfish": ogni mazzo gioca da solo, senza avversario. Misurano consistenza, salute del mana e velocità. Il confronto (pre e post-side) è una stima che aggiunge l'interazione sulla carta, ⇒ The simulations are "goldfish": each deck plays alone, with no opponent. They measure consistency, mana health and speed. The comparison (pre and post-sideboard) is an estimate that adds interaction on paper,
+non è ⇒ it is not
+una win-rate reale. Limiti attuali: il mana include terre e ramp (mana dork/rock e ricerca terre) in modo semplificato; le creature-mana non tappano il turno in cui entrano; le carte a doppia faccia usano la faccia frontale; i costi ibridi contano come generico; i ruoli delle carte sono dedotti dal testo (approssimazione). Dati e immagini © Scryfall. ⇒ a real win rate. Current limits: mana includes lands and ramp (mana dorks/rocks and land search) in a simplified way; mana creatures don't tap the turn they enter; double-faced cards use the front face; hybrid costs count as generic; card roles are inferred from the text (approximation). Data and images © Scryfall.
+Mazzi del meta · ⇒ Meta decks ·
+— scegli un mazzo del meta — ⇒ — pick a meta deck —
+— scegli un tuo mazzo — ⇒ — pick one of your decks —
+Es. 4 Lightning Bolt 20 Mountain Sideboard 3 Abrade ⇒ E.g. 4 Lightning Bolt 20 Mountain Sideboard 3 Abrade
+carte risolte ⇒ cards resolved
+(su {0} inserite) ⇒ (of {0} entered)
+· {0} sideboard ⇒ · {0} sideboard
+· {0} side ⇒ · {0} side
+⚠️ Non trovate su Scryfall (escluse): ⇒ ⚠️ Not found on Scryfall (excluded):
+Velocità (turno in cui il piano parte) ⇒ Speed (turn the plan kicks in)
+Consistenza (mani tenute / mulligan) ⇒ Consistency (hands kept / mulligans)
+Risposte alle minacce avversarie ⇒ Answers to opposing threats
+Resilienza delle proprie minacce ⇒ Resilience of own threats
+% post-side ⇒ % post-sideboard
+Perché questi numeri? (fattori del confronto) ⇒ Why these numbers? (comparison factors)
+Fattore ⇒ Factor
+Peso ⇒ Weight
+Favorisce ⇒ Favors
+Punteggio totale ⇒ Total score
+La percentuale nasce dalla differenza dei punteggi totali passata in una curva logistica (differenze piccole → vicino a 50/50, differenze grandi → si allontanano). I punteggi sommano quattro fattori, ciascuno moltiplicato per il suo peso. ⇒ The percentage comes from the difference between the total scores passed through a logistic curve (small differences → close to 50/50, large differences → further apart). The scores add up four factors, each multiplied by its weight.
+⚠️ Non è una win-rate reale. ⇒ ⚠️ This is not a real win rate.
+È una stima che combina la velocità/consistenza in solitaria (goldfish) con l'interazione sulla carta (rimozioni, counter, spazzavia vs minacce). Non simula la partita vera con blocchi, sequenze e decisioni: usala per confrontare i motori e capire il matchup, non come previsione dell'esito. Il mana include ora terre e ramp (mana dork/rock e ricerca terre), in modo semplificato. ⇒ It is an estimate combining solo speed/consistency (goldfish) with interaction on paper (removal, counters, sweepers vs threats). It doesn't simulate the real game with blocks, sequencing and decisions: use it to compare engines and understand the matchup, not as a prediction of the outcome. Mana now includes lands and ramp (mana dorks/rocks and land search), in a simplified way.
+✅ Giocate forti ⇒ ✅ Strong plays
+⚠️ Attenzione a ⇒ ⚠️ Watch out for
+🔁 Piano di sideboard ⇒ 🔁 Sideboard plan
+Carte suggerite dal formato ⇒ Suggested cards from the format
+Proposte di carte legali nel formato per rispondere all'altro mazzo (euristico: classifica l'avversario e cerca risposte adatte). ⇒ Proposed cards legal in the format to answer the other deck (heuristic: it classifies the opponent and looks for suitable answers).
+Trova carte ⇒ Find cards
+· contro ⇒ · against
+Nessun suggerimento trovato. ⇒ No suggestions found.
+aggressivo (aggro) ⇒ aggressive (aggro)
+Rimozione economica contro le creature ⇒ Cheap removal against creatures
+Spazzavia per ripulire il tavolo ⇒ Sweepers to clear the board
+Guadagno vita per stabilizzare ⇒ Life gain to stabilise
+Minacce a basso costo, difficili da gestire ⇒ Cheap threats that are hard to handle
+Counter per contrastarli sul loro turno ⇒ Counters to fight them on their turn
+Discard per svuotare la loro mano ⇒ Discard to empty their hand
+Rimozione efficiente e flessibile ⇒ Efficient, flexible removal
+Vantaggio carte per superarli sul lungo ⇒ Card advantage to outlast them
+Minacce che generano valore entrando ⇒ Threats that generate value on entering
+più veloce ⇒ faster
+più lento ⇒ slower
+di pari passo ⇒ on par
+Il tuo mazzo parte in media a T{0} contro T{1} dell'avversario: sei {2}. L'avversario sembra un profilo {3}. ⇒ Your deck gets going on average on T{0} against the opponent's T{1}: you are {2}. The opponent looks like a {3} profile.
+Sei più veloce (T{0} vs T{1}): imposta l'aggressione, sviluppa minacce sulla curva e spingi danni prima che l'avversario stabilizzi. ⇒ You are faster (T{0} vs T{1}): set up the aggression, develop threats on curve and push damage before the opponent stabilises.
+Sei più lento: gioca in reattività, scambia risorse 1-per-1 e porta la partita alle fasi lunghe dove il tuo card advantage conta. ⇒ You are slower: play reactively, trade resources 1-for-1 and take the game long where your card advantage matters.
+Tieni le tue rimozioni ({0}) per le minacce chiave dell'avversario ({1}). ⇒ Save your removal ({0}) for the opponent's key threats ({1}).
+Usa i counter ({0}) sulle carte che spostano la partita (spazzavia, bombe, pescate) più che sul primo bersaglio. ⇒ Use counters ({0}) on cards that swing the game (sweepers, bombs, card draw) rather than on the first target.
+Contro il controllo: minacce ridondanti e a prova di spazzavia; se hai discard ({0}) strappa counter/spazzavia prima di calare la minaccia decisiva. ⇒ Against control: redundant, sweeper-proof threats; if you have discard ({0}) strip counters/sweepers before landing the decisive threat.
+Matchup equilibrato: gioca in tempo, non sovraestendere e cerca gli scambi di risorse favorevoli. ⇒ Even matchup: play on tempo, don't overextend and look for favorable resource trades.
+Spazzavia avversari ({0}): non svuotare la mano, sviluppa a ondate. ⇒ Opposing sweepers ({0}): don't empty your hand, develop in waves.
+Counter avversari ({0}): gioca attorno ai loro turni di mana aperto. ⇒ Opposing counters ({0}): play around their open-mana turns.
+Molte rimozioni ({0}): le tue minacce singole cadranno, servono ridondanza o minacce difficili da rimuovere. ⇒ Lots of removal ({0}): your single threats will fall, you need redundancy or threats that are hard to remove.
+Avversario aggressivo (parte a T{0}): la tua vita è una risorsa, stabilizza in fretta (rimozioni economiche, guadagno vita, spazzavia). ⇒ Aggressive opponent (gets going on T{0}): your life is a resource, stabilise quickly (cheap removal, life gain, sweepers).
+Nessuna minaccia evidente sulla sola lista: gioca standard. ⇒ No obvious threat from the list alone: play standard.
+colpisce specificamente i colori avversari ({0}) ⇒ specifically hits the opponent's colors ({0})
+ostacola il guadagno di vita dell'avversario ⇒ hinders the opponent's life gain
+l'avversario ha {0} tra artefatti/incantesimi ⇒ the opponent has {0} artifacts/enchantments
+molte minacce avversarie ({0}) ⇒ many opposing threats ({0})
+l'avversario è lento e ha bersagli importanti da neutralizzare ⇒ the opponent is slow and has important targets to counter
+contro il controllo lo discard strappa counter/bombe ⇒ against control, discard strips counters/bombs
+minaccia proattiva contro un mazzo reattivo ⇒ proactive threat against a reactive deck
+non neutralizzabile: passa sopra i counter del controllo ⇒ can't be countered: goes over control's counters
+guadagno vita contro l'aggro ⇒ life gain against aggro
+l'avversario usa il cimitero ({0} carte) ⇒ the opponent uses the graveyard ({0} cards)
+spazzavia contro un board aggressivo ⇒ sweeper against an aggressive board
+Nessun sideboard inserito per questo mazzo: aggiungi una sezione 'Sideboard' alla lista per ricevere un piano. ⇒ No sideboard entered for this deck: add a 'Sideboard' section to the list to get a plan.
+Il sideboard attuale non offre carte chiaramente migliori per questo matchup: probabilmente si gioca la stessa lista. ⇒ The current sideboard offers no clearly better cards for this matchup: you probably play the same list.
+taglio di flessibilità per far spazio alle carte in entrata ⇒ flexibility cut to make room for incoming cards
+Piano automatico contro un profilo {0}: {1} dentro / {2} fuori. Suggerimento indicativo, adatta al tuo stile. ⇒ Automatic plan against a {0} profile: {1} in / {2} out. A rough suggestion, adapt it to your style.
+rimozione da creatura poco utile: l'avversario ha poche creature ⇒ creature removal not very useful: the opponent has few creatures
+guadagno vita poco rilevante contro il controllo ⇒ life gain hardly relevant against control
+counter meno incisivo contro l'aggro rapido ⇒ counter less effective against fast aggro
+troppo lenta contro l'aggressione ⇒ too slow against aggression
+carta debole in questo matchup ⇒ weak card in this matchup
+Cosa significano le metriche e le percentuali? ⇒ What do the metrics and percentages mean?
+Le simulazioni sono ⇒ The simulations are
+: ogni mazzo gioca da solo, senza avversario. Servono a misurare quanto è regolare e veloce il suo motore. ⇒ : each deck plays alone, with no opponent. They measure how consistent and fast its engine is.
+Mani tenute a 7 ⇒ Hands kept at 7
+: quota di partite in cui la mano iniziale (2–5 terre) è stata tenuta senza mulligan. Più alta = più regolare. ⇒ : share of games where the opening hand (2–5 lands) was kept without a mulligan. Higher = more consistent.
+Mulligan medi ⇒ Average mulligans
+: numero medio di mulligan per partita. ⇒ : average number of mulligans per game.
+Turno medio "attivo" ⇒ Average "active" turn
+: turno in cui il mazzo lancia la sua prima magia importante (CMC ≥ mediana delle magie). È una proxy di "quando il piano parte". ⇒ : turn in which the deck casts its first important spell (MV ≥ median of its spells). It's a proxy for "when the plan kicks in".
+Terre in gioco per turno ⇒ Lands in play per turn
+: media delle terre in gioco; mostra flood/screw e la curva di sviluppo del mana. ⇒ : average lands in play; shows flood/screw and the mana development curve.
+Deck attivo entro il turno ⇒ Deck active by turn
+: probabilità di aver già lanciato la magia chiave entro quel turno. ⇒ : probability of having already cast the key spell by that turn.
+Disponibilità colore ⇒ Color availability
+: probabilità di avere una fonte di quel colore entro il turno. ⇒ : probability of having a source of that color by the turn.
+La ⇒ The
+percentuale di confronto ⇒ comparison percentage
+combina quattro fattori (velocità, consistenza, risposte alle minacce avversarie, resilienza delle proprie minacce), ciascuno pesato; la differenza dei punteggi diventa una probabilità. È una ⇒ combines four factors (speed, consistency, answers to opposing threats, resilience of own threats), each weighted; the score difference becomes a probability. It is an
+stima ⇒ estimate
+del matchup sulla carta, non una win-rate simulata partita per partita. ⇒ of the matchup on paper, not a win rate simulated game by game.
+Turno medio "attivo" (cmc ≥ ⇒ Average "active" turn (MV ≥
+Terre nel mazzo ⇒ Lands in deck
+Kill goldfish (20 danni) ⇒ Goldfish kill (20 damage)
+Curva di mana (magie per CMC) ⇒ Mana curve (spells by MV)
+Terre in gioco per turno (media) ⇒ Lands in play per turn (average)
+Mana disponibile per turno (terre + ramp) ⇒ Mana available per turn (lands + ramp)
+Probabilità "deck attivo" entro il turno ⇒ Probability of "deck active" by turn
+Land drop rispettati (prob. ≥ T terre al turno T) ⇒ Land drops hit (prob. ≥ T lands on turn T)
+Quanto spesso il mazzo tiene il passo con la curva (terre in gioco ≥ numero del turno). ⇒ How often the deck keeps up with the curve (lands in play ≥ turn number).
+Danno cumulativo per turno (clock goldfish) ⇒ Cumulative damage per turn (goldfish clock)
+Stima ottimistica: nessun bloccante né rimozione, tutte le creature attaccano. 20 danni = partita vinta. ⇒ Optimistic estimate: no blockers or removal, all creatures attack. 20 damage = game won.
+Disponibilità colore (prob. fonte entro il turno) ⇒ Color availability (prob. of a source by the turn)
+Da T1 (sinistra) a T ⇒ From T1 (left) to T
+(destra); più intenso = più probabile. ⇒ (right); more intense = more likely.
+nessuna pescata (sei in gioco) ⇒ no draw (you're on the play)
+niente terra da giocare ⇒ no land to play
+nessuna magia ⇒ no spells
+Mano tenuta a 7 ⇒ Hand kept at 7
+Mulligan a {0} ⇒ Mulligan to {0}
+in gioco ⇒ on the play
+in risposta ⇒ in response
+Mano iniziale ⇒ Opening hand
+Mostra fino al turno ⇒ Show up to turn
+Turno ⇒ Turn
+Prima magia con cmc ≥ {0} ⇒ First spell with MV ≥ {0}
+🔑 deck attivo ⇒ 🔑 deck active
+⚠ salti la terra ⇒ ⚠ missed land drop
+🌱 ramp: + ⇒ 🌱 ramp: +
+peschi {0} ⇒ you draw {0}
+giochi {0} ⇒ you play {0}
+lanci {0} ⇒ you cast {0}
+Win-rate simulata (partite interattive) ⇒ Simulated win rate (interactive games)
+Vinte da {0} ⇒ Won by {0}
+Vinte da ⇒ Won by
+Partite giocate ⇒ Games played
+Turni medi ⇒ Average turns
+Pareggi (limite turni) ⇒ Draws (turn limit)
+vince il ⇒ wins
+quando inizia e il ⇒ when on the play and
+quando pesca. ⇒ when on the draw.
+Partite di esempio ⇒ Sample games
+Tre partite tipiche, vinte in proporzione alla win-rate e di durata vicina alla media. Turno per turno, i due mazzi si rispondono. ⇒ Three typical games, won in proportion to the win rate and close to the average length. Turn by turn, the two decks respond to each other.
+Partita di esempio ⇒ Sample game
+Partita {0}: {1} al turno {2} · inizia {3} ⇒ Game {0}: {1} on turn {2} · {3} on the play
+vince {0} ⇒ {0} wins
+pareggio ⇒ draw
+Log dettagliato (tutte le fasi del turno) ⇒ Detailed log (all turn phases)
+Modello semplificato. ⇒ Simplified model.
+Il motore gioca davvero (mani iniziali e mulligan, terre, vita, creature, combattimento con blocchi, rimozioni, spazzavia, counter, burn, ramp, prospero, rapidità, lampo, volare, legame vitale, tocco letale, cautela, attacchi alla mano, trigger "quando entra" e "ogni volta che una creatura entra", fasi del turno con i trigger di mantenimento, pescata e sottofase finale, seconda fase principale dopo il combattimento) ma deduce gli effetti dai ruoli/numeri delle carte: non conosce ogni testo specifico, le abilità attivate o i trigger complessi (es. blink), e i planeswalker sono approssimati a creature. ⇒ The engine really plays (opening hands and mulligans, lands, life, creatures, combat with blocks, removal, sweepers, counters, burn, ramp, prowess, haste, flash, flying, lifelink, deathtouch, vigilance, attacks on the hand, "when it enters" and "whenever a creature enters" triggers, turn phases with upkeep, draw and end step triggers, second main phase after combat) but infers effects from the cards' roles/numbers: it doesn't know every specific text, activated abilities or complex triggers (e.g. blink), and planeswalkers are approximated as creatures.
+Stappo ⇒ Untap
+Mantenimento ⇒ Upkeep
+Pescata ⇒ Draw
+Principale 1 ⇒ Main 1
+Combattimento ⇒ Combat
+Principale 2 ⇒ Main 2
+Finale ⇒ Final
+niente da segnalare ⇒ nothing to report
+una carta ⇒ a card
+mette in mano {0} ⇒ puts {0} into hand
+perde {0} vita ⇒ loses {0} life
+pesca {0} ⇒ draws {0}
+{0} carte ⇒ {0} cards
+guadagna {0} vita ⇒ gains {0} life
+crea {0}{1} {2}/{3} ⇒ creates {0}{1} {2}/{3}
+{0}: {1} (vita {2}) ⇒ {0}: {1} (life {2})
+{0} ha {1} mana disponibile, {2} carte in mano ⇒ {0} has {1} mana available, {2} cards in hand
+{0}: prospero +1/+1 a {1} ⇒ {0}: prowess +1/+1 to {1}
+{0} prova {1}, {2} la neutralizza ⇒ {0} tries {1}, {2} counters it
+{0} guadagna {1} vita ({2}: entra {3}) ⇒ {0} gains {1} life ({2}: {3} enters)
+{0} perde {1} vita ({2}: entra {3}) ⇒ {0} loses {1} life ({2}: {3} enters)
+Fine turno di {0}: {1} usa il lampo ⇒ End of {0}'s turn: {1} uses flash
+{0} gioca {1}{2} ⇒ {0} plays {1}{2}
+(tappata) ⇒ (tapped)
+{0} lancia {1} (mana) ⇒ {0} casts {1} (mana)
+{0} lancia {1} (+{2} terra) ⇒ {0} casts {1} (+{2} land)
+{0} lancia {1}: spazzavia ({2} creature distrutte) ⇒ {0} casts {1}: sweeper ({2} creatures destroyed)
+{0} lancia {1}: rimuove {2} ⇒ {0} casts {1}: removes {2}
+{0} lancia {1}: {2} danni uccidono {3} ⇒ {0} casts {1}: {2} damage kills {3}
+{0} lancia {1}: {2} danni ({3} a {4}) ⇒ {0} casts {1}: {2} damage ({3} at {4})
+{0} lancia {1} ({2}/{3}) ⇒ {0} casts {1} ({2}/{3})
+{0} lancia {1}: +{2} a {3} ⇒ {0} casts {1}: +{2} to {3}
+{0} pesca {1} con {2} ⇒ {0} draws {1} with {2}
+{0}: {1} perde {2} dalla mano ⇒ {0}: {1} loses {2} from hand
+{0} pesca una carta ({1}) ⇒ {0} draws a card ({1})
+{0} perde {1} vita ({2}, vita {3}) ⇒ {0} loses {1} life ({2}, life {3})
+{0} lancia {1} ⇒ {0} casts {1}
+{0} guadagna {1} vita ({2}) ⇒ {0} gains {1} life ({2})
+{0} non ha creature pronte ad attaccare ⇒ {0} has no creatures ready to attack
+{0} non attacca: i bloccanti avversari sono troppo forti ⇒ {0} doesn't attack: the opposing blockers are too strong
+{0} attacca con {1} ⇒ {0} attacks with {1}
+muore {0} ⇒ {0} dies
+{0} blocca {1} con {2}{3} ⇒ {0} blocks {1} with {2}{3}
+{0} danni a {1} (vita {2}) ⇒ {0} damage to {1} (life {2})
+{0} guadagna {1} vita (legame vitale, vita {2}) ⇒ {0} gains {1} life (lifelink, life {2})
+{0} inizia (on the play), {1} pesca. Vita {2} a testa. ⇒ {0} is on the play, {1} draws. {2} life each.
+(mulligan a {0}) ⇒ (mulligan to {0})
+Mano iniziale di {0}{1}: {2} ⇒ {0}'s opening hand{1}: {2}
+Entrambi a 0 vita: pareggio al turno {0}. ⇒ Both at 0 life: draw on turn {0}.
+{0} vince al turno {1}. ⇒ {0} wins on turn {1}.
+Turno {0} · {1} (vita {2}, avversario {3}) ⇒ Turn {0} · {1} (life {2}, opponent {3})
+{0} stappa {1} {2}{3} ⇒ {0} untaps {1} {2}{3}
+{0} inizia: niente pescata al primo turno ⇒ {0} is on the play: no draw on the first turn
+{0} non può pescare: perde per deck out. ⇒ {0} can't draw: loses by decking.
+{0} pesca {1} ⇒ {0} draws {1}
+Finiscono i bonus fino a fine turno ⇒ Until-end-of-turn bonuses wear off
+{0} scarta {1} carte (massimo 7 in mano) ⇒ {0} discards {1} cards (maximum hand size 7)
+Limite turni: pareggio ({0} {1}, {2} {3}). ⇒ Turn limit: draw ({0} {1}, {2} {3}).
+Limite turni: vince {0} ai punti ({1} {2}, {3} {4}). ⇒ Turn limit: {0} wins on points ({1} {2}, {3} {4}).
+Pedina {0} ⇒ Token {0}
+
+// ── Carte simili ──
+attacco improvviso ⇒ first strike
+doppio attacco ⇒ double strike
+rapidità ⇒ haste
+legame vitale ⇒ lifelink
+tocco letale ⇒ deathtouch
+blocca una creatura (tipo Pacifismo) ⇒ locks down a creature (like Pacifism)
+distrugge tutte le creature ⇒ destroys all creatures
+danni a tutte le creature ⇒ damages all creatures
+esilia tutte le creature ⇒ exiles all creatures
+dà -N/-N ⇒ gives -N/-N
+fa uscire e rientrare una tua creatura (blink) ⇒ exiles and returns one of your creatures (blink)
+esilia una creatura ⇒ exiles a creature
+distrugge una creatura ⇒ destroys a creature
+danni a qualsiasi bersaglio ⇒ damage to any target
+danni a un bersaglio ⇒ damage to a target
+lotta / morso ⇒ fight / bite
+distrugge artefatti o incantesimi ⇒ destroys artifacts or enchantments
+fa tornare in mano ⇒ returns to hand
+fa sacrificare ⇒ forces a sacrifice
+impedisce agli avversari di giocare magie nel tuo turno ⇒ stops opponents casting spells on your turn
+neutralizza una magia ⇒ counters a spell
+fa scartare ⇒ forces a discard
+cerca terre (ramp) ⇒ searches for lands (ramp)
+produce mana ⇒ produces mana
+cerca una carta nel mazzo ⇒ tutors a card from the library
+esilia il cimitero (odio per il cimitero) ⇒ exiles the graveyard (graveyard hate)
+recupera dal cimitero ⇒ recurs from the graveyard
+pesca più carte ⇒ draws several cards
+esilia le prime carte e puoi giocarle (pesca d'impulso) ⇒ exiles the top cards and lets you play them (impulse draw)
+guarda le prime carte del mazzo ⇒ looks at the top cards of the library
+pesca una carta ⇒ draws a card
+crea pedine ⇒ creates tokens
+segnalini +1/+1 ⇒ +1/+1 counters
+potenzia le tue creature ⇒ pumps your creatures
+potenzia una creatura ⇒ pumps a creature
+dà {0} a una creatura fino a fine turno ⇒ gives {0} to a creature until end of turn
+tappa / blocca ⇒ taps / locks down
+fa guadagnare punti vita ⇒ gains life
+fa perdere punti vita ⇒ makes lose life
+protezione dai bersagli ⇒ protection from targeting
+stesso tipo ({0}) ⇒ same type ({0})
+stesso costo ({0}) ⇒ same cost ({0})
+costa meno ({0} invece di {1}) ⇒ cheaper ({0} instead of {1})
+costa di più ({0} invece di {1}) ⇒ costs more ({0} instead of {1})
+istantanei e stregonerie ⇒ instants and sorceries
+istantaneo o stregoneria ⇒ instant or sorcery
+costo {0} o meno (ha anche un costo alternativo) ⇒ cost {0} or less (also has an alternative cost)
+costo {0} o meno ⇒ cost {0} or less
+stesso effetto: {0} ⇒ same effect: {0}
+qualsiasi costo ⇒ any cost
+abilità {0} ⇒ ability {0}
+stessa abilità: {0} ⇒ same ability: {0}
+poi carte di ogni tipo con lo stesso effetto ⇒ then cards of every type with the same effect
+
+// ── Gioca ──
+Esempio · Mono-Red Aggro ⇒ Sample · Mono-Red Aggro
+Esempio · Azorius Control ⇒ Sample · Azorius Control
+Terra (ramp) ⇒ Land (ramp)
+Il mazzo selezionato non ha carte nel main. ⇒ The selected deck has no cards in the main deck.
+Troppe poche carte risolte per giocare (controlla i nomi). ⇒ Too few cards resolved to play (check the names).
+Per sfidare un amico devi aver fatto l'accesso. ⇒ You need to be signed in to challenge a friend.
+Tavolo ⇒ Table
+= solitario libero senza regole: trascini le carte dalla mano al campo, tappi, peschi; ⇒ = free solo play with no rules: drag cards from hand to battlefield, tap, draw;
+Automatico ⇒ Automatic
+= guardi la partita giocata dall'euristica; ⇒ = watch the game played by the heuristic;
+Segnapunti ⇒ Life counter
+= punti vita e segnalini per giocare dal vivo con gli amici, un solo telefono al centro del tavolo. ⇒ = life totals and counters to play in person with friends, one phone in the middle of the table.
+🃏 Tavolo ⇒ 🃏 Table
+👁 Automatico ⇒ 👁 Automatic
+❤️ Segnapunti ⇒ ❤️ Life counter
+⚔ Partita in corso contro ⇒ ⚔ Game in progress against
+Riprendi ⇒ Resume
+Chiudi la partita ⇒ Close the game
+ti ha sfidato al Tavolo. ⇒ challenged you at the Table.
+Scegli il tuo mazzo qui sotto e premi ⇒ Pick your deck below and press
+Accetta la sfida ⇒ Accept the challenge
+Non ora ⇒ Not now
+Contro ⇒ Against
+Da solo (solitario) ⇒ Alone (solo)
+Sfida un amico ⇒ Challenge a friend
+· online ⇒ · online
+Vuoi giocare contro un amico? ⇒ Want to play against a friend?
+Aggiungilo in Amici ⇒ Add them in Friends
+, poi sceglilo qui. ⇒ , then pick them here.
+I miei mazzi ⇒ My decks
+Esempi ⇒ Samples
+In gioco (no pescata al T1) ⇒ On the play (no draw on T1)
+Ricarica ⇒ Reload
+riceve la sfida in chat: quando la accetta, vedete tutti e due il campo dell'altro e potete scrivervi dal tavolo (💬). ⇒ gets the challenge in chat: when they accept it, you both see each other's battlefield and can chat from the table (💬).
+🃏 Apri il tavolo ⇒ 🃏 Open the table
+Nuova partita (rimescola) ⇒ New game (reshuffle)
+🔀 Nuova partita ⇒ 🔀 New game
+◀ Indietro ⇒ ◀ Back
+Avanza ▶ ⇒ Forward ▶
+Nuova partita ⇒ New game
+🔀 Rimescola ⇒ 🔀 Reshuffle
+mano a 7 ⇒ hand of 7
+mulligan a {0} ⇒ mulligan to {0}
+Peschi {0}. ⇒ You draw {0}.
+Giochi {0}. ⇒ You play {0}.
+Lanci: {0}. ⇒ You cast: {0}.
+Niente terra. ⇒ No land.
+Nessuna magia. ⇒ No spells.
+🌱 Terre in gioco ⇒ 🌱 Lands in play
+nessuna terra ⇒ no lands
+✋ Mano ({0}) ⇒ ✋ Hand ({0})
+🧱 Permanenti ⇒ 🧱 Permanents
+⚔ attacco: ⇒ ⚔ attack:
+nessun permanente ⇒ no permanents
+Turno {0} ⇒ Turn {0}
+
+// ── Tavolo ──
+Tocca a te: carte stappate e una carta pescata. ⇒ Your turn: cards untapped and one card drawn.
+{0} ha lasciato la partita. ⇒ {0} left the game.
+nuova sfida ⇒ new challenge
+Nuova partita: mazzo mescolato, 7 carte in mano. ⇒ New game: deck shuffled, 7 cards in hand.
+Chiudi il tavolo ⇒ Close the table
+Turno passato a {0}. ⇒ Turn passed to {0}.
+Fine del tuo turno: tocca all'amico ⇒ End your turn: your friend's turn
+Turno dell'amico ⇒ Friend's turn
+Passa ▶ ⇒ Pass ▶
+Turno di {0} ⇒ {0}'s turn
+Nuovo turno: stappa tutto e pesca ⇒ New turn: untap everything and draw
+▶ Turno ⇒ ▶ Turn
+Pesca ⇒ Draw
+Stappa ⇒ Untap
+Chat con l'amico ⇒ Chat with your friend
+Annulla l'ultima mossa ⇒ Undo the last move
+↺ Stappa tutto ⇒ ↺ Untap all
+🔀 Mescola il mazzo ⇒ 🔀 Shuffle the library
+Mulligan {0}: tieni la mano e metti {1} ⇒ Mulligan {0}: keep the hand and put {1}
+carte in fondo (tieni premuto → Sotto al mazzo). ⇒ cards on the bottom (long press → Bottom of library).
+♻ Mulligan ⇒ ♻ Mulligan
+👁 Guarda il mazzo ⇒ 👁 Look at the library
+Pedina ⇒ Token
+➕ Pedina generica ⇒ ➕ Generic token
+🆕 Ricomincia (solo il mio mazzo) ⇒ 🆕 Restart (only my deck)
+🆕 Nuova partita ⇒ 🆕 New game
+🏳 Abbandona la partita ⇒ 🏳 Concede the game
+Tu ⇒ You
+Avversario ⇒ Opponent
+Trascina qui le carte dalla mano. ⇒ Drag cards here from your hand.
+Tocco = tappa/stappa · tieni premuto = menu ⇒ Tap = tap/untap · long press = menu
+Mano · ⇒ Hand ·
+trascina sul campo per giocare · tocca per il menu ⇒ drag onto the battlefield to play · tap for the menu
+mano vuota ⇒ empty hand
+· pedina ⇒ · token
+Tappa ⇒ Tap
+Scopri ⇒ Turn face up
+A faccia in giù ⇒ Face down
+Copia (pedina) ⇒ Copy (token)
+Metti in campo ⇒ Put onto the battlefield
+In campo coperta ⇒ Onto the battlefield face down
+In mano ⇒ To hand
+Al cimitero ⇒ To graveyard
+In esilio ⇒ To exile
+Sopra al mazzo ⇒ Top of library
+Sotto al mazzo ⇒ Bottom of library
+🔀 Mescola ⇒ 🔀 Shuffle
+Dalla cima al fondo. Tocca una carta per spostarla. ⇒ From top to bottom. Tap a card to move it.
+Nessuna carta. ⇒ No cards.
+Collegato ⇒ Connected
+Non collegato ⇒ Not connected
+· collegamento… ⇒ · connecting…
+· ha lasciato ⇒ · left
+· non collegato ⇒ · not connected
+Carte in mano ⇒ Cards in hand
+Carte nel mazzo ⇒ Cards in library
+Cimitero ⇒ Graveyard
+Esilio ⇒ Exile
+Mano ⇒ Hand
+Campo ⇒ Battlefield
+Carico il tavolo dell'amico… ⇒ Loading your friend's table…
+Qui vedrai il campo di {0} quando apre la sfida. ⇒ You'll see {0}'s battlefield here when they open the challenge.
+Carta di ⇒ Card of
+· tappata ⇒ · tapped
+· segnalini {0}{1} ⇒ · counters {0}{1}
+Le carte dell'amico le muove lui: se serve, chiediglielo in chat. ⇒ Your friend moves their own cards: if needed, ask them in chat.
+[[tavolo:{0}]] ⚔ Ti sfido al Tavolo! Io gioco con «{1}». ⇒ [[tavolo:{0}]] ⚔ I challenge you at the Table! I'm playing «{1}».
+⚔ Ti sfido al Tavolo! Io gioco con «{0}». ⇒ ⚔ I challenge you at the Table! I'm playing «{0}».
+
+// ── Segnapunti ──
+Dado da {0} ⇒ {0}-sided die
+Moneta ⇒ Coin
+Testa ⇒ Heads
+Croce ⇒ Tails
+Menu del segnapunti ⇒ Life counter menu
+✓ Registrata nel gruppo ⇒ ✓ Recorded in group
+🏆 {0} · Registra la partita ⇒ 🏆 {0} · Record the game
+Fine ⇒ End
+Chi inizia? ⇒ Who goes first?
+Dado da 6 ⇒ 6-sided die
+Dado da 20 ⇒ 20-sided die
+Sicuro? Tutti tornano a {0} ⇒ Sure? Everyone goes back to {0}
+↺ Nuova partita (vita {0}) ⇒ ↺ New game (life {0})
+✓ Partita registrata nel gruppo ⇒ ✓ Game recorded in group
+📒 Registra nel gruppo di amici ⇒ 📒 Record in friends group
+⚙ Giocatori e impostazioni ⇒ ⚙ Players and settings
+Torna alla partita ⇒ Back to the game
+tocca per chiudere ⇒ tap to close
+Danni comandante da {0} ⇒ Commander damage from {0}
+{0}: togli 1 vita ⇒ {0}: remove 1 life
+{0}: aggiungi 1 vita ⇒ {0}: add 1 life
+Monarca ⇒ Monarch
+Inizi tu! ⇒ You go first!
+Segnalini ⇒ Counters
+Segnalini ＋ ⇒ Counters ＋
+prossimo lancio +{0} ⇒ next cast +{0}
+⚔ Danni da comandante ricevuti (tolgono anche vita) ⇒ ⚔ Commander damage received (also removes life)
+È il Monarca (tocca per togliere) ⇒ Is the Monarch (tap to remove)
+Diventa il Monarca ⇒ Become the Monarch
+più ⇒ more
+da {0} ⇒ from {0}
+Oro ⇒ Gold
+Veleno ⇒ Poison
+a 10 sei fuori ⇒ at 10 you're out
+Energia ⇒ Energy
+Esperienza ⇒ Experience
+Lanci comandante ⇒ Commander casts
+ogni lancio costa {2} in più ⇒ each cast costs {2} more
+Giocatore 1 ⇒ Player 1
+Giocatore 2 ⇒ Player 2
+Giocatore 3 ⇒ Player 3
+Giocatore 4 ⇒ Player 4
+Giocatore 5 ⇒ Player 5
+Giocatore 6 ⇒ Player 6
+Vita a zero ⇒ Life at zero
+10 segnalini veleno ⇒ 10 poison counters
+21 danni da comandante ⇒ 21 commander damage
+Standard, Modern… ⇒ Standard, Modern…
+Due Teste ⇒ Two-Headed
+Partita in corso ⇒ Game in progress
+↩ Riprendi ⇒ ↩ Resume
+Giocatori ⇒ Players
+Punti vita iniziali ⇒ Starting life
+Danni da comandante e lanci del comandante ⇒ Commander damage and commander casts
+Gira i riquadri verso ogni giocatore (telefono al centro del tavolo) ⇒ Turn the panels towards each player (phone in the middle of the table)
+Gruppo di amici ⇒ Friends group
+Nessuno (partita libera) ⇒ None (casual game)
+Scegli chi gioca tra i membri: a fine partita la registri nel gruppo con un tocco. ⇒ Pick who plays among the members: at the end of the game you record it in the group with one tap.
+Chi gioca ⇒ Who's playing
+Scegli colore o immagine ⇒ Pick color or image
+Membro del gruppo per il giocatore {0} ⇒ Group member for player {0}
+Ospite ⇒ Guest
+Nome giocatore {0} ⇒ Player name {0}
+▶ Nuova partita con questi giocatori ⇒ ▶ New game with these players
+▶ Inizia la partita ⇒ ▶ Start the game
+Nel segnapunti: tocca la metà sinistra di un riquadro per togliere vita, la destra per aggiungerla (tieni premuto per contare veloce). Sotto al numero ci sono veleno, energia e gli altri segnalini. Il simbolo ✦ al centro apre dadi, moneta e “chi inizia”. ⇒ In the life counter: tap the left half of a panel to remove life, the right half to add it (hold to count fast). Below the number are poison, energy and the other counters. The ✦ symbol in the middle opens dice, coin and “who goes first”.
+Aspetto di ⇒ Look of
+Fatto ⇒ Done
+Immagine di sfondo ⇒ Background image
+Togli immagine ⇒ Remove image
+Dai tuoi mazzi ⇒ From your decks
+Cerca una carta (es. il tuo comandante) ⇒ Search a card (e.g. your commander)
+
+// ── Registra partita ──
+Registra la partita ⇒ Record the game
+Per registrare le partite in un gruppo di amici serve un profilo con nome utente. ⇒ To record games in a friends group you need a profile with a username.
+Vai ad Amici ⇒ Go to Friends
+Non fai ancora parte di nessun gruppo. Creane uno in ⇒ You're not in any group yet. Create one in
+Amici › Gruppi ⇒ Friends › Groups
+e aggiungi i tuoi amici: poi qui potrai salvare le partite. ⇒ and add your friends: then you can save games here.
+Manca il nome di un giocatore. ⇒ A player's name is missing.
+Carico i tuoi gruppi… ⇒ Loading your groups…
+Gruppo ⇒ Group
+Giocatori e vincitore ⇒ Players and winner
+{0}: vincitore ⇒ {0}: winner
+Vincitore ⇒ Winner
+Ospite (senza profilo) ⇒ Guest (no profile)
+Nome dell'ospite ⇒ Guest name
+Vita finale ⇒ Final life
+Togli giocatore ⇒ Remove player
+🤝 Pareggio ⇒ 🤝 Draw
+＋ Giocatore ⇒ ＋ Player
+Conta per il torneo ⇒ Counts for the tournament
+Nota (facoltativa) ⇒ Note (optional)
+es. mazzi usati ⇒ e.g. decks used
+📒 Salva nel gruppo ⇒ 📒 Save to group
+
+// ── Amici ──
+Per aggiungere amici, vederli online e scrivergli serve un profilo. ⇒ To add friends, see them online and message them you need a profile.
+L'accesso con profilo non è attivo su questa installazione. ⇒ Profile sign-in is not active on this installation.
+Accedi o crea un profilo ⇒ Sign in or create a profile
+La sezione Amici non è ancora attiva sul server: va fatto una volta un passaggio su Supabase (incollare il file ⇒ The Friends section is not active on the server yet: a one-time step on Supabase is needed (paste the file
+nell'editor SQL). ⇒ into the SQL editor).
+Non riesco a caricare gli amici: ⇒ I can't load your friends:
+Scegli il tuo ⇒ Choose your
+nome utente ⇒ username
+: è quello che i tuoi amici cercano per aggiungerti. La tua email resta privata (ti trova per email solo chi la conosce già). ⇒ : it's what your friends search to add you. Your email stays private (only people who already know it can find you by email).
+Nome utente ⇒ Username
+Da 3 a 20 caratteri: lettere minuscole, numeri, _ e punto. ⇒ 3 to 20 characters: lowercase letters, numbers, _ and dot.
+Nome da mostrare (facoltativo) ⇒ Display name (optional)
+Continua ⇒ Continue
+Il tuo nome utente: ⇒ Your username:
+Richieste ricevute ⇒ Requests received
+Accetta ⇒ Accept
+Rifiuta ⇒ Decline
+Blocca ⇒ Block
+I tuoi amici ⇒ Your friends
+online su ⇒ online out of
+Ancora nessun amico. Cercali qui sopra per nome utente o email: quando accettano la richiesta li vedi qui, con il pallino verde quando sono online. ⇒ No friends yet. Search for them above by username or email: when they accept the request you'll see them here, with a green dot when they're online.
+{0} messaggi non letti ⇒ {0} unread messages
+Richieste inviate ⇒ Requests sent
+In attesa che accetti ⇒ Waiting for them to accept
+Utenti bloccati ⇒ Blocked users
+Non possono scriverti, mandarti richieste né trovarti nella ricerca. Non ricevono avvisi del blocco. ⇒ They can't message you, send you requests or find you in search. They aren't notified of the block.
+Sblocca ⇒ Unblock
+Aggiungi un amico ⇒ Add a friend
+Nome utente o email esatta ⇒ Username or exact email
+Nessuno trovato. Controlla il nome utente (lo trovi nella sua pagina Amici). ⇒ Nobody found. Check the username (it's on their Friends page).
+Già amici · Scrivi ⇒ Already friends · Message
+Richiesta inviata ⇒ Request sent
+Visto {0} ⇒ Seen {0}
+Togliere {0} dagli amici? Non potrete più scrivervi. ⇒ Remove {0} from friends? You won't be able to message each other any more.
+Potete scrivervi quando la richiesta di amicizia è accettata. ⇒ You can message each other once the friend request is accepted.
+Questa persona non è tra i tuoi amici. ⇒ This person is not among your friends.
+← Torna agli amici ⇒ ← Back to friends
+Torna agli amici ⇒ Back to friends
+Gioca al Tavolo contro questo amico ⇒ Play at the Table against this friend
+⚔ Sfida ⇒ ⚔ Challenge
+Altre azioni ⇒ More actions
+Togli amico ⇒ Remove friend
+Segnala ⇒ Report
+Nessun messaggio. Scrivi il primo a ⇒ No messages. Write the first one to
+Apri il tavolo ⇒ Open the table
+⚔ Accetta la sfida ⇒ ⚔ Accept the challenge
+Letto ⇒ Read
+Scrivi un messaggio… ⇒ Write a message…
+Bloccare {0}? Non potrà più scriverti, mandarti richieste né trovarti nella ricerca, e non sarete più amici. Puoi sbloccarlo in fondo alla pagina Amici. ⇒ Block {0}? They won't be able to message you, send you requests or find you in search, and you won't be friends any more. You can unblock them at the bottom of the Friends page.
+Grazie, segnalazione inviata. La controlleremo il prima possibile. ⇒ Thanks, report sent. We'll check it as soon as possible.
+Insieme alla segnalazione inviamo una copia degli ultimi messaggi tra voi, così possiamo verificare. ⇒ Along with the report we send a copy of your latest messages, so we can check.
+non saprà chi l'ha segnalato. ⇒ won't know who reported them.
+Motivo ⇒ Reason
+Dettagli (facoltativo) ⇒ Details (optional)
+Blocca anche ⇒ Also block
+Invio… ⇒ Sending…
+Invia segnalazione ⇒ Send report
+poco fa ⇒ just now
+un'ora fa ⇒ an hour ago
+{0} ore fa ⇒ {0} hours ago
+{0} giorni fa ⇒ {0} days ago
+{0} min fa ⇒ {0} min ago
+Ieri ⇒ Yesterday
+il {0} ⇒ on {0}
+Offese, minacce o molestie ⇒ Insults, threats or harassment
+Contenuti inappropriati ⇒ Inappropriate content
+Spam o pubblicità ⇒ Spam or advertising
+Truffa o richiesta di soldi ⇒ Scam or request for money
+Errore sconosciuto ⇒ Unknown error
+Blocchi e segnalazioni non sono ancora attivi sul server: va eseguito una volta il file supabase/account.sql su Supabase. ⇒ Blocking and reporting are not active on the server yet: the file supabase/account.sql must be run once on Supabase.
+Troppe segnalazioni oggi: riprova domani. ⇒ Too many reports today: try again tomorrow.
+Il nome da mostrare può avere al massimo 40 caratteri. ⇒ The display name can be at most 40 characters.
+Le immagini profilo non sono ancora attive sul server: va eseguito una volta il file supabase/avatar.sql su Supabase. ⇒ Profile pictures are not active on the server yet: the file supabase/avatar.sql must be run once on Supabase.
+Immagine non valida: scegline una dalla galleria. ⇒ Invalid image: pick one from the gallery.
+La sezione Amici non è ancora configurata sul server. ⇒ The Friends section is not set up on the server yet.
+Nome utente non valido: 3-20 tra lettere minuscole, numeri, _ e punto. ⇒ Invalid username: 3-20 lowercase letters, numbers, _ and dot.
+Operazione non permessa dal server ({0}). ⇒ Operation not allowed by the server ({0}).
+Questo nome utente è già preso: scegline un altro. ⇒ This username is already taken: pick another one.
+Profilo non trovato. ⇒ Profile not found.
+C'è già una richiesta tra voi due. ⇒ There's already a request between you two.
+Operazione non permessa dal server. ⇒ Operation not allowed by the server.
+Operazione non permessa: potete scrivervi solo da amici. ⇒ Operation not allowed: you can only message each other as friends.
+Utente ⇒ User
+Amico ⇒ Friend
+Chiudi la chat ⇒ Close the chat
+Nessun messaggio. ⇒ No messages.
+⚔ Sfida al Tavolo ⇒ ⚔ Challenge at the Table
+Scrivi… ⇒ Write…
+Messaggio ⇒ Message
+Invia ⇒ Send
+
+// ── Gruppi e tornei ──
+I gruppi sono fatti di amici: prima serve il profilo con nome utente nella sezione Amici. ⇒ Groups are made of friends: first you need a profile with a username in the Friends section.
+👤 Amici ⇒ 👤 Friends
+👥 Gruppi ⇒ 👥 Groups
+Gruppi ⇒ Groups
+La sezione Gruppi non è ancora attiva sul server: va fatto una volta un passaggio su Supabase (incollare il file ⇒ The Groups section is not active on the server yet: a one-time step on Supabase is needed (paste the file
+nell'editor SQL, dopo friends.sql). ⇒ into the SQL editor, after friends.sql).
+I tuoi gruppi ⇒ Your groups
+Ancora nessun gruppo. Creane uno qui sotto (es. "Venerdì da Marco") e aggiungi i tuoi amici: nel gruppo trovate le partite registrate col segnapunti, la classifica e i tornei. ⇒ No groups yet. Create one below (e.g. "Friday at Marco's") and add your friends: in the group you'll find games recorded with the life counter, the standings and tournaments.
+Creato da te ⇒ Created by you
+Membro ⇒ Member
+Nuovo gruppo ⇒ New group
+Nome del gruppo ⇒ Group name
+Creo… ⇒ Creating…
+🏆 Classifica ⇒ 🏆 Standings
+📒 Partite ⇒ 📒 Games
+⚔ Tornei ⇒ ⚔ Tournaments
+👥 Membri ⇒ 👥 Members
+Questo gruppo non esiste più o non ne fai parte. ⇒ This group no longer exists or you're not in it.
+← I tuoi gruppi ⇒ ← Your groups
+← Tornei di ⇒ ← Tournaments of
+Torneo non trovato. ⇒ Tournament not found.
+Sempre ⇒ All time
+Ultimi 30 giorni ⇒ Last 30 days
+Nessuna partita registrata ⇒ No games recorded
+negli ultimi 30 giorni ⇒ in the last 30 days
+. Giocate col ⇒ . Play with the
+(scegliendo questo gruppo) e a fine partita toccate “Registra”, oppure aggiungetele a mano in ⇒ (picking this group) and at the end of the game tap “Record”, or add them by hand in
+Partite ⇒ Games
+Vinte ⇒ Won
+Giocate ⇒ Played
+(ospite) ⇒ (guest)
+Tornei vinti ⇒ Tournaments won
+Partite ( ⇒ Games (
+＋ Registra ⇒ ＋ Record
+Le partite giocate col ⇒ Games played with the
+si registrano dal menu ✦ o dal pulsante che compare a fine partita. Puoi anche aggiungerle a mano con “Registra”. ⇒ are recorded from the ✦ menu or the button that appears at the end of the game. You can also add them by hand with “Record”.
+⚔ torneo ⇒ ⚔ tournament
+Elimina partita ⇒ Delete game
+Tornei ⇒ Tournaments
+＋ Nuovo torneo ⇒ ＋ New tournament
+Nessun torneo. Creane uno: scegli chi partecipa (anche ospiti senza profilo) e il formato; l'app fa gli abbinamenti turno per turno e tiene la classifica. ⇒ No tournaments. Create one: pick who takes part (guests without a profile too) and the format; the app does the pairings round by round and keeps the standings.
+vinto da {0} ⇒ won by {0}
+turno {0} di {1} ⇒ round {0} of {1}
+Torneo del {0} ⇒ Tournament of {0}
+Servono almeno 2 giocatori. ⇒ At least 2 players are needed.
+Massimo 32 giocatori. ⇒ Maximum 32 players.
+Torneo ⇒ Tournament
+Nuovo torneo ⇒ New tournament
+Incontri ⇒ Matches
+Partita secca ⇒ Single game
+1 partita ⇒ 1 game
+Al meglio di 3 ⇒ Best of 3
+vince chi ne fa 2 ⇒ first to 2 wins
+Partecipanti ( ⇒ Participants (
+Aggiungi un ospite senza profilo ⇒ Add a guest without a profile
+{0} turni, ognuno gioca contro tutti. ⇒ {0} rounds, everyone plays everyone.
+{0} turni. ⇒ {0} rounds.
+{0} turni fino alla finale. ⇒ {0} rounds up to the final.
+{0} turni ⇒ {0} rounds
+Con un numero dispari, a ogni turno uno riposa (vale come vittoria). ⇒ With an odd number, each round one player gets a bye (counts as a win).
+⚔ Crea e sorteggia il primo turno ⇒ ⚔ Create and pair the first round
+Membri ( ⇒ Members (
+(tu) ⇒ (you)
+· ha creato il gruppo ⇒ · created the group
+Aggiungi amici ⇒ Add friends
+Non hai ancora amici: aggiungili in ⇒ You don't have friends yet: add them in
+Tutti i tuoi amici sono già nel gruppo. ⇒ All your friends are already in the group.
+Nel gruppo puoi aggiungere solo i tuoi amici; ogni membro può aggiungere i propri. ⇒ You can only add your own friends to the group; each member can add theirs.
+✎ Rinomina ⇒ ✎ Rename
+Eliminare il gruppo con tutte le partite e i tornei? Non si può annullare. ⇒ Delete the group with all its games and tournaments? This can't be undone.
+Uscire dal gruppo? Per rientrare un membro dovrà aggiungerti di nuovo. ⇒ Leave the group? To rejoin, a member will have to add you again.
+Elimina il gruppo ⇒ Delete the group
+🗑 Elimina il gruppo ⇒ 🗑 Delete the group
+Esci dal gruppo ⇒ Leave the group
+{0} giocatori ⇒ {0} players
+Il torneo è diventato troppo grande per essere salvato. ⇒ The tournament has become too big to be saved.
+La sezione Gruppi non è ancora configurata sul server. ⇒ The Groups section is not set up on the server yet.
+Il torneo è stato cambiato da un altro membro: riprova. ⇒ The tournament was changed by another member: try again.
+Operazione non permessa: non fai parte del gruppo. ⇒ Operation not allowed: you're not in the group.
+Puoi aggiungere al gruppo solo i tuoi amici. ⇒ You can only add your friends to the group.
+È già nel gruppo. ⇒ Already in the group.
+Operazione non permessa. ⇒ Operation not allowed.
+partita secca ⇒ single game
+al meglio di 3 ⇒ best of 3
+giocatori · ⇒ players ·
+Vincitore del torneo ⇒ Tournament winner
+▶ Sorteggia ⇒ ▶ Pair
+Tocca un incontro per segnare il risultato. Se giocate col ⇒ Tap a match to enter the result. If you play with the
+scegliendo questo gruppo e i due giocatori, a fine partita la vittoria si aggiunge qui da sola. ⇒ picking this group and the two players, the win is added here on its own at the end of the game.
+Classifica ⇒ Standings
+Giocatore ⇒ Player
+Stato ⇒ Status
+Punti ⇒ Points
+Media vittorie degli avversari (spareggio) ⇒ Opponents' win average (tiebreaker)
+Partite vinte (spareggio) ⇒ Games won (tiebreaker)
+(ritirato) ⇒ (dropped)
+Campione ⇒ Champion
+In gioco ⇒ Playing
+Vittoria 3 punti, pareggio 1. A pari punti conta la media vittorie degli avversari (Avv.), poi la % di partite vinte (Part.). ⇒ Win 3 points, draw 1. On equal points the opponents' win average (Opp.) counts, then the % of games won (Games).
+Ritira un giocatore… ⇒ Drop a player…
+Chi è ritirato non viene più abbinato dal turno successivo. ⇒ A dropped player is no longer paired from the next round.
+Eliminare il torneo? Le partite registrate restano nel gruppo. ⇒ Delete the tournament? Recorded games stay in the group.
+🗑 Elimina torneo ⇒ 🗑 Delete tournament
+riposa (vale come vittoria) ⇒ has a bye (counts as a win)
+Pareggi ⇒ Draws
+Nell'eliminazione diretta serve un vincitore. ⇒ Single elimination needs a winner.
+🤝 Pari ⇒ 🤝 Draw
+Salva risultato ⇒ Save result
+Azzera ⇒ Reset
+Svizzero ⇒ Swiss
+turni con chi ha i tuoi stessi punti, niente rivincite ⇒ rounds against players with your points, no rematches
+Girone ⇒ Round robin
+tutti contro tutti ⇒ everyone against everyone
+Eliminazione ⇒ Elimination
+chi perde è fuori, fino alla finale ⇒ losers are out, up to the final
+Semifinali ⇒ Semifinals
+Quarti ⇒ Quarterfinals
+Fuori: {0} ⇒ Out: {0}
+
+// ── Moderazione e statistiche ──
+Segnalazioni ⇒ Reports
+da vedere ⇒ to review
+Lo vedi solo tu perché sei moderatore. ⇒ Only you see this because you're a moderator.
+Da vedere ⇒ To review
+Nessuna segnalazione ⇒ No reports
+(account eliminato) ⇒ (account deleted)
+· da @ ⇒ · by @
+Nascondi messaggi ⇒ Hide messages
+Mostra ultimi {0} messaggi ⇒ Show last {0} messages
+chi segnala ⇒ reporter
+✓ Vista, chiudi ⇒ ✓ Seen, close
+Riapri ⇒ Reopen
+Cancellare per sempre l'account di {0}? Perde collezione, amici e messaggi. Non si può annullare. ⇒ Permanently delete {0}'s account? They lose collection, friends and messages. This can't be undone.
+Cancella account di ⇒ Delete account of
+Oggi ⇒ Today
+7 giorni ⇒ 7 days
+30 giorni ⇒ 30 days
+90 giorni ⇒ 90 days
+{0} min ⇒ {0} min
+{0} h {1} min ⇒ {0} h {1} min
+Statistiche di utilizzo ⇒ Usage statistics
+Le vedi solo tu perché sei moderatore. ⇒ Only you see these because you're a moderator.
+📊 Apri le statistiche ⇒ 📊 Open statistics
+Lo vedi solo tu perché sei moderatore. Conta il tempo con l'app aperta in primo piano. ⇒ Only you see this because you're a moderator. It counts the time with the app open in the foreground.
+Persone (dispositivi) ⇒ People (devices)
+Con account ⇒ With account
+Nuove ⇒ New
+Online adesso ⇒ Online now
+Aperture dell'app ⇒ App opens
+Tempo totale ⇒ Total time
+Durata media apertura ⇒ Average session length
+Tempo medio a persona ⇒ Average time per person
+Iscritti ⇒ Sign-ups
+Chi ⇒ Who
+Giorno per giorno ⇒ Day by day
+Sezioni più usate ⇒ Most used sections
+Ancora nessun dato in questo periodo. ⇒ No data in this period yet.
+Account senza profilo ⇒ Accounts without a profile
+· ultimo uso ⇒ · last used
+Senza account ⇒ Without account
+· {0} dispositivi ⇒ · {0} devices
+· app installata su {0} ⇒ · app installed on {0}
+Aggiorna ⇒ Refresh
+Minuti di uso al giorno ⇒ Minutes of use per day
+{0}: {1} persone, {2} ⇒ {0}: {1} people, {2}
+Tocca una colonna per vedere i numeri di quel giorno. ⇒ Tap a column to see that day's numbers.
+· usa di più {0} ⇒ · uses {0} most
+account registrato ⇒ registered account
+account registrati ⇒ registered accounts
+attivi negli ultimi 7 giorni ⇒ active in the last 7 days
+iscritto il ⇒ signed up on
+· ultima attività ⇒ · last activity
+· email non confermata ⇒ · email not confirmed
+Il tempo a destra conta solo da quando sono attive le statistiche (21 novembre 2026). ⇒ The time on the right only counts from when statistics were turned on (21 November 2026).
+Supabase non configurato ⇒ Supabase not configured
+Manca lo script supabase/usage.sql: eseguilo nell'SQL Editor di Supabase. ⇒ The supabase/usage.sql script is missing: run it in Supabase's SQL Editor.
+Per vedere gli iscritti riesegui supabase/usage.sql nell'SQL Editor di Supabase. ⇒ To see sign-ups, run supabase/usage.sql again in Supabase's SQL Editor.
+
+// ── Errori e avvisi ──
+Errore nella pagina: ⇒ Error in the page:
+Qualcosa è andato storto ⇒ Something went wrong
+Sembra che manchi la connessione e questa pagina non è ancora salvata sul dispositivo. ⇒ It looks like you're offline and this page isn't saved on the device yet.
+Questa pagina ha avuto un problema. I tuoi dati sono al sicuro. ⇒ This page had a problem. Your data is safe.
+Ricarica l'app ⇒ Reload the app
+Dettagli per chi sviluppa ⇒ Details for developers
+Memoria piena: le ultime modifiche non sono state salvate. ⇒ Storage full: the latest changes were not saved.
+Restano solo finché l'app è aperta. Libera spazio sul telefono o nel browser (dati dei siti), oppure togli mazzi o carte che non usi, e riprova. Intanto puoi scaricare un backup di ciò che è già salvato. ⇒ They only last while the app is open. Free up space on your phone or in the browser (site data), or remove decks or cards you don't use, and try again. Meanwhile you can download a backup of what's already saved.
+💾 Scarica backup ⇒ 💾 Download backup
+Ho capito ⇒ Got it
+
+// ── Varie ──
+Modificato: ⇒ Edited:
+Creato: ⇒ Created:
+Lista: ⇒ List:
+Errore. ⇒ Error.
+Dispositivi: ⇒ Devices:
+Avv. ⇒ Opp.
+Part. ⇒ Games
+Incolori: ⇒ Colorless:
+Multicolore: ⇒ Multicolor:
+Bianco/Blu ⇒ White/Blue
+Blu/Nero ⇒ Blue/Black
+Nero/Rosso ⇒ Black/Red
+Rosso/Verde ⇒ Red/Green
+Verde/Bianco ⇒ Green/White
+Bianco/Nero ⇒ White/Black
+Blu/Rosso ⇒ Blue/Red
+Nero/Verde ⇒ Black/Green
+Rosso/Bianco ⇒ Red/White
+Verde/Blu ⇒ Green/Blue
+← Torna a ⇒ ← Back to
+− Foil ⇒ − Foil
+No ⇒ No
+Es. ⇒ E.g.
+# Strategia ⇒ # Strategy
+Come vince il mazzo, cosa cercare nella mano iniziale… ⇒ How the deck wins, what to look for in the opening hand…
+# Piano di side ⇒ # Sideboard plan
+- contro aggro: +2 … ⇒ - vs aggro: +2 …
+- contro controllo: … ⇒ - vs control: …
+**testo** ⇒ **text**

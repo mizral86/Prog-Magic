@@ -4,6 +4,7 @@
 //   /gruppi/:gid               un gruppo
 //   /gruppi/:gid/torneo/:tid   un torneo
 
+import { locale, tr } from "../i18n";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Link, NavLink, useNavigate, useParams } from "react-router-dom";
 import { FriendsError } from "../friends";
@@ -560,7 +561,7 @@ function NewTournament({
 }) {
   const fr = useFriends();
   const b = useGroupsBackend();
-  const [name, setName] = useState(() => `Torneo del ${new Date().toLocaleDateString("it-IT", { day: "numeric", month: "long" })}`);
+  const [name, setName] = useState(() => `${tr("Torneo del", "Tournament of")} ${new Date().toLocaleDateString(locale(), { day: "numeric", month: "long" })}`);
   const [kind, setKind] = useState<TKind>("swiss");
   const [bestOf, setBestOf] = useState<1 | 3>(3);
   const [picked, setPicked] = useState<Set<string>>(() => new Set(members.map((m) => m.user_id)));
@@ -878,5 +879,5 @@ function Members({
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleString("it-IT", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleString(locale(), { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }

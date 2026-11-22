@@ -8,6 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { tr } from "./i18n";
 import { CardCategory, CardInfo, Color, TokenRef } from "./types";
 
 export type Board = "main" | "side" | "maybe";
@@ -199,7 +200,7 @@ export function DecksProvider({ children }: { children: ReactNode }) {
           ...prev,
           [id]: {
             id,
-            name: name || "Nuovo mazzo",
+            name: name || tr("Nuovo mazzo", "New deck"),
             format,
             cards: [],
             createdAt: Date.now(),

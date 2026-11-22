@@ -1,7 +1,7 @@
 // Nomi italiani dei tipi di creatura più comuni (dalle stampe italiane).
 // I tipi non in elenco restano in inglese, come li dà Scryfall.
 
-const IT: Record<string, string> = {
+export const CREATURE_TYPES_IT: Record<string, string> = {
   Advisor: "Consigliere",
   Angel: "Angelo",
   Ape: "Scimmia",
@@ -118,5 +118,5 @@ const IT: Record<string, string> = {
 };
 
 export function creatureTypeIt(t: string): string {
-  return IT[t] ?? t;
+  return CREATURE_TYPES_IT[t] ?? t;
 }

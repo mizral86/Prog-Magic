@@ -2,6 +2,8 @@
 // Volutamente fuori dalle chiavi "pm.*": ogni tocco cambia lo stato e non ha
 // senso caricarlo sul profilo online a ogni punto vita.
 
+import { tr } from "./i18n";
+
 export const LC_KEY = "mm.segnapunti.v1";
 
 /** Sfondo del riquadro: un colore di mana oppure l'illustrazione di una carta. */
@@ -63,7 +65,7 @@ export interface LcSetup {
   groupId?: string;
 }
 
-const DEFAULT_NAMES = ["Giocatore 1", "Giocatore 2", "Giocatore 3", "Giocatore 4", "Giocatore 5", "Giocatore 6"];
+const DEFAULT_NAMES = [1, 2, 3, 4, 5, 6].map((n) => `${tr("Giocatore", "Player")} ${n}`);
 const DEFAULT_TINTS: Tint[] = ["R", "U", "G", "B", "W", "M"];
 
 export function defaultSetup(): LcSetup {

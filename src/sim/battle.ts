@@ -18,6 +18,7 @@
 // win-rate REALE nei limiti di questo modello, non una simulazione di MTG
 // completa.
 
+import { tr } from "../i18n";
 import { CardInfo, Color, COLORS } from "../types";
 import { rolesOf } from "../cardRoles";
 
@@ -64,7 +65,7 @@ export const PHASE_LABEL: Record<PhaseId, string> = {
   main1: "Principale 1",
   combat: "Combattimento",
   main2: "Principale 2",
-  end: "Finale",
+  end: tr("Finale", "End"),
 };
 
 /** Una partita di esempio da mostrare (scelta in proporzione alle vittorie). */

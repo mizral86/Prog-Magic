@@ -1,5 +1,6 @@
 // Pannello "Segnalazioni" in Account, visibile solo ai moderatori.
 
+import { locale } from "../i18n";
 import { useEffect, useState } from "react";
 import { REPORT_REASONS } from "../friends";
 import { AdminReport, deleteReportedUser, isAdmin, loadReports, setReportStatus } from "../moderation";
@@ -79,7 +80,7 @@ function ReportCard({ r, onChange }: { r: AdminReport; onChange: () => void }) {
       <div className="report-card-head">
         <b>{who}</b>
         {!r.reported_exists && <span className="muted small"> (account eliminato)</span>}
-        <span className="muted small"> · {new Date(r.created_at).toLocaleString("it-IT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+        <span className="muted small"> · {new Date(r.created_at).toLocaleString(locale(), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
       </div>
       <div className="small">
         <b>{reason}</b>

@@ -11,8 +11,11 @@ import "./styles.css";
 import { applyTheme, getTheme } from "./theme";
 import { checkMetaUpdate } from "./metagame";
 import { installStorageGuard } from "./storageGuard";
+import { installTranslator } from "./i18n";
 
 installStorageGuard();
+// In inglese traduce i testi della pagina man mano che compaiono.
+installTranslator();
 applyTheme(getTheme());
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

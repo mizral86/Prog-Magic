@@ -1,5 +1,6 @@
 // Risultati del simulatore interattivo: win-rate reale + log di una partita.
 
+import { locale } from "../i18n";
 import { Fragment, useEffect, useState } from "react";
 import {
   BattleLogLine,
@@ -99,18 +100,18 @@ export function BattleResultView({ result, nameA, nameB, lookup }: Props) {
       <div className="stat-cards" style={{ marginTop: 12 }}>
         <div className="stat-card">
           <div className="value" style={{ color: "var(--accent)" }}>
-            {result.winsA.toLocaleString("it-IT")}
+            {result.winsA.toLocaleString(locale())}
           </div>
           <div className="label">Vinte da {nameA}</div>
         </div>
         <div className="stat-card">
           <div className="value" style={{ color: "var(--accent-2)" }}>
-            {result.winsB.toLocaleString("it-IT")}
+            {result.winsB.toLocaleString(locale())}
           </div>
           <div className="label">Vinte da {nameB}</div>
         </div>
         <div className="stat-card">
-          <div className="value">{result.games.toLocaleString("it-IT")}</div>
+          <div className="value">{result.games.toLocaleString(locale())}</div>
           <div className="label">Partite giocate</div>
         </div>
         <div className="stat-card">
