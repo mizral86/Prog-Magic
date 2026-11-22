@@ -1,3 +1,4 @@
+import { locale } from "../i18n";
 import { useMemo, useState } from "react";
 import { parseDecklist, ParsedLine } from "../deckParser";
 import { resolveCards } from "../scryfall";
@@ -136,7 +137,7 @@ export default function SimulatorPage() {
       case "resolving":
         return "Risoluzione carte su Scryfall…";
       case "sim-pre":
-        return `Simulazione pre-side (${numGames.toLocaleString("it-IT")} partite/mazzo)…`;
+        return `Simulazione pre-side (${numGames.toLocaleString(locale())} partite/mazzo)…`;
       case "sim-post":
         return "Simulazione post-side…";
       case "error":

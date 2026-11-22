@@ -10,6 +10,8 @@
 //                turno vanno ai primi sorteggiati.
 // Punti partita: vittoria 3, pareggio 1, sconfitta 0. Il bye vale una vittoria 2-0.
 
+import { tr } from "./i18n";
+
 export type TKind = "swiss" | "roundrobin" | "elimination";
 export type TStatus = "open" | "running" | "done";
 
@@ -437,12 +439,13 @@ export function champion(d: TData, kind: TKind): TPlayer | null {
 }
 
 export function roundName(kind: TKind, d: TData, n: number): string {
-  if (kind !== "elimination") return `Turno ${n}`;
+  const turn = tr(`Turno ${n}`, `Round ${n}`);
+  if (kind !== "elimination") return turn;
   const left = d.totalRounds - n;
-  if (left === 0) return "Finale";
+  if (left === 0) return tr("Finale", "Final");
   if (left === 1) return "Semifinali";
   if (left === 2) return "Quarti";
-  return `Turno ${n}`;
+  return turn;
 }
 
 export function playerName(d: TData, id: string | null): string {

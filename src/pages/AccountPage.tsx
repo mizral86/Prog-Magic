@@ -12,6 +12,7 @@ import ReportsAdmin from "../components/ReportsAdmin";
 import FanNotice from "../components/FanNotice";
 import UsageAdmin from "../components/UsageAdmin";
 import { setUsageEnabled, usageEnabled } from "../usage";
+import { getLang, locale, setLang } from "../i18n";
 
 type Mode = "login" | "signup" | "reset";
 
@@ -31,6 +32,7 @@ export default function AccountPage() {
             Finché non è attivo, collezione e mazzi restano salvati solo su questo dispositivo.
           </p>
         </div>
+        <LanguagePicker />
         <FanNotice />
       </div>
     );
@@ -49,6 +51,7 @@ export default function AccountPage() {
     <div className="page">
       <h1 className="page-title">Account</h1>
       {auth.status === "in" ? <Profile /> : <SignInForm />}
+      <LanguagePicker />
       <UsageOptOut />
       <FanNotice />
     </div>
@@ -431,10 +434,37 @@ function SignInForm() {
 function formatWhen(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString("it-IT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleString(locale(), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
 /** Interruttore per non inviare le statistiche di utilizzo da questo dispositivo. */
+/** Lingua dell'interfaccia: i nomi delle lingue restano scritti nella loro lingua. */
+function LanguagePicker() {
+  const lang = getLang();
+  return (
+    <div className="panel account-panel lang-panel">
+      <div className="lang-row">
+        {/* Si legge in entrambe le lingue, così si ritrova anche senza capire l'altra. */}
+        <span className="lang-title" translate="no">
+          🌐 {lang === "en" ? "Language" : "Lingua"}{" "}
+          <span className="muted small">· {lang === "en" ? "Lingua" : "Language"}</span>
+        </span>
+        <div className="segmented" role="group" aria-label="Lingua dell'app">
+          <button type="button" className={lang === "it" ? "on" : ""} translate="no" onClick={() => setLang("it")}>
+            Italiano
+          </button>
+          <button type="button" className={lang === "en" ? "on" : ""} translate="no" onClick={() => setLang("en")}>
+            English
+          </button>
+        </div>
+      </div>
+      <p className="muted small lang-note">
+        Cambia la lingua dei testi dell'app. Le carte restano nella lingua della loro stampa.
+      </p>
+    </div>
+  );
+}
+
 function UsageOptOut() {
   const [on, setOn] = useState(usageEnabled);
   return (

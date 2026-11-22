@@ -1,6 +1,7 @@
 // Pagina "Amici": nome utente, ricerca e richieste di amicizia, amici online
 // e chat con ciascun amico (/amici/:id).
 
+import { locale } from "../i18n";
 import { FormEvent, KeyboardEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../auth";
@@ -698,7 +699,7 @@ function Chat({ friendId }: { friendId: string }) {
                     )}
                   </span>
                 ) : (
-                  <span className="chat-text">{m.body}</span>
+                  <span className="chat-text" translate="no">{m.body}</span>
                 )}
                 <span className="chat-time">{timeLabel(m.created_at)}</span>
               </div>
@@ -845,7 +846,7 @@ function formatAgo(iso: string): string {
   const days = Math.round(h / 24);
   if (days === 1) return "ieri";
   if (days < 7) return `${days} giorni fa`;
-  return `il ${d.toLocaleDateString("it-IT", { day: "numeric", month: "short" })}`;
+  return `il ${d.toLocaleDateString(locale(), { day: "numeric", month: "short" })}`;
 }
 
 function dayLabel(iso: string): string {
@@ -855,9 +856,9 @@ function dayLabel(iso: string): string {
   yest.setDate(today.getDate() - 1);
   if (d.toDateString() === today.toDateString()) return "Oggi";
   if (d.toDateString() === yest.toDateString()) return "Ieri";
-  return d.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" });
+  return d.toLocaleDateString(locale(), { weekday: "long", day: "numeric", month: "long" });
 }
 
 function timeLabel(iso: string): string {
-  return new Date(iso).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+  return new Date(iso).toLocaleTimeString(locale(), { hour: "2-digit", minute: "2-digit" });
 }

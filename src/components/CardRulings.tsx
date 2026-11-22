@@ -1,7 +1,8 @@
 // Regole e casistiche ufficiali della carta, tradotte in italiano.
 
 import { useEffect, useState } from "react";
-import { getRulingsIt, Ruling } from "../rulings";
+import { fetchRulingsEn, getRulingsIt, Ruling } from "../rulings";
+import { getLang } from "../i18n";
 
 const SHOWN = 3;
 
@@ -29,7 +30,8 @@ export function CardRulings({
     let cancelled = false;
     setRulings(null);
     setError(null);
-    getRulingsIt({ name, printedName, scryfallId })
+    // In inglese le regole si mostrano originali, senza traduzione.
+    (getLang() === "en" ? fetchRulingsEn({ name, scryfallId }) : getRulingsIt({ name, printedName, scryfallId }))
       .then((r) => !cancelled && setRulings(r))
       .catch((e) => !cancelled && setError(e instanceof Error ? e.message : String(e)));
     return () => {
@@ -39,6 +41,7 @@ export function CardRulings({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, attempt]);
 
+  const englishUi = getLang() === "en";
   const untranslated = rulings?.some((r) => !r.it) ?? false;
   const list = rulings ? (all ? rulings : rulings.slice(0, SHOWN)) : [];
 
@@ -59,6 +62,7 @@ export function CardRulings({
       )}
       {rulings && rulings.length > 0 && (
         <>
+          {!englishUi && (
           <div className="ruling-head muted small">
             <span>
               {untranslated
@@ -71,11 +75,12 @@ export function CardRulings({
               {english ? "Mostra in italiano" : "Originale inglese"}
             </button>
           </div>
+          )}
           <ul className="ruling-list">
             {list.map((r, i) => (
               <li key={i} className="ruling">
                 <span className="ruling-date">{formatDate(r.date)}</span>
-                {english ? r.en : (r.it ?? r.en)}
+                <span translate="no">{english || englishUi ? r.en : (r.it ?? r.en)}</span>
               </li>
             ))}
           </ul>

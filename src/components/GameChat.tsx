@@ -1,5 +1,6 @@
 // Chat con l'amico, compatta, da aprire sopra il tavolo durante la partita.
 
+import { locale } from "../i18n";
 import { FormEvent, KeyboardEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Message } from "../friends";
 import { useFriends } from "../friendsContext";
@@ -100,9 +101,9 @@ export function GameChat({
           const inv = parseInvite(m.body);
           return (
             <div key={m.id} className={`chat-bubble ${m.sender === uid ? "mine" : "theirs"}`}>
-              <span className="chat-text">{inv ? `⚔ Sfida al Tavolo` : m.body}</span>
+              <span className="chat-text" translate={inv ? undefined : "no"}>{inv ? `⚔ Sfida al Tavolo` : m.body}</span>
               <span className="chat-time">
-                {new Date(m.created_at).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}
+                {new Date(m.created_at).toLocaleTimeString(locale(), { hour: "2-digit", minute: "2-digit" })}
               </span>
             </div>
           );

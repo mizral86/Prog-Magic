@@ -1,5 +1,6 @@
 // Utility per i prezzi delle carte (preferenza EUR, fallback USD).
 
+import { locale } from "./i18n";
 import { CardInfo } from "./types";
 
 export interface PriceInfo {
@@ -20,7 +21,7 @@ export function bestPrice(card: CardInfo | undefined): PriceInfo | null {
 }
 
 export function formatMoney(value: number, currency: "EUR" | "USD"): string {
-  return new Intl.NumberFormat("it-IT", {
+  return new Intl.NumberFormat(locale(), {
     style: "currency",
     currency,
     maximumFractionDigits: 2,

@@ -1,6 +1,7 @@
 // Scheda "Info" del mazzo: valore, nome e formato, note, prova del mazzo
 // (mano iniziale), legalità, confronto nel simulatore, import/export, date.
 
+import { locale } from "../i18n";
 import { ReactNode, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FORMATS, Format, isScryfallId, useDecks } from "../decks";
@@ -23,7 +24,7 @@ const FORMAT_LABEL: Record<Format, string> = {
   commander: "Commander",
 };
 
-const dateFmt = new Intl.DateTimeFormat("it-IT", { dateStyle: "medium", timeStyle: "short" });
+const dateFmt = new Intl.DateTimeFormat(locale(), { dateStyle: "medium", timeStyle: "short" });
 
 export function DeckInfoTab({
   deck,

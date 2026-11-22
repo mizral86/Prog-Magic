@@ -1,5 +1,6 @@
 // Sezione "Mazzi": elenco dei mazzi salvati, creazione, apertura editor.
 
+import { tr } from "../i18n";
 import { useState } from "react";
 import { deckCoverUrl, FORMATS, Format, useDecks } from "../decks";
 import { deckStats } from "../deckStats";
@@ -49,7 +50,7 @@ export default function DecksPage() {
           <button
             className="primary"
             onClick={() => {
-              const id = decks.create("Nuovo mazzo", newFormat);
+              const id = decks.create(tr("Nuovo mazzo", "New deck"), newFormat);
               setSelected(id);
             }}
           >

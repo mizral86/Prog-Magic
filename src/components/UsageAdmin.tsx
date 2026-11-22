@@ -1,5 +1,6 @@
 // Pannello "Statistiche di utilizzo" in Account, visibile solo ai moderatori.
 
+import { locale } from "../i18n";
 import { useEffect, useState } from "react";
 import { isAdmin } from "../moderation";
 import { loadRegisteredUsers, RegisteredUser, useUsageStats } from "../usage";
@@ -51,7 +52,7 @@ function fmtWhen(iso: string): string {
   const diff = (Date.now() - d.getTime()) / 60_000;
   if (diff < 3) return "adesso";
   if (diff < 60) return `${Math.round(diff)} min fa`;
-  return d.toLocaleString("it-IT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleString(locale(), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
 /** Tutti i giorni del periodo, anche quelli senza uso (ora italiana). */
@@ -297,7 +298,7 @@ function topText(top: string[] | null): string {
 
 function fmtDate(iso: string | null): string {
   if (!iso) return "mai";
-  return new Date(iso).toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(iso).toLocaleDateString(locale(), { day: "numeric", month: "short", year: "numeric" });
 }
 
 /** Tutti gli account registrati, anche chi non ha usato l'app dopo lo script delle statistiche. */

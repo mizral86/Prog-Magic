@@ -67,7 +67,7 @@ interface ScryRuling {
   comment?: string;
 }
 
-async function fetchRulingsEn(card: { name: string; scryfallId?: string }): Promise<Ruling[]> {
+export async function fetchRulingsEn(card: { name: string; scryfallId?: string }): Promise<Ruling[]> {
   const path = card.scryfallId
     ? `/cards/${encodeURIComponent(card.scryfallId)}/rulings`
     : `/cards/named?exact=${encodeURIComponent(card.name)}`;
