@@ -19,6 +19,7 @@ import { CardThumb } from "../components/CardThumb";
 import { Tabletop } from "../components/Tabletop";
 import { SAMPLE_A, SAMPLE_B } from "../sampleDecks";
 import { LifeSetup } from "../components/LifeSetup";
+import { Learn } from "../components/Learn";
 import { useFriends } from "../friendsContext";
 import { shownName } from "../friends";
 import {
@@ -131,13 +132,21 @@ export default function PlayPage() {
   const [turnIdx, setTurnIdx] = useState(0); // 0 = solo mano iniziale
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<"interactive" | "auto" | "life">(() =>
-    params.get("sfida") || params.get("partita")
-      ? "interactive"
-      : sessionStorage.getItem("mm.gioca.mode") === "life"
-        ? "life"
-        : "interactive",
-  );
+  const [mode, setMode] = useState<"interactive" | "auto" | "life" | "learn">(() => {
+    if (params.get("sfida") || params.get("partita")) return "interactive";
+    if (params.has("impara")) return "learn";
+    const m = sessionStorage.getItem("mm.gioca.mode");
+    return m === "life" || m === "learn" ? m : "interactive";
+  });
+  // Lezione da aprire subito (link "?impara=combattimento" da altre sezioni).
+  const [learnStart, setLearnStart] = useState<string | null>(() => params.get("impara"));
+  useEffect(() => {
+    if (!params.has("impara")) return;
+    setMode("learn");
+    setLearnStart(params.get("impara"));
+    setParams({}, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
 
   // Link da Amici o dalla chat (anche con la pagina già aperta); servono una volta sola.
   useEffect(() => {
@@ -162,6 +171,7 @@ export default function PlayPage() {
 
   useEffect(() => {
     sessionStorage.setItem("mm.gioca.mode", mode);
+    if (mode !== "learn") setLearnStart(null);
   }, [mode]);
 
   const cfg: SimConfig = { ...DEFAULT_CONFIG, onPlay };
@@ -307,7 +317,8 @@ export default function PlayPage() {
         carte dalla mano al campo, tappi, peschi;{" "}
         <strong>Automatico</strong> = guardi la partita giocata dall'euristica;{" "}
         <strong>Segnapunti</strong> = punti vita e segnalini per giocare dal
-        vivo con gli amici, un solo telefono al centro del tavolo.
+        vivo con gli amici, un solo telefono al centro del tavolo;{" "}
+        <strong>Impara</strong> = le regole di Magic in brevi lezioni con esempi e quiz.
       </p>
 
       <div className="segmented" style={{ marginBottom: 10 }}>
@@ -326,11 +337,15 @@ export default function PlayPage() {
         <button className={mode === "life" ? "on" : ""} onClick={() => setMode("life")}>
           ❤️ Segnapunti
         </button>
+        <button className={mode === "learn" ? "on" : ""} onClick={() => setMode("learn")}>
+          🎓 Impara
+        </button>
       </div>
 
       {mode === "life" && <LifeSetup />}
+      {mode === "learn" && <Learn start={learnStart} />}
 
-      {mode !== "life" && (
+      {mode !== "life" && mode !== "learn" && (
       <>
 
       {mode === "interactive" && saved && !online && !invite && (

@@ -1,5 +1,6 @@
 // Risultati del simulatore interattivo: win-rate reale + log di una partita.
 
+import { Link } from "react-router-dom";
 import { locale } from "../i18n";
 import { Fragment, useEffect, useState } from "react";
 import {
@@ -171,6 +172,9 @@ export function BattleResultView({ result, nameA, nameB, lookup }: Props) {
           />
           Log dettagliato (tutte le fasi del turno)
         </label>
+        <Link className="small bl-learn" to="/gioca?impara=turno">
+          📖 Come funzionano le fasi del turno
+        </Link>
         <div className="battle-log">
           {lines.map((line, i) => (
             <Fragment key={i}>
