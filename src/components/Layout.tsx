@@ -10,6 +10,7 @@ import StorageWarning from "./StorageWarning";
 import { applyTheme, getTheme, isDark, ThemeChoice } from "../theme";
 import { ChallengeBanner } from "./ChallengeBanner";
 import UserAvatar from "./UserAvatar";
+import { BugButton } from "./Feedback";
 import { startUsageTracking, trackSection } from "../usage";
 
 interface Tab {
@@ -80,6 +81,7 @@ export function Layout() {
         </ErrorBoundary>
       </main>
 
+      <BugButton />
       <nav className="bottomnav">
         {TABS.map((t) => (
           <NavLink

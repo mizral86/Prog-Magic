@@ -12,8 +12,11 @@ import { applyTheme, getTheme } from "./theme";
 import { checkMetaUpdate } from "./metagame";
 import { installStorageGuard } from "./storageGuard";
 import { installTranslator } from "./i18n";
+import { installErrorLog } from "./feedback";
 
 installStorageGuard();
+// Tiene gli ultimi errori per "Segnala un problema".
+installErrorLog();
 // In inglese traduce i testi della pagina man mano che compaiono.
 installTranslator();
 applyTheme(getTheme());

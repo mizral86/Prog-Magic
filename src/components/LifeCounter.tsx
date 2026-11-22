@@ -17,6 +17,7 @@ import {
   survivors,
 } from "../lifeCounter";
 import { RecordGame } from "./RecordGame";
+import { MatchRecord } from "./MatchRecord";
 
 interface Props {
   game: LcGame;
@@ -37,6 +38,8 @@ export function LifeCounter({ game, onChange, onClose }: Props) {
   const [starter, setStarter] = useState<string | null>(null); // badge "Inizi tu"
   const [panel, setPanel] = useState<string | null>(null); // segnalini aperti
   const [record, setRecord] = useState(false); // registra nel gruppo di amici
+  const [diary, setDiary] = useState(false); // diario del proprio mazzo
+  const [diaryAt, setDiarySaved] = useState<number | null>(null);
   const gameRef = useRef(game);
   gameRef.current = game;
 
@@ -87,6 +90,7 @@ export function LifeCounter({ game, onChange, onClose }: Props) {
     n <= 2 ? 50 : ((n % 2 === 1 ? pairs : Math.floor(pairs / 2)) / rows) * 100;
   const alive = survivors(game);
   const over = n > 1 && alive.length <= 1;
+  const diarySaved = diaryAt === game.startedAt;
 
   function pickFirst() {
     setMenu(false);
@@ -183,6 +187,20 @@ export function LifeCounter({ game, onChange, onClose }: Props) {
         />
       )}
 
+      {diary && (
+        <MatchRecord
+          source="segnapunti"
+          seats={game.players.map((p) => ({ id: p.id, name: p.name, out: !!lossReason(p) }))}
+          firstSeat={game.first}
+          players={game.players.length}
+          onSaved={() => {
+            setDiary(false);
+            setDiarySaved(game.startedAt);
+          }}
+          onClose={() => setDiary(false)}
+        />
+      )}
+
       {menu && (
         <div className="lc-veil" onClick={() => setMenu(false)}>
           <div className="lc-menu" onClick={(e) => e.stopPropagation()}>
@@ -223,6 +241,15 @@ export function LifeCounter({ game, onChange, onClose }: Props) {
               }}
             >
               {game.recordedId ? "✓ Partita registrata nel gruppo" : "📒 Registra nel gruppo di amici"}
+            </button>
+            <button
+              className="lc-menu-wide"
+              onClick={() => {
+                setMenu(false);
+                setDiary(true);
+              }}
+            >
+              {diarySaved ? "✓ Salvata nel diario del mazzo" : "📊 Diario del mazzo"}
             </button>
             <button className="lc-menu-wide" onClick={onClose}>
               ⚙ Giocatori e impostazioni

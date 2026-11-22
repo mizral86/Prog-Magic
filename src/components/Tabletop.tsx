@@ -9,6 +9,7 @@ import { useFriends } from "../friendsContext";
 import { parseInvite, PubCard } from "../onlineGame";
 import type { TableNet } from "../useTableNet";
 import { GameChat } from "./GameChat";
+import { MatchRecord } from "./MatchRecord";
 import {
   copyAsToken,
   createToken,
@@ -89,6 +90,7 @@ export function Tabletop({
   const [menu, setMenu] = useState<{ uid: number; zone: Zone } | null>(null);
   const [viewer, setViewer] = useState<Zone | null>(null);
   const [more, setMore] = useState(false);
+  const [recording, setRecording] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [dragging, setDragging] = useState<{ uid: number; zone: Zone } | null>(null);
   const [hover, setHover] = useState<string | null>(null);
@@ -443,6 +445,7 @@ export function Tabletop({
             </button>
             <button onClick={() => setViewer("library")}>👁 Guarda il mazzo</button>
             <button onClick={() => commit(createToken(state, "Pedina"))}>➕ Pedina generica</button>
+            <button onClick={() => setRecording(true)}>🏁 Com'è andata? (diario del mazzo)</button>
             <button onClick={restart}>{net ? "🆕 Ricomincia (solo il mio mazzo)" : "🆕 Nuova partita"}</button>
             {net && onLeave && (
               <button
@@ -648,9 +651,33 @@ export function Tabletop({
           commitKeep={commit}
         />
       )}
+      {recording && (
+        <MatchRecord
+          source={net ? "online" : "tavolo"}
+          deckName={title}
+          mulligans={state.mulligans}
+          turns={state.turn}
+          onPlay={net ? undefined : onPlay}
+          opponent={net?.friendName}
+          oppDeck={net?.opp.deck || undefined}
+          result={guessResult(state.life, net ? net.opp.table?.life ?? 20 : state.oppLife)}
+          onSaved={() => {
+            setRecording(false);
+            setToast("Partita salvata nel diario del mazzo (Mazzi → Partite).");
+          }}
+          onClose={() => setRecording(false)}
+        />
+      )}
 
     </div>
   );
+}
+
+/** Vita a zero da una parte sola: il risultato è già chiaro. */
+function guessResult(me: number, opp: number): "win" | "loss" | undefined {
+  if (me <= 0 && opp > 0) return "loss";
+  if (opp <= 0 && me > 0) return "win";
+  return undefined;
 }
 
 // Posiziona il fantasma appena compare (prima del primo pointermove successivo).

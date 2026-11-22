@@ -1441,3 +1441,105 @@ Come vince il mazzo, cosa cercare nella mano iniziale… ⇒ How the deck wins, 
 - contro aggro: +2 … ⇒ - vs aggro: +2 …
 - contro controllo: … ⇒ - vs control: …
 **testo** ⇒ **text**
+
+// ── Diario partite del mazzo ──
+Com'è andata? ⇒ How did it go?
+La partita finisce nel diario del mazzo: in Mazzi → scheda ⇒ The game goes into the deck's log: in Decks → the
+trovi vittorie, inizio/pesca e avversari. ⇒ tab you'll find wins, play/draw and opponents.
+Crea prima un mazzo in Mazzi: il diario si tiene per i tuoi mazzi. ⇒ Create a deck in Decks first: the log is kept for your own decks.
+Il tuo mazzo ⇒ Your deck
+Tu chi sei? ⇒ Which one are you?
+Risultato ⇒ Result
+Vinta ⇒ Won
+Persa ⇒ Lost
+Pareggio ⇒ Draw
+Chi ha iniziato? ⇒ Who went first?
+Io ⇒ Me
+L'avversario ⇒ Opponent
+Non ricordo ⇒ Don't remember
+Mulligan ⇒ Mulligans
+Mazzo dell'avversario (facoltativo) ⇒ Opponent's deck (optional)
+es. Mono Red, Azorius Control ⇒ e.g. Mono Red, Azorius Control
+Avversario (facoltativo) ⇒ Opponent (optional)
+Nome di chi hai sfidato ⇒ Name of the person you played
+es. senza terre al turno 3 ⇒ e.g. no lands on turn 3
+📊 Salva nel diario ⇒ 📊 Save to log
+Scegli il risultato ⇒ Pick the result
+🏁 Com'è andata? (diario del mazzo) ⇒ 🏁 How did it go? (deck log)
+Partita salvata nel diario del mazzo (Mazzi → Partite). ⇒ Game saved to the deck log (Decks → Games).
+📊 Diario del mazzo ⇒ 📊 Deck log
+✓ Salvata nel diario del mazzo ⇒ ✓ Saved to the deck log
+vittorie ⇒ wins
+1 partita ⇒ 1 game
+{0} partite ⇒ {0} games
+🔥 {0} vittorie di fila ⇒ 🔥 {0} wins in a row
+{0} sconfitte di fila ⇒ {0} losses in a row
+＋ Registra partita ⇒ ＋ Log a game
+Ancora nessuna partita con questo mazzo. Puoi registrarle da qui, oppure a fine partita dal Tavolo (menu ⋯ → ⇒ No games with this deck yet. You can log them here, or at the end of a game from the Table (⋯ menu →
+) e dal Segnapunti (menu ✦ → ⇒ ) and from the Life counter (✦ menu →
+Diario del mazzo ⇒ Deck log
+Inizi o peschi? ⇒ On the play or on the draw?
+Inizio io ⇒ On the play
+Pesco io ⇒ On the draw
+{0} partita senza sapere chi ha iniziato. ⇒ {0} game without knowing who went first.
+{0} partite senza sapere chi ha iniziato. ⇒ {0} games without knowing who went first.
+Mano tenuta ⇒ Kept hand
+Con mulligan ⇒ Mulliganed
+In media {0} mulligan a partita. ⇒ {0} mulligans per game on average.
+Contro quali mazzi ⇒ Against which decks
+Non indicato ⇒ Not given
+Diario ⇒ Log
+contro ⇒ vs
+A mano ⇒ By hand
+Tavolo in due ⇒ Two-player table
+· iniziavo io ⇒ · on the play
+· pescavo io ⇒ · on the draw
+· mulligan {0} ⇒ · mulligan {0}
+· {0} turni ⇒ · {0} turns
+Mostra tutte ({0}) ⇒ Show all ({0})
+Tutti i tuoi mazzi ⇒ All your decks
+{0} (eliminato) ⇒ {0} (deleted)
+
+// ── Segnala un problema ──
+Segnala un problema ⇒ Report a problem
+Grazie! ⇒ Thank you!
+Segnalazione inviata. La leggiamo e, se serve, sistemiamo nella prossima versione. ⇒ Report sent. We'll read it and, if needed, fix it in the next version.
+Torna all'app ⇒ Back to the app
+🐞 Qualcosa non va ⇒ 🐞 Something's wrong
+💡 Un'idea ⇒ 💡 An idea
+Cosa è successo? ⇒ What happened?
+Cosa ti piacerebbe? ⇒ What would you like?
+es. Nel Tavolo ho trascinato una carta nel cimitero ed è sparita ⇒ e.g. On the Table I dragged a card to the graveyard and it disappeared
+es. Vorrei vedere il prezzo totale della wishlist ⇒ e.g. I'd like to see the wishlist's total price
+Schermata ⇒ Screenshot
+Allega la schermata ⇒ Attach the screenshot
+Usa un'altra immagine ⇒ Use another image
+🖼 Allega un'immagine ⇒ 🖼 Attach an image
+per esempio una schermata fatta col telefono, oppure usa “Fotografa una schermata” in Account. ⇒ for example a screenshot taken with your phone, or use “Capture a screen” in Account.
+Allega i dettagli tecnici ⇒ Attach technical details
+cosa sono? ⇒ what's this?
+nascondi ⇒ hide
+Versione dell'app, browser, dimensione dello schermo e ultimi errori. Niente email, mazzi o collezione: solo quante carte e quanti mazzi hai. ⇒ App version, browser, screen size and recent errors. No email, decks or collection: only how many cards and decks you have.
+✓ Copiato: incollalo in un messaggio ⇒ ✓ Copied: paste it into a message
+📋 Copia il testo della segnalazione ⇒ 📋 Copy the report text
+✓ Copiato ⇒ ✓ Copied
+📋 Copia il testo da mandare in altro modo ⇒ 📋 Copy the text to send another way
+Invia segnalazione ⇒ Send report
+Vai sulla schermata col problema e tocca 🐞 ⇒ Go to the screen with the problem and tap 🐞
+Qualcosa non funziona o hai un'idea per l'app? Puoi allegare una schermata: tocca ⇒ Something not working, or have an idea for the app? You can attach a screenshot: tap
+, vai dove c'è il problema e premi il pulsante 🐞 che compare in basso. ⇒ , go where the problem is and press the 🐞 button that appears at the bottom.
+Fotografa una schermata ⇒ Capture a screen
+📸 Fotografa una schermata ⇒ 📸 Capture a screen
+✍ Scrivi senza schermata ⇒ ✍ Write without a screenshot
+🐞 Segnala il problema ⇒ 🐞 Report the problem
+Problemi segnalati ⇒ Reported problems
+Bug e idee mandati dagli utenti con “Segnala un problema”. ⇒ Bugs and ideas sent by users with “Report a problem”.
+💡 Idea ⇒ 💡 Idea
+🐞 Problema ⇒ 🐞 Problem
+senza account ⇒ no account
+{0} errori registrati prima dell'invio ⇒ {0} errors logged before sending
+🖼 Schermata ⇒ 🖼 Screenshot
+Nascondi dettagli ⇒ Hide details
+Esegui supabase/feedback.sql per attivare le segnalazioni. ⇒ Run supabase/feedback.sql to turn on reports.
+Invio non disponibile su questa installazione. ⇒ Sending isn't available on this installation.
+La raccolta delle segnalazioni non è ancora attiva (manca feedback.sql). ⇒ Report collection isn't active yet (feedback.sql is missing).
