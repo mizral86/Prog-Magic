@@ -3,15 +3,18 @@
 import { useAuth } from "../auth";
 import { useFriends } from "../friendsContext";
 import { useOpenReports } from "../moderation";
-import { Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import ErrorBoundary, { clearChunkReloadFlag } from "./ErrorBoundary";
 import StorageWarning from "./StorageWarning";
 import { applyTheme, getTheme, isDark, ThemeChoice } from "../theme";
 import { ChallengeBanner } from "./ChallengeBanner";
 import UserAvatar from "./UserAvatar";
-import { BugButton } from "./Feedback";
+import { useBugMode } from "../feedback";
 import { startUsageTracking, trackSection } from "../usage";
+
+// Il pulsante 🐞 (e il foglio della segnalazione) si scarica solo quando serve.
+const BugButton = lazy(() => import("./Feedback").then((m) => ({ default: m.BugButton })));
 
 interface Tab {
   to: string;
@@ -32,6 +35,7 @@ const TABS: Tab[] = [
 export function Layout() {
   const [theme, setTheme] = useState<ThemeChoice>(getTheme);
   const location = useLocation();
+  const bugMode = useBugMode();
   // L'app è partita: se serve, in futuro si potrà ricaricare di nuovo per una versione nuova.
   useEffect(() => {
     const t = window.setTimeout(clearChunkReloadFlag, 10_000);
@@ -81,7 +85,11 @@ export function Layout() {
         </ErrorBoundary>
       </main>
 
-      <BugButton />
+      {bugMode && (
+        <Suspense fallback={null}>
+          <BugButton />
+        </Suspense>
+      )}
       <nav className="bottomnav">
         {TABS.map((t) => (
           <NavLink

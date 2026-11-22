@@ -17,10 +17,13 @@ import { installErrorLog } from "./feedback";
 installStorageGuard();
 // Tiene gli ultimi errori per "Segnala un problema".
 installErrorLog();
-// In inglese traduce i testi della pagina man mano che compaiono.
-installTranslator();
 applyTheme(getTheme());
 
+// In inglese traduce i testi della pagina man mano che compaiono (prima
+// scarica il dizionario, così non si vede l'italiano per un attimo).
+void installTranslator().then(start);
+
+function start() {
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "") || "/"}>
@@ -45,3 +48,4 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 // Una volta al giorno: ci sono mazzi del meta più nuovi sul sito? Se sì
 // vengono scaricati e usati subito (vedi metagame.ts).
 setTimeout(() => void checkMetaUpdate(), 3000);
+}
