@@ -2,8 +2,10 @@
 // lasciare lo schermo bianco. Il resto dell'app (barra in alto e in basso)
 // continua a funzionare e cambiando pagina l'errore si azzera.
 
-import { Component, ReactNode } from "react";
-import { ReportErrorButton } from "./Feedback";
+import { Component, lazy, ReactNode, Suspense } from "react";
+
+// Il modulo della segnalazione si scarica solo se serve.
+const ReportErrorButton = lazy(() => import("./Feedback").then((m) => ({ default: m.ReportErrorButton })));
 
 interface Props {
   /** Cambia quando cambia pagina: azzera l'errore. */
@@ -71,7 +73,11 @@ export default class ErrorBoundary extends Component<Props, State> {
             <button type="button" className="ghost" onClick={() => window.location.reload()}>
               Ricarica l'app
             </button>
-            {!offline && <ReportErrorButton error={error} />}
+            {!offline && (
+              <Suspense fallback={null}>
+                <ReportErrorButton error={error} />
+              </Suspense>
+            )}
           </div>
           <details className="muted small">
             <summary>Dettagli per chi sviluppa</summary>

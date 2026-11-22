@@ -14,7 +14,7 @@ import UsageAdmin from "../components/UsageAdmin";
 import FeedbackAdmin from "../components/FeedbackAdmin";
 import { FeedbackPanel } from "../components/Feedback";
 import { setUsageEnabled, usageEnabled } from "../usage";
-import { getLang, locale, setLang } from "../i18n";
+import { getLang, legalPage, locale, setLang } from "../i18n";
 
 type Mode = "login" | "signup" | "reset";
 
@@ -487,7 +487,7 @@ function UsageOptOut() {
           Aiuta a migliorare l'app con statistiche di utilizzo
           <span className="muted small" style={{ display: "block" }}>
             Solo quanto tempo l'app resta aperta e in quali sezioni, per capire quanto viene usata. Niente
-            pubblicità né servizi esterni. <a href={`${import.meta.env.BASE_URL}privacy.html#statistiche`}>Dettagli</a>
+            pubblicità né servizi esterni. <a href={legalPage("privacy", { it: "statistiche", en: "statistics" })}>Dettagli</a>
           </span>
         </span>
       </label>

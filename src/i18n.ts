@@ -8,8 +8,9 @@
 //
 // La scelta sta in localStorage "mm.lang" (non "pm.*": non va sul profilo, così
 // resta anche dopo l'uscita dall'account). Cambiarla ricarica l'app.
+// Il dizionario inglese si scarica solo a chi sceglie l'inglese: chi usa
+// l'italiano non lo carica affatto (app più leggera all'apertura).
 
-import enText from "./i18n/en.txt?raw";
 import { CREATURE_TYPES_IT } from "./creatureTypes";
 
 export type Lang = "it" | "en";
@@ -46,6 +47,13 @@ export function setLang(lang: Lang): void {
 /** Locale per date e numeri. */
 export function locale(): string {
   return LANG === "en" ? "en-GB" : "it-IT";
+}
+
+/** Pagina legale (privacy, termini) nella lingua scelta, con un'eventuale ancora. */
+export function legalPage(name: "privacy" | "termini", anchor?: { it: string; en: string }): string {
+  const en = LANG === "en";
+  const hash = anchor ? `#${en ? anchor.en : anchor.it}` : "";
+  return `${import.meta.env.BASE_URL}${name}${en ? "-en" : ""}.html${hash}`;
 }
 
 /** Sceglie tra due testi quando la stessa parola italiana ha più traduzioni. */
@@ -106,9 +114,10 @@ export function parseDictionary(text: string): { exact: Map<string, string>; pat
   return { exact: ex, patterns: pats };
 }
 
+let enText: string | null = null;
 let loaded = false;
 function ensureLoaded(): void {
-  if (loaded) return;
+  if (loaded || enText === null) return;
   loaded = true;
   const d = parseDictionary(enText);
   for (const [k, v] of d.exact) exact.set(k, v);
@@ -247,12 +256,18 @@ function translateTree(root: Node): void {
 }
 
 /**
- * Avvia la traduzione della pagina (solo in inglese). Da chiamare prima di
+ * Avvia la traduzione della pagina (solo in inglese). Da attendere prima di
  * montare React: l'osservatore traduce ogni testo appena compare o cambia.
  */
-export function installTranslator(): void {
+export async function installTranslator(): Promise<void> {
   document.documentElement.lang = LANG;
   if (LANG !== "en") return;
+  try {
+    enText = (await import("./i18n/en.txt?raw")).default;
+  } catch {
+    // Senza rete e senza copia in cache: l'app resta in italiano.
+    return;
+  }
   ensureLoaded();
   document.title = t(document.title);
 
