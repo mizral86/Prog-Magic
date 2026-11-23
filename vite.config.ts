@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
-// Base URL: "/" in locale; su GitHub Pages viene passato VITE_BASE=/Prog-Magic/.
+// Base URL: "/" in locale; anche su GitHub Pages, ora servito da https://mengadeck.mengaapp.eu/.
 const base = process.env.VITE_BASE || "/";
 
 export default defineConfig({
