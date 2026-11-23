@@ -79,8 +79,9 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Il sito è servito da https://<utente>.github.io/Prog-Magic/
-          VITE_BASE: /Prog-Magic/
+          # Il sito è servito da https://mengadeck.mengaapp.eu/ (dominio personalizzato,
+          # impostato in Settings → Pages), quindi alla radice.
+          VITE_BASE: /
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
