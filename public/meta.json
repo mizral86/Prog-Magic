@@ -1,9 +1,9 @@
 {
- "updated": "2026-11-24",
- "updatedLabel": "24 novembre 2026",
+ "updated": "2026-11-25",
+ "updatedLabel": "25 novembre 2026",
  "formats": {
   "standard": {
-   "source": "MTGO e tornei cartacei (melee.gg), ultimi 14 giorni · 955 liste",
+   "source": "MTGO e tornei cartacei (melee.gg), ultimi 14 giorni · 913 liste",
    "archetypes": [
     {
      "name": "Azorius Control",
@@ -12,10 +12,10 @@
      "deck": "1 Captain Marvel, Earth's Protector\n4 Consult the Star Charts\n4 Countersculpt\n2 Day of Judgment\n4 Deserted Beach\n2 Erode\n4 Floodfarm Verge\n2 Fountainport\n4 Get Lost\n4 Hallowed Fountain\n3 Island\n3 Jace's Machinations\n1 Mathemagics\n2 Meticulous Archive\n4 No More Lies\n4 Petrified Hamlet\n3 Plains\n4 Seam Rip\n4 The Theorist, Jace Beleren\n1 Ultima\nSideboard\n3 Annul\n1 Captain Marvel, Earth's Protector\n4 Doorkeeper Thrull\n1 Flashfreeze\n2 Rest in Peace\n1 Sphinx of False Conclusions\n2 Stock Up\n1 Theorist's Sanctum"
     },
     {
-     "name": "Jund Sacrifice",
+     "name": "Selesnya Aggro",
      "share": "7,1%",
-     "source": "duanceyao, Standard Challenge 32, 20 nov 2026, 1° (8-1)",
-     "deck": "4 Biotech Specialist\n1 Blazemire Verge\n3 Blood Crypt\n4 Blooming Marsh\n1 Deadly Precision\n1 Forest\n4 Gene Pollinator\n4 Greedy Freebooter\n4 Lively Dirge\n2 Magda, the Hoardmaster\n1 Mountain\n4 Obsessive Pursuit\n3 Overgrown Tomb\n1 Smaug the Magnificent\n4 Starting Town\n3 Stomping Ground\n1 Swamp\n4 The Sackville-Bagginses\n1 Thornspire Verge\n4 Torch the Tower\n3 Umbral Collar Zealot\n2 Witherbloom Charm\n1 Wolverine, Fierce Fighter\nSideboard\n2 Deathmark\n3 Duress\n1 Fire Magic\n1 Guerrilla Gorilla\n1 Leatherhead, Swamp Stalker\n1 Q, Stacking the Deck\n2 Terminal Criticism\n2 Test of Courage\n1 The Ooze\n1 Vicious Rivalry"
+     "source": "reidq7, Standard Challenge 16, 19 nov 2026, 1° (7-2)",
+     "deck": "2 Abandoned Air Temple\n4 Bejeweled Warg\n2 Brightglass Gearhulk\n6 Forest\n4 Gene Pollinator\n1 Guiding Hydra\n4 Hushwood Verge\n4 Llanowar Elves\n2 Meltstrider's Resolve\n4 Michelangelo, Weirdness to 11\n2 Multiversal Passage\n4 Ouroboroid\n4 Pawpatch Recruit\n2 Plains\n4 Practiced Offense\n2 Seam Rip\n3 Starting Town\n2 Surrak, Elusive Hunter\n4 Temple Garden\nSideboard\n1 Brightglass Gearhulk\n2 Clarion Conqueror\n4 Doorkeeper Thrull\n1 Erode\n2 Leatherhead, Swamp Stalker\n2 Sheltered by Ghosts\n1 Skateboard\n1 Surrak, Elusive Hunter\n1 Yera and Oski, Weaver and Guide"
     },
     {
      "name": "Dimir Control",
@@ -24,61 +24,55 @@
      "deck": "1 Bitter Triumph\n1 Break Under Pressure\n4 Consult the Star Charts\n4 Countersculpt\n4 Deadly Cover-Up\n1 Emeritus of Ideation\n1 Feed the Cycle\n1 Georgiou, Terran Emperor\n4 Gloomlake Verge\n1 Great Hall of the Biblioplex\n1 Island\n2 Jace's Machinations\n2 Ni'Var Science Academy\n1 Nowhere to Run\n3 Petrified Hamlet\n4 Requiting Hex\n1 Restless Reef\n4 Shipwreck Marsh\n1 Shoot the Sheriff\n3 Spell Snare\n3 Swamp\n4 The Theorist, Jace Beleren\n2 Theorist's Sanctum\n2 Three Steps Ahead\n1 Undercity Sewers\n4 Watery Grave\nSideboard\n1 Annul\n1 Bitter Triumph\n2 Duress\n1 Emeritus of Ideation\n2 Engineered Explosives\n1 Georgiou, Terran Emperor\n2 Ghost Vacuum\n1 Spell Snare\n1 Terminal Criticism\n2 Torpor Orb\n1 Wan Shi Tong, Librarian"
     },
     {
-     "name": "Selesnya Aggro",
-     "share": "6,8%",
-     "source": "reidq7, Standard Challenge 16, 19 nov 2026, 1° (7-2)",
-     "deck": "2 Abandoned Air Temple\n4 Bejeweled Warg\n2 Brightglass Gearhulk\n6 Forest\n4 Gene Pollinator\n1 Guiding Hydra\n4 Hushwood Verge\n4 Llanowar Elves\n2 Meltstrider's Resolve\n4 Michelangelo, Weirdness to 11\n2 Multiversal Passage\n4 Ouroboroid\n4 Pawpatch Recruit\n2 Plains\n4 Practiced Offense\n2 Seam Rip\n3 Starting Town\n2 Surrak, Elusive Hunter\n4 Temple Garden\nSideboard\n1 Brightglass Gearhulk\n2 Clarion Conqueror\n4 Doorkeeper Thrull\n1 Erode\n2 Leatherhead, Swamp Stalker\n2 Sheltered by Ghosts\n1 Skateboard\n1 Surrak, Elusive Hunter\n1 Yera and Oski, Weaver and Guide"
-    },
-    {
      "name": "Boros Aggro",
-     "share": "6,7%",
+     "share": "7,0%",
      "source": "Ethan Cummins, Standard ReCQ with up to 2 Invites and NRG Points, 22 nov 2026, 5° (2-1)",
      "deck": "4 Starfield Shepherd\n4 Nurturing Pixie\n4 Momo, Friendly Flier\n3 Nova Hellkite\n4 Sage of the Skies\n2 Captain James T. Kirk\n1 Smaug the Magnificent\n2 Voice of Victory\n1 Guiding Hydra\n3 Torch the Tower\n3 Practiced Offense\n4 The Naked Time\n3 Seam Rip\n4 Inspiring Vantage\n4 Sacred Foundry\n4 Sunbillow Verge\n3 Mountain\n3 Plains\n2 Starting Town\n1 Abandoned Air Temple\n1 Multiversal Passage\nSideboard\n1 Torch the Tower\n1 The Legend of Roku\n2 Rest in Peace\n2 Get Lost\n2 Ruinous Rampage\n3 Clarion Conqueror\n4 Giant Cindermaw"
     },
     {
-     "name": "Dimir Midrange",
-     "share": "6,7%",
-     "source": "kobayui, Standard Showcase Challenge, 21 nov 2026, 2° (9-2)",
-     "deck": "1 Bitter Triumph\n4 Dream Beavers\n4 Enduring Curiosity\n4 Floodpits Drowner\n4 Gloomlake Verge\n2 Hidden Lair\n3 Island\n4 Kaito, Bane of Nightmares\n2 Ni'Var Science Academy\n1 Preacher of the Schism\n1 Realm of Koh\n3 Requiting Hex\n1 Restless Reef\n1 Shipwreck Marsh\n2 Shoot the Sheriff\n2 Soulstone Sanctuary\n3 Spell Snare\n4 Spyglass Siren\n4 Swamp\n2 The Wondrous Wasp\n1 Tragic Trajectory\n1 Wan Shi Tong, Librarian\n4 Watery Grave\n2 We Say Thee Nay!\nSideboard\n1 Annul\n2 Day of Black Sun\n2 Disdainful Stroke\n3 Duress\n2 Engineered Explosives\n1 Flashfreeze\n1 Negate\n1 Strategic Betrayal\n1 Terminal Criticism\n1 Vren, the Relentless"
-    },
-    {
      "name": "Izzet Control",
-     "share": "6,5%",
+     "share": "6,8%",
      "source": "TrueHero, Standard Challenge 16, 19 nov 2026, 3° (6-2)",
      "deck": "4 Anthropological Mission\n2 Burst Lightning\n2 Chandra, Chill of Compliance\n1 Engineered Explosives\n1 Fire Magic\n4 Flashback\n2 Great Hall of the Biblioplex\n1 Impractical Joke\n3 Into the Flood Maw\n6 Island\n2 Long River's Pull\n1 Multiversal Passage\n4 Opt\n3 Ral, Crackling Wit\n4 Riverpyre Verge\n1 Sear\n4 Sleight of Hand\n2 Spell Pierce\n2 Spell Snare\n4 Spirebluff Canal\n4 Steam Vents\n1 Stormcarved Coast\n1 Torch the Tower\n1 Traumatic Critique\nSideboard\n2 Ajani Unrelenting\n2 Annul\n3 Bothersome Noisemaker\n2 Essence Burn\n1 Fire Magic\n1 Ghost Vacuum\n1 Impractical Joke\n1 Spell Snare\n2 Stock Up"
     },
     {
+     "name": "Jund Sacrifice",
+     "share": "6,8%",
+     "source": "duanceyao, Standard Challenge 32, 20 nov 2026, 1° (8-1)",
+     "deck": "4 Biotech Specialist\n1 Blazemire Verge\n3 Blood Crypt\n4 Blooming Marsh\n1 Deadly Precision\n1 Forest\n4 Gene Pollinator\n4 Greedy Freebooter\n4 Lively Dirge\n2 Magda, the Hoardmaster\n1 Mountain\n4 Obsessive Pursuit\n3 Overgrown Tomb\n1 Smaug the Magnificent\n4 Starting Town\n3 Stomping Ground\n1 Swamp\n4 The Sackville-Bagginses\n1 Thornspire Verge\n4 Torch the Tower\n3 Umbral Collar Zealot\n2 Witherbloom Charm\n1 Wolverine, Fierce Fighter\nSideboard\n2 Deathmark\n3 Duress\n1 Fire Magic\n1 Guerrilla Gorilla\n1 Leatherhead, Swamp Stalker\n1 Q, Stacking the Deck\n2 Terminal Criticism\n2 Test of Courage\n1 The Ooze\n1 Vicious Rivalry"
+    },
+    {
+     "name": "Dimir Midrange",
+     "share": "6,5%",
+     "source": "kobayui, Standard Showcase Challenge, 21 nov 2026, 2° (9-2)",
+     "deck": "1 Bitter Triumph\n4 Dream Beavers\n4 Enduring Curiosity\n4 Floodpits Drowner\n4 Gloomlake Verge\n2 Hidden Lair\n3 Island\n4 Kaito, Bane of Nightmares\n2 Ni'Var Science Academy\n1 Preacher of the Schism\n1 Realm of Koh\n3 Requiting Hex\n1 Restless Reef\n1 Shipwreck Marsh\n2 Shoot the Sheriff\n2 Soulstone Sanctuary\n3 Spell Snare\n4 Spyglass Siren\n4 Swamp\n2 The Wondrous Wasp\n1 Tragic Trajectory\n1 Wan Shi Tong, Librarian\n4 Watery Grave\n2 We Say Thee Nay!\nSideboard\n1 Annul\n2 Day of Black Sun\n2 Disdainful Stroke\n3 Duress\n2 Engineered Explosives\n1 Flashfreeze\n1 Negate\n1 Strategic Betrayal\n1 Terminal Criticism\n1 Vren, the Relentless"
+    },
+    {
      "name": "4c Control",
-     "share": "4,5%",
+     "share": "4,6%",
      "source": "kasa, Standard Challenge 16, 22 nov 2026, 1° (7-1)",
      "deck": "2 Consult the Star Charts\n1 Cori Mountain Monastery\n2 Day of Judgment\n1 Fire Magic\n1 Firebending Lesson\n2 Flashback\n3 Gloomlake Verge\n4 Great Hall of the Biblioplex\n3 Hallowed Fountain\n4 Inevitable Defeat\n1 Island\n4 Jeskai Revelation\n1 Mistrise Village\n3 No More Lies\n1 Plains\n1 Sacred Foundry\n2 Sear\n2 Shattered Sanctum\n1 Spell Snare\n4 Steam Vents\n4 Stock Up\n1 Sunbillow Verge\n4 Sundown Pass\n4 Tablet of Discovery\n2 Together as One\n2 Twinned Vision\nSideboard\n1 Day of Judgment\n1 Fire Magic\n2 Flashfreeze\n1 Geist of Saint Thalia\n2 Negate\n1 Outrageous Robbery\n2 Spell Snare\n2 Strategic Betrayal\n1 Thor, God of Thunder\n1 Torpor Orb\n1 Ultima"
     }
    ]
   },
   "pioneer": {
-   "source": "MTGO e tornei cartacei (melee.gg), ultimi 30 giorni · 881 liste",
+   "source": "MTGO e tornei cartacei (melee.gg), ultimi 30 giorni · 838 liste",
    "archetypes": [
     {
      "name": "Golgari Midrange",
      "share": "14,2%",
-     "source": "moon11, Pioneer Challenge 32, 17 nov 2026, 2° (6-2)",
-     "deck": "3 Abrupt Decay\n4 Badgermole Cub\n2 Bitter Triumph\n4 Blooming Marsh\n1 Boseiju, Who Endures\n1 Castle Locthwain\n1 Culling Ritual\n4 Fatal Push\n1 Forest\n4 Graveyard Trespasser\n4 Llanowar Wastes\n4 Mutavault\n4 Overgrown Tomb\n3 Professor Dellian Fel\n1 Restless Cottage\n3 Salt Vampire\n3 Sheoldred, the Apocalypse\n3 Swamp\n1 Takenuma, Abandoned Mire\n4 Thoughtseize\n4 Unholy Annex // Ritual Chamber\n1 Urborg, Tomb of Yawgmoth\nSideboard\n1 Culling Ritual\n2 Damping Sphere\n2 Duress\n2 Extinction Event\n2 Go Blank\n2 Invoke Despair\n4 Strategic Betrayal"
+     "source": "_bwonsamdi_, Pioneer Challenge 32, 19 nov 2026, 3° (6-2)",
+     "deck": "3 Abrupt Decay\n4 Badgermole Cub\n2 Bitter Triumph\n4 Blooming Marsh\n1 Boseiju, Who Endures\n1 Castle Locthwain\n2 Culling Ritual\n2 Duress\n4 Fatal Push\n1 Forest\n4 Graveyard Trespasser\n4 Llanowar Wastes\n4 Mutavault\n4 Overgrown Tomb\n3 Professor Dellian Fel\n2 Restless Cottage\n3 Sheoldred, the Apocalypse\n2 Swamp\n1 Takenuma, Abandoned Mire\n4 Thoughtseize\n4 Unholy Annex // Ritual Chamber\n1 Urborg, Tomb of Yawgmoth\nSideboard\n2 Ashiok, Dream Render\n1 Culling Ritual\n2 Duress\n2 Extinction Event\n1 Go Blank\n2 Invoke Despair\n1 Professor Dellian Fel\n4 Strategic Betrayal"
     },
     {
      "name": "Izzet Creativity",
-     "share": "5,3%",
+     "share": "5,5%",
      "source": "Mathilde8, Pioneer Challenge 16, 22 nov 2026, 9° (4-2)",
      "deck": "1 Atraxa, Grand Unifier\n4 Deduce\n4 Fable of the Mirror-Breaker\n4 Fiery Impulse\n2 Fires of Victory\n1 Flashback\n2 Fountainport\n2 Great Hall of the Biblioplex\n4 Indomitable Creativity\n2 Island\n4 Make Disappear\n2 Mirrex\n3 Mountain\n2 Negate\n1 Raph & Mikey, Troublemakers\n4 Spirebluff Canal\n4 Steam Vents\n4 Stormcarved Coast\n3 Sunken Citadel\n1 The Theorist, Jace Beleren\n2 Three Steps Ahead\n1 Valgavoth, Terror Eater\n3 Volcanic Spite\nSideboard\n2 Anger of the Gods\n2 Annul\n3 Change the Equation\n2 Consult the Star Charts\n1 Hullbreaker Horror\n2 Pyroclasm\n3 Shark Typhoon"
     },
     {
-     "name": "Mono Green Devotion",
-     "share": "5,2%",
-     "source": "Delta Valmassei, Pioneer ReCQ with up to 2 Invites and NRG Points, 21 nov 2026, 1° (4-0)",
-     "deck": "4 Badgermole Cub\n2 Boseiju, Who Endures\n4 Cavalier of Thorns\n4 Elvish Mystic\n13 Forest\n2 Garruk, Curse Breaker\n3 Invasion of Ixalan\n4 Kiora, Behemoth Beckoner\n2 Lair of the Hydra\n4 Llanowar Elves\n4 Nykthos, Shrine to Nyx\n2 Oath of Nissa\n4 Old-Growth Troll\n2 Outcaster Trailblazer\n4 Storm the Festival\n2 Ulvenwald Oddity\nSideboard\n2 Arasta of the Endless Web\n1 Cityscape Leveler\n1 Emrakul, the Promised End\n2 Scrapshooter\n2 Setessan Petitioner\n3 Tail Swipe\n2 The Stone Brain\n2 Unlicensed Hearse"
-    },
-    {
      "name": "Mono Red Aggro",
-     "share": "5,1%",
+     "share": "4,9%",
      "source": "Yinan Wan, Pioneer ReCQ with up to 2 Invites and NRG Points, 21 nov 2026, 3° (2-1)",
      "deck": "4 Burst Lightning\n1 Den of the Bugbear\n4 Emberheart Challenger\n4 Kumano Faces Kakkazan\n4 Monastery Swiftspear\n4 Monstrous Rage\n14 Mountain\n4 Mutavault\n2 Ramunap Ruins\n4 Reckless Rage\n1 Rockface Village\n4 Screaming Nemesis\n1 Sokenzan, Crucible of Defiance\n4 Soul-Scar Mage\n4 Sunspine Lynx\n1 The Legend of Roku\nSideboard\n4 Magebane Lizard\n2 Redcap Melee\n3 Scorching Shot\n3 Soul-Guide Lantern\n1 The Legend of Roku\n2 Weathered Runestone"
     },
@@ -89,27 +83,33 @@
      "deck": "4 Academic Dispute\n3 Boomerang Basics\n4 Burst Lightning\n4 Emberheart Challenger\n4 Flow State\n1 Island\n4 Monastery Swiftspear\n4 Monstrous Rage\n1 Mountain\n1 Riverglide Pathway\n4 Riverpyre Verge\n2 Screaming Nemesis\n3 Shivan Reef\n4 Sleight of Hand\n3 Soul-Scar Mage\n4 Spirebluff Canal\n4 Steam Vents\n4 Stormchaser's Talent\n2 Vivi Ornitier\nSideboard\n1 Boomerang Basics\n1 Firebending Lesson\n1 Improvisation Capstone\n1 Iroh's Demonstration\n1 It'll Quench Ya!\n1 Octopus Form\n2 Quantum Riddler\n1 Ral, Crackling Wit\n3 Scorching Shot\n1 Soul-Guide Lantern\n2 Spell Pierce"
     },
     {
+     "name": "Mono Green Devotion",
+     "share": "4,8%",
+     "source": "Delta Valmassei, Pioneer ReCQ with up to 2 Invites and NRG Points, 21 nov 2026, 1° (4-0)",
+     "deck": "4 Badgermole Cub\n2 Boseiju, Who Endures\n4 Cavalier of Thorns\n4 Elvish Mystic\n13 Forest\n2 Garruk, Curse Breaker\n3 Invasion of Ixalan\n4 Kiora, Behemoth Beckoner\n2 Lair of the Hydra\n4 Llanowar Elves\n4 Nykthos, Shrine to Nyx\n2 Oath of Nissa\n4 Old-Growth Troll\n2 Outcaster Trailblazer\n4 Storm the Festival\n2 Ulvenwald Oddity\nSideboard\n2 Arasta of the Endless Web\n1 Cityscape Leveler\n1 Emrakul, the Promised End\n2 Scrapshooter\n2 Setessan Petitioner\n3 Tail Swipe\n2 The Stone Brain\n2 Unlicensed Hearse"
+    },
+    {
      "name": "Izzet Cauldron",
      "share": "4,5%",
      "source": "Dominic Stryker, Magic: Pioneer Win-a-Sheet with RC Invite & NRG Points, 21 nov 2026, 5° (1-1)",
      "deck": "4 Academic Dispute\n4 Agatha's Soul Cauldron\n3 Boomerang Basics\n4 Fear of Missing Out\n2 Mountain\n1 Otawara, Soaring City\n4 Pompous Battlemage // Improvised Act\n4 Quantum Riddler\n1 Riverglide Pathway\n4 Riverpyre Verge\n4 Shivan Reef\n4 Spirebluff Canal\n4 Steam Vents\n4 Stormchaser's Talent\n4 The Naked Time\n2 Torch the Tower\n1 Traumatic Critique\n4 Vivi Ornitier\n3 Winternight Stories\nSideboard\n2 Ashiok, Dream Render\n1 Boomerang Basics\n1 Combustion Technique\n1 Firebending Lesson\n1 Iroh's Demonstration\n1 Octopus Form\n1 Price of Freedom\n2 Ral, Crackling Wit\n4 Slickshot Show-Off\n1 This Town Ain't Big Enough"
     },
     {
-     "name": "Azorius Control",
+     "name": "Izzet Spellementals",
      "share": "4,4%",
-     "source": "GenericUser48, Pioneer Challenge 32, 17 nov 2026, 5° (5-2)",
-     "deck": "4 Adarkar Wastes\n3 Blast Zone\n3 Cleansing Nova\n4 Consult the Star Charts\n4 Coveted Falcon\n4 Deserted Beach\n1 Dovin's Veto\n1 Eiganjo, Seat of the Empire\n2 Erode\n4 Get Lost\n4 Hallowed Fountain\n4 Impulse\n2 Island\n3 March of Otherworldly Light\n2 Memory Deluge\n4 Nine Lives\n1 Otawara, Soaring City\n2 Petrified Hamlet\n2 Plains\n2 Seachrome Coast\n4 Stock Up\nSideboard\n1 Dovin's Veto\n3 Knockout Blow\n4 Leyline of Sanctity\n2 Pithing Needle\n2 Rest in Peace\n3 Silence"
+     "source": "VitorCarvalho01, Pioneer Challenge 16, 22 nov 2026, 13° (4-2)",
+     "deck": "2 Brazen Borrower\n4 Consider\n4 Eddymurk Crab\n4 Fiery Impulse\n2 Get Out\n1 Hall of Storm Giants\n4 Hearth Elemental\n2 Island\n4 Opt\n1 Otawara, Soaring City\n4 Prismari Charm\n4 Riverglide Pathway\n1 Shivan Reef\n4 Sleight of Hand\n4 Spirebluff Canal\n4 Steam Vents\n2 Stormcarved Coast\n4 Stubborn Denial\n4 Sunderflock\n1 Vibrant Outburst\nSideboard\n2 Abrade\n1 Chandra, Chill of Compliance\n3 Change the Equation\n2 Disdainful Stroke\n1 Ral, Crackling Wit\n1 Saheeli, Sublime Artificer\n2 The Theorist, Jace Beleren\n3 Unlicensed Hearse"
     },
     {
-     "name": "Izzet Spellementals",
+     "name": "Azorius Control",
      "share": "4,2%",
-     "source": "VitorCarvalho01, Pioneer Challenge 32, 17 nov 2026, 11° (4-2)",
-     "deck": "1 Beacon Bolt\n4 Consider\n4 Eddymurk Crab\n4 Fiery Impulse\n2 Get Out\n1 Hall of Storm Giants\n4 Hearth Elemental\n2 Island\n4 Opt\n1 Otawara, Soaring City\n4 Prismari Charm\n4 Riverglide Pathway\n2 Seasoned Cryomancer\n1 Shivan Reef\n4 Sleight of Hand\n4 Spirebluff Canal\n4 Steam Vents\n2 Stormcarved Coast\n3 Stubborn Denial\n4 Sunderflock\n1 Vibrant Outburst\nSideboard\n2 Abrade\n2 Brazen Borrower\n2 Change the Equation\n4 Crackling Drake\n1 Disdainful Stroke\n1 Stubborn Denial\n3 Unlicensed Hearse"
+     "source": "cspickle, Pioneer Challenge 16, 22 nov 2026, 8° (4-3)",
+     "deck": "1 Beza, the Bounding Spring\n1 Castle Ardenvale\n2 Change the Equation\n4 Consult the Star Charts\n3 Deserted Beach\n4 Dovin's Veto\n1 Eiganjo, Seat of the Empire\n1 Emeritus of Ideation\n1 Field of Ruin\n1 Fountainport\n4 Get Lost\n2 Glacial Fortress\n2 Hall of Storm Giants\n4 Hallowed Fountain\n4 Hengegate Pathway\n2 Irrigated Farmland\n3 Island\n4 March of Otherworldly Light\n3 Meticulous Archive\n4 No More Lies\n3 Omen of the Sea\n1 Otawara, Soaring City\n3 Petrified Hamlet\n2 Plains\n3 Restless Anchorage\n2 Supreme Verdict\n3 Teferi, Hero of Dominaria\n4 Temporary Lockdown\n2 The Theorist, Jace Beleren\n4 The Wandering Emperor\n2 Ultima\nSideboard\n2 Beza, the Bounding Spring\n1 Farewell\n3 High Noon\n3 Kutzil's Flanker\n3 Mystical Dispute\n2 Rest in Peace\n1 Yorion, Sky Nomad"
     }
    ]
   },
   "modern": {
-   "source": "MTGO e tornei cartacei (melee.gg), ultimi 30 giorni · 2950 liste",
+   "source": "MTGO e tornei cartacei (melee.gg), ultimi 30 giorni · 2750 liste",
    "archetypes": [
     {
      "name": "Broodscale",
@@ -119,21 +119,27 @@
     },
     {
      "name": "Rakdos Midrange",
-     "share": "9,4%",
+     "share": "9,2%",
      "source": "Jesús Esteban Dominguez, Torneo Zamora 21 Noviembre, 21 nov 2026, 1° (4-1)",
      "deck": "2 Swamp\n4 Thoughtseize\n1 Arid Mesa\n4 Lightning Bolt\n2 Fatal Push\n1 Blood Moon\n4 Street Wraith\n2 Troll of Khazad-dûm\n1 Mountain\n4 Dark Matter Manipulator\n4 Moonshadow\n3 Verdant Catacombs\n4 Mishra's Bauble\n4 Fear of Missing Out\n4 Nethergoyf\n2 Raucous Theater\n4 Detective's Phoenix\n2 Unholy Heat\n3 Blood Crypt\n1 Marsh Flats\n4 Bloodstained Mire\nSideboard\n2 Fatal Push\n2 Nihil Spellbomb\n2 Inquisition of Kozilek\n2 Ob Nixilis, the Adversary\n3 Obsidian Charmaw\n2 Meltdown\n1 Fire Magic\n1 Glistening Deluge"
-    },
-    {
-     "name": "Prowess",
-     "share": "6,4%",
-     "source": "O_danielakos, Modern Challenge 32, 20 nov 2026, 2° (8-2)",
-     "deck": "3 Bloodstained Mire\n4 Cori-Steel Cutter\n4 Dragon's Rage Channeler\n4 Expressive Iteration\n1 Fiery Islet\n4 Lava Dart\n4 Lightning Bolt\n4 Mishra's Bauble\n4 Monastery Swiftspear\n2 Mountain\n2 Mutagenic Growth\n4 Preordain\n4 Scalding Tarn\n4 Slickshot Show-Off\n3 Steam Vents\n1 Stomping Ground\n1 Thundering Falls\n1 Tormod's Crypt\n1 Unholy Heat\n2 Violent Urge\n3 Wooded Foothills\nSideboard\n3 Consign to Memory\n1 Heritage Reclamation\n1 Meltdown\n1 Mystical Dispute\n2 Obsidian Charmaw\n1 Pick Your Poison\n2 Spell Pierce\n1 Surgical Extraction\n3 Unholy Heat"
     },
     {
      "name": "Azorius Control",
      "share": "6,1%",
      "source": "Jesus Hernandez, Torneo Zamora 21 Noviembre, 21 nov 2026, 2° (3-1-1)",
      "deck": "1 Thundering Falls\n1 Jace, the Mind Sculptor\n3 Silence\n1 Otawara, Soaring City\n4 Flooded Strand\n3 Arid Mesa\n1 Monumental Henge\n2 Hallowed Fountain\n1 Floodfarm Verge\n4 Orim's Chant\n2 Consult the Star Charts\n1 Force of Negation\n2 Island\n1 Isochron Scepter\n4 Teferi, Time Raveler\n1 March of Otherworldly Light\n2 Spell Snare\n1 Mystic Gate\n4 Narset, Parter of Veils\n2 Meticulous Archive\n2 Prismatic Ending\n3 Day's Undoing\n2 Sink into Stupor\n4 Solitude\n1 Lórien Revealed\n2 Plains\n3 Wrath of the Skies\n1 Supreme Verdict\n1 Geier Reach Sanitarium\nSideboard\n1 Kaheera, the Orphanguard\n1 Surgical Extraction\n2 High Noon\n2 Sanctifier en-Vec\n3 Mystical Dispute\n3 Consign to Memory\n1 Beza, the Bounding Spring\n1 Supreme Verdict\n1 Erode"
+    },
+    {
+     "name": "Prowess",
+     "share": "6,1%",
+     "source": "O_danielakos, Modern Challenge 32, 20 nov 2026, 2° (8-2)",
+     "deck": "3 Bloodstained Mire\n4 Cori-Steel Cutter\n4 Dragon's Rage Channeler\n4 Expressive Iteration\n1 Fiery Islet\n4 Lava Dart\n4 Lightning Bolt\n4 Mishra's Bauble\n4 Monastery Swiftspear\n2 Mountain\n2 Mutagenic Growth\n4 Preordain\n4 Scalding Tarn\n4 Slickshot Show-Off\n3 Steam Vents\n1 Stomping Ground\n1 Thundering Falls\n1 Tormod's Crypt\n1 Unholy Heat\n2 Violent Urge\n3 Wooded Foothills\nSideboard\n3 Consign to Memory\n1 Heritage Reclamation\n1 Meltdown\n1 Mystical Dispute\n2 Obsidian Charmaw\n1 Pick Your Poison\n2 Spell Pierce\n1 Surgical Extraction\n3 Unholy Heat"
+    },
+    {
+     "name": "Amulet Titan",
+     "share": "5,9%",
+     "source": "Lord_of_The_Wastes, Modern Challenge 16, 21 nov 2026, 1° (8-0)",
+     "deck": "4 Amulet of Vigor\n4 Arboreal Grazer\n3 Boseiju, Who Endures\n4 Crumbling Vestige\n1 Cultivator Colossus\n1 Dryad Arbor\n1 Echoing Deeps\n3 Forest\n2 Genesis Device\n3 Green Sun's Zenith\n4 Gruul Turf\n1 Hanweir Battlements\n3 Malevolent Rumble\n1 Mirrorpool\n1 Otawara, Soaring City\n4 Primeval Titan\n1 Roiling Canopy\n3 Scapeshift\n3 Simic Growth Chamber\n4 Spelunking\n2 Summoner's Pact\n1 Tolaria West\n4 Urza's Saga\n1 Vesuva\n1 Yavimaya, Cradle of Growth\nSideboard\n1 Ba Sing Se\n1 Bojuka Bog\n3 Dismember\n1 Endurance\n1 Engineered Explosives\n1 Force of Vigor\n1 Grafdigger's Cage\n1 Sakura-Tribe Scout\n1 Skyline Cascade\n3 Trinisphere\n1 Vexing Bauble"
     },
     {
      "name": "Boros Energy",
@@ -143,36 +149,30 @@
     },
     {
      "name": "Tron",
-     "share": "5,6%",
+     "share": "5,7%",
      "source": "narca, Modern Challenge 16, 21 nov 2026, 2° (4-3)",
      "deck": "1 Abstergo Entertainment\n1 Boseiju, Who Endures\n4 Deep Space 9\n4 Devourer of Destiny\n4 Expedition Map\n3 Extinguisher Battleship\n1 Forest\n4 Giant's Boulder\n4 Karn, the Great Creator\n4 Kozilek's Command\n4 Nexus of Becoming\n4 Talisman of Unity\n3 U.S.S. Voyager, Lone Wanderer\n4 Ugin's Labyrinth\n4 Ugin, Eye of the Storms\n4 Urza's Mine\n4 Urza's Power Plant\n4 Urza's Tower\nSideboard\n4 Chalice of the Void\n1 Engineered Explosives\n1 Ensnaring Bridge\n1 Extinguisher Battleship\n1 Grafdigger's Cage\n1 Haywire Mite\n1 Liquimetal Coating\n1 Soulless Jailer\n1 Sundering Titan\n1 The Echoverse Fulcrum\n1 Trinisphere\n1 U.S.S. Voyager, Lone Wanderer"
     },
     {
-     "name": "Amulet Titan",
-     "share": "5,6%",
-     "source": "Lord_of_The_Wastes, Modern Challenge 16, 21 nov 2026, 1° (8-0)",
-     "deck": "4 Amulet of Vigor\n4 Arboreal Grazer\n3 Boseiju, Who Endures\n4 Crumbling Vestige\n1 Cultivator Colossus\n1 Dryad Arbor\n1 Echoing Deeps\n3 Forest\n2 Genesis Device\n3 Green Sun's Zenith\n4 Gruul Turf\n1 Hanweir Battlements\n3 Malevolent Rumble\n1 Mirrorpool\n1 Otawara, Soaring City\n4 Primeval Titan\n1 Roiling Canopy\n3 Scapeshift\n3 Simic Growth Chamber\n4 Spelunking\n2 Summoner's Pact\n1 Tolaria West\n4 Urza's Saga\n1 Vesuva\n1 Yavimaya, Cradle of Growth\nSideboard\n1 Ba Sing Se\n1 Bojuka Bog\n3 Dismember\n1 Endurance\n1 Engineered Explosives\n1 Force of Vigor\n1 Grafdigger's Cage\n1 Sakura-Tribe Scout\n1 Skyline Cascade\n3 Trinisphere\n1 Vexing Bauble"
-    },
-    {
      "name": "Affinity",
-     "share": "5,2%",
+     "share": "5,3%",
      "source": "GREG PINO, Modern ReCQ with up to 2 Invites and NRG, 22 nov 2026, 1° (5-0)",
      "deck": "4 Kappa Cannoneer\n4 Pinnacle Emissary\n4 Emry, Lurker of the Loch\n4 Mox Opal\n4 Mishra's Bauble\n3 Engineered Explosives\n3 Tormod's Crypt\n4 Welding Jar\n4 Urza's Saga\n4 Spirebluff Canal\n4 Fiery Islet\n2 Island\n1 Steam Vents\n1 Shadowspear\n1 Pithing Needle\n1 Skateboard\n4 Ravenous Robots\n1 Aether Spellbomb\n2 Shivan Reef\n1 Thought Monitor\n2 Memnite\n2 Springleaf Drum\nSideboard\n4 Galvanic Blast\n4 Consign to Memory\n1 Damping Sphere\n1 Grafdigger's Cage\n1 Cursed Totem\n4 Harbinger of the Seas"
     }
    ]
   },
   "pauper": {
-   "source": "MTGO e tornei cartacei (melee.gg), ultimi 30 giorni · 2970 liste",
+   "source": "MTGO e tornei cartacei (melee.gg), ultimi 30 giorni · 2890 liste",
    "archetypes": [
     {
      "name": "Red Madness",
-     "share": "12,6%",
-     "source": "Rafael Franco, Mont Weekly Pauper, 17 nov 2026, 1° (4-0)",
-     "deck": "4 Sneaky Snacker\n4 Highway Robbery\n4 Faithless Looting\n4 Lightning Bolt\n4 Grab the Prize\n19 Mountain\n2 Kessig Flamebreather\n4 Fireblast\n4 Guttersnipe\n4 Fiery Temper\n4 Voldaren Epicure\n4 Lava Dart\nSideboard\n3 Smash to Smithereens\n3 Cast into the Fire\n4 Pyroblast\n3 Relic of Progenitus\n2 End the Festivities"
+     "share": "12,7%",
+     "source": "GrandiniA, pauper cacciucchino by lega pauper livorno 7seas game fest, 22 nov 2026, 2° (4-3)",
+     "deck": "4 Voldaren Epicure\n4 Lightning Bolt\n4 Faithless Looting\n4 Lava Dart\n4 Grab the Prize\n4 Sneaky Snacker\n4 Highway Robbery\n4 Kessig Flamebreather\n3 Guttersnipe\n4 Fiery Temper\n3 Fireblast\n18 Mountain\nSideboard\n2 End the Festivities\n4 Pyroblast\n2 Red Elemental Blast\n2 Searing Blaze\n3 Cast into the Fire\n2 Soul-Guide Lantern"
     },
     {
      "name": "Dimir Faeries",
-     "share": "7,4%",
+     "share": "7,5%",
      "source": "serajh, Pauper Challenge 16, 21 nov 2026, 1°",
      "deck": "2 Augur of Bolas\n4 Baleful Strix\n1 Bojuka Bog\n3 Brainstorm\n2 Cast Down\n4 Contaminated Aquifer\n4 Counterspell\n2 Cut Down\n1 Dimir Aqueduct\n1 Dispel\n1 Extract a Confession\n3 Faerie Seer\n1 Foreboding Landscape\n1 Gurmag Angler\n10 Island\n4 Lórien Revealed\n1 Murmuring Mystic\n2 Ninja of the Deep Hours\n1 Plunder the Trollshaws\n4 Snuff Out\n4 Spellstutter Sprite\n1 Suffocating Fumes\n1 Swamp\n2 Thorn of the Black Rose\nSideboard\n3 Annul\n1 Arms of Hadar\n2 Campfire\n1 Extract a Confession\n4 Hydroblast\n1 Okiba-Gang Shinobi\n2 Relic of Progenitus\n1 Stormbound Geist"
     },
@@ -184,7 +184,7 @@
     },
     {
      "name": "Spy Combo",
-     "share": "4,9%",
+     "share": "5,1%",
      "source": "tanipamyu, MO パウパー対戦会#15 (第134回はでらCS, 22 nov 2026, 1° (3-0)",
      "deck": "1 Swamp\n1 Beastrider Vanguard\n2 Gatecreeper Vine\n3 Forest\n4 Generous Ent\n4 Land Grant\n2 Mesmeric Fiend\n1 Photosynthetic Physician\n2 Lotus Petal\n1 Mirrorshell Crab\n1 Troll of Khazad-dûm\n1 Axebane Guardian\n2 Lotleth Giant\n1 Malevolent Rumble\n1 Acorn Harvest\n2 Dread Return\n4 Masked Vandal\n4 Wall of Roots\n2 Overgrown Battlement\n4 Saruli Caretaker\n3 Winding Way\n4 Balustrade Spy\n4 Sagu Wildling\n2 Quirion Ranger\n4 Lead the Stampede\nSideboard\n1 Haunted Mire\n2 Nylea's Disciple\n2 Nyxborn Hydra\n1 Photosynthetic Physician\n1 Jack-o'-Lantern\n2 Faerie Macabre\n3 Healer of the Glade\n2 Scattershot Archer\n1 Flaring Pain"
     },
@@ -195,16 +195,16 @@
      "deck": "1 Big Score\n1 Bitter Reunion\n3 Crossover Collaboration\n4 Desperate Ritual\n2 First Day of Class\n4 Geothermal Crevice\n4 Glimpse the Impossible\n4 Goblin Anarchomancer\n4 Hickory Woodlot\n4 Manamorphose\n5 Mountain\n3 Reckless Impulse\n4 Sandstone Needle\n4 Seething Song\n2 Seize the Storm\n4 Thornscape Familiar\n4 Twinned Vision\n3 Wrenn's Resolve\nSideboard\n1 Abandon Attachments\n1 Flaring Pain\n2 Gruul Turf\n1 Origin of Metalbending\n4 Pyroblast\n2 Red Elemental Blast\n1 Scattershot\n3 Weather the Storm"
     },
     {
-     "name": "Red Rally",
-     "share": "4,2%",
-     "source": "Felix Schulte, LEG No.7 Copper Season, 18 nov 2026, 1° (4-0)",
-     "deck": "4 Burning-Tree Emissary\n4 Clockwork Percussionist\n2 Fireblast\n4 Galvanic Blast\n4 Goblin Bushwhacker\n4 Goblin Tomb Raider\n4 Great Furnace\n4 Inventor's Axe\n4 Lightning Bolt\n15 Mountain\n4 Rally at the Hornburg\n3 Reckless Impulse\n4 Voldaren Epicure\nSideboard\n2 Cast into the Fire\n3 Raze\n1 Reckless Impulse\n4 Red Elemental Blast\n2 Smash to Smithereens\n3 Tectonic Hazard"
-    },
-    {
      "name": "Esper Affinity",
-     "share": "4,1%",
+     "share": "4,2%",
      "source": "zigeye, Pauper Challenge 16, 21 nov 2026, 3°",
      "deck": "2 Ancient Den\n3 Blood Fountain\n4 Cryogen Relic\n4 Dispatch\n3 Giant's Boulder\n4 Glint Hawk\n3 Goldmire Bridge\n3 Mistvault Bridge\n4 Myr Enforcer\n3 Nihil Spellbomb\n3 Razortide Bridge\n4 Reckoner's Bargain\n4 Refurbished Familiar\n4 Seat of the Synod\n4 Thoughtcast\n4 Utrom Monitor\n4 Vault of Whispers\nSideboard\n3 Dispel\n3 Echoing Decay\n3 Envelop\n3 Hydroblast\n3 Thraben Charm"
+    },
+    {
+     "name": "Red Rally",
+     "share": "4,1%",
+     "source": "Felix Schulte, LEG No.7 Copper Season, 18 nov 2026, 1° (4-0)",
+     "deck": "4 Burning-Tree Emissary\n4 Clockwork Percussionist\n2 Fireblast\n4 Galvanic Blast\n4 Goblin Bushwhacker\n4 Goblin Tomb Raider\n4 Great Furnace\n4 Inventor's Axe\n4 Lightning Bolt\n15 Mountain\n4 Rally at the Hornburg\n3 Reckless Impulse\n4 Voldaren Epicure\nSideboard\n2 Cast into the Fire\n3 Raze\n1 Reckless Impulse\n4 Red Elemental Blast\n2 Smash to Smithereens\n3 Tectonic Hazard"
     },
     {
      "name": "Elves",
@@ -215,7 +215,7 @@
    ]
   },
   "legacy": {
-   "source": "MTGO e tornei cartacei (melee.gg), ultimi 30 giorni · 3313 liste",
+   "source": "MTGO e tornei cartacei (melee.gg), ultimi 30 giorni · 3145 liste",
    "archetypes": [
     {
      "name": "Dimir Hogaak",
@@ -224,20 +224,20 @@
      "deck": "4 Brainstorm\n1 Brazen Borrower\n4 Dark Matter Manipulator\n3 Daze\n1 Dryad Arbor\n4 Force of Will\n4 Hogaak, Arisen Necropolis\n2 Kaito, Bane of Nightmares\n4 Misty Rainforest\n3 Mockingbird\n4 Moonshadow\n3 Orcish Bowmasters\n3 Ponder\n4 Stitcher's Supplier\n1 Swamp\n2 Thoughtseize\n1 Undercity Sewers\n4 Underground Sea\n4 Verdant Catacombs\n4 Wasteland\nSideboard\n1 Brazen Borrower\n2 Consign to Memory\n2 Dauthi Voidwalker\n4 Fatal Push\n2 Force of Negation\n2 Karakas\n2 Massacre"
     },
     {
-     "name": "Beanstalk Control",
-     "share": "5,6%",
-     "source": "Thibaud Vanet, Salviche #6, 22 nov 2026, 1° (6-0-2)",
-     "deck": "4 Brainstorm\n4 Flooded Strand\n1 Force of Negation\n4 Force of Will\n1 Island\n4 Leyline Binding\n1 Meticulous Archive\n4 Misty Rainforest\n3 Murktide Regent\n2 Phelia, Exuberant Shepherd\n1 Plains\n1 Polluted Delta\n4 Ponder\n4 Quantum Riddler\n1 Savannah\n1 Spell Snare\n4 Swords to Plowshares\n4 Tamiyo, Inquisitive Student\n1 Teferi, Time Raveler\n2 Tropical Island\n3 Tundra\n4 Up the Beanstalk\n1 Volcanic Island\n1 Xander's Lounge\nSideboard\n3 Carpet of Flowers\n3 Consign to Memory\n2 Containment Priest\n1 Damping Sphere\n1 Hydroblast\n2 Pyroblast\n1 Surgical Extraction\n2 Wrath of the Skies"
-    },
-    {
      "name": "Lands",
-     "share": "5,6%",
+     "share": "5,7%",
      "source": "Felipe Jacob, Mont Weekly Legacy, 19 nov 2026, 1° (3-0-1)",
      "deck": "2 Ancient Tomb\n1 Blast Zone\n1 Bojuka Bog\n3 Boseiju, Who Endures\n4 Crop Rotation\n3 Dark Depths\n1 Expedition Map\n4 Exploration\n1 Forest\n1 Ghost Quarter\n1 Grafdigger's Cage\n1 Icetill Explorer\n1 Karakas\n4 Life from the Loam\n4 Malevolent Rumble\n1 Maze of Ith\n4 Mox Diamond\n1 Otawara, Soaring City\n1 Pithing Needle\n1 Skateboard\n4 Sphere of Resistance\n1 Talon Gates of Madara\n1 The Tabernacle at Pendrell Vale\n3 Thespian's Stage\n4 Urza's Saga\n4 Wasteland\n4 Yavimaya, Cradle of Growth\nSideboard\n2 Choke\n2 Damping Sphere\n1 Dismember\n3 Disruptor Flute\n2 Endurance\n3 Force of Vigor\n2 Torpor Orb"
     },
     {
+     "name": "Beanstalk Control",
+     "share": "5,5%",
+     "source": "Thibaud Vanet, Salviche #6, 22 nov 2026, 1° (6-0-2)",
+     "deck": "4 Brainstorm\n4 Flooded Strand\n1 Force of Negation\n4 Force of Will\n1 Island\n4 Leyline Binding\n1 Meticulous Archive\n4 Misty Rainforest\n3 Murktide Regent\n2 Phelia, Exuberant Shepherd\n1 Plains\n1 Polluted Delta\n4 Ponder\n4 Quantum Riddler\n1 Savannah\n1 Spell Snare\n4 Swords to Plowshares\n4 Tamiyo, Inquisitive Student\n1 Teferi, Time Raveler\n2 Tropical Island\n3 Tundra\n4 Up the Beanstalk\n1 Volcanic Island\n1 Xander's Lounge\nSideboard\n3 Carpet of Flowers\n3 Consign to Memory\n2 Containment Priest\n1 Damping Sphere\n1 Hydroblast\n2 Pyroblast\n1 Surgical Extraction\n2 Wrath of the Skies"
+    },
+    {
      "name": "Doomsday",
-     "share": "5,3%",
+     "share": "5,2%",
      "source": "m_himukai, Legacy Challenge 16, 22 nov 2026, 2° (6-2)",
      "deck": "4 Brainstorm\n1 Cabal Ritual\n1 Cavern of Souls\n1 Consider\n4 Dark Ritual\n3 Daze\n4 Doomsday\n1 Duress\n2 Edge of Autumn\n1 Flooded Strand\n2 Flow State\n4 Force of Will\n1 Island\n1 Lion's Eye Diamond\n2 Lotus Petal\n1 Misty Rainforest\n1 Night's Whisper\n3 Personal Tutor\n4 Polluted Delta\n4 Ponder\n1 Scalding Tarn\n2 Street Wraith\n1 Swamp\n2 Thassa's Oracle\n3 Thoughtseize\n1 Undercity Sewers\n4 Underground Sea\n1 Verdant Catacombs\nSideboard\n1 Consign to Memory\n2 Duress\n1 Fatal Push\n1 Flusterstorm\n3 Force of Negation\n4 Leyline of the Void\n1 Long Goodbye\n1 Spectral Restitching\n1 Voice of Victory"
     },
@@ -256,8 +256,8 @@
     {
      "name": "Eldrazi",
      "share": "4,0%",
-     "source": "Jackie Conklin, Charlotte Legacy League Season 4 Week 7, 17 nov 2026, 7° (2-1)",
-     "deck": "4 Lotus Petal\n4 Wastescape Battlemage\n3 Reality Smasher\n4 Kozilek's Command\n4 Glaring Fleshraker\n4 Thought-Knot Seer\n4 Eldrazi Linebreaker\n4 Endless One\n4 Ancient Tomb\n4 Cavern of Souls\n1 City of Traitors\n4 Eldrazi Temple\n2 Eye of Ugin\n2 Secluded Courtyard\n1 Wastes\n4 Wasteland\n1 Ulalek, Fused Atrocity\n1 Echoes of Eternity\n2 Blinding Drone\n2 Devourer of Destiny\n2 Nulldrifter\nSideboard\n1 All Is Dust\n4 Chalice of the Void\n4 Leyline of the Void\n2 Surgical Extraction\n2 Hope-Ender Coatl\n2 Disruptor Flute"
+     "source": "Julien Gaillard, Salviche #6, 22 nov 2026, 8° (3-3)",
+     "deck": "4 Ancient Tomb\n4 Cavern of Souls\n4 Chalice of the Void\n1 City of Traitors\n1 Devourer of Destiny\n4 Eldrazi Linebreaker\n4 Eldrazi Temple\n2 Eye of Ugin\n4 Glaring Fleshraker\n4 It That Heralds the End\n4 Kozilek's Command\n4 Lotus Petal\n1 Petrified Hamlet\n3 Reality Smasher\n4 Secluded Courtyard\n1 Sire of Seven Deaths\n1 Thief of Existence\n4 Thought-Knot Seer\n3 Wasteland\n3 Wastescape Battlemage\nSideboard\n2 Dismember\n3 Disruptor Flute\n3 Faerie Macabre\n3 Mindbreak Trap\n2 Null Rod\n2 Warping Wail"
     },
     {
      "name": "Tron",
@@ -268,17 +268,17 @@
    ]
   },
   "vintage": {
-   "source": "MTGO e tornei cartacei (melee.gg), ultimi 30 giorni · 1719 liste",
+   "source": "MTGO e tornei cartacei (melee.gg), ultimi 30 giorni · 1657 liste",
    "archetypes": [
     {
      "name": "Blue Control",
-     "share": "12,9%",
+     "share": "13,3%",
      "source": "Capriccioso, Vintage Challenge 32, 21 nov 2026, 2° (7-2)",
      "deck": "1 Ancestral Recall\n2 Ancient Tomb\n1 Archon of Emeria\n1 Black Lotus\n1 Brainstorm\n4 Clarion Conqueror\n4 Flooded Strand\n3 Force of Negation\n4 Force of Will\n1 Gitaxian Probe\n4 Hullbreacher\n1 Island\n1 Karakas\n2 Lavinia, Azorius Renegade\n1 Lotus Petal\n2 Lórien Revealed\n1 Mana Crypt\n1 Mental Misstep\n1 Mox Emerald\n1 Mox Jet\n1 Mox Pearl\n1 Mox Ruby\n1 Mox Sapphire\n1 Plains\n2 Quantum Riddler\n1 Sol Ring\n1 Strip Mine\n3 Swords to Plowshares\n1 Time Walk\n4 Tundra\n1 Urza's Saga\n1 Vexing Bauble\n1 Wasteland\n4 White Plume Adventurer\nSideboard\n2 Archon of Absolution\n1 Archon of Emeria\n3 Consign to Memory\n1 Lavinia, Azorius Renegade\n3 Mystical Dispute\n1 Quantum Riddler\n1 Swords to Plowshares\n3 Wasteland"
     },
     {
      "name": "Esper Lurrus Control",
-     "share": "9,0%",
+     "share": "8,8%",
      "source": "albertosd87, Vintage Challenge 32, 19 nov 2026, 4° (5-3)",
      "deck": "1 Ancestral Recall\n2 Bilbo, Thief in the Night\n1 Black Lotus\n1 Demonic Tutor\n1 Flooded Strand\n4 Flow State\n3 Force of Negation\n4 Force of Will\n1 Gitaxian Probe\n1 Island\n1 Karakas\n3 Lórien Revealed\n1 Mental Misstep\n1 Misty Rainforest\n1 Mox Jet\n1 Mox Pearl\n1 Mox Sapphire\n1 Mystical Dispute\n1 Null Rod\n2 Orcish Bowmasters\n1 Polluted Delta\n1 Prismatic Ending\n4 Psychic Frog\n1 Scalding Tarn\n1 Soul-Guide Lantern\n1 Spell Pierce\n1 Strip Mine\n3 Swords to Plowshares\n1 Thoughtseize\n1 Time Walk\n1 Treasure Cruise\n3 Tundra\n3 Underground Sea\n1 Urza's Saga\n1 Vexing Bauble\n4 Wasteland\nSideboard\n2 Consign to Memory\n3 Containment Priest\n1 Flusterstorm\n1 Long Goodbye\n1 Lurrus of the Dream-Den\n1 Mystical Dispute\n1 Null Rod\n1 Pithing Needle\n1 Prismatic Ending\n1 Stony Silence\n1 Swords to Plowshares\n1 The Tabernacle at Pendrell Vale"
     },
@@ -289,20 +289,20 @@
      "deck": "4 Ancient Tomb\n4 Anointed Peacekeeper\n4 Archon of Emeria\n1 Black Lotus\n4 Cavern of Souls\n4 Chancellor of the Annex\n4 Chrome Mox\n4 Clarion Conqueror\n1 Karakas\n1 Mana Crypt\n1 Mox Emerald\n1 Mox Jet\n1 Mox Pearl\n1 Mox Ruby\n1 Mox Sapphire\n2 Plains\n4 Seasoned Dungeoneer\n1 Strip Mine\n1 Vexing Bauble\n4 Void Mirror\n4 Wasteland\n4 White Plume Adventurer\n4 Witch Enchanter\nSideboard\n1 Archon of Absolution\n4 Containment Priest\n4 Leyline of the Void\n2 Light of Day\n1 Null Rod\n3 Swords to Plowshares"
     },
     {
-     "name": "Oath",
-     "share": "6,2%",
-     "source": "Wesal, Vintage Challenge 32, 21 nov 2026, 4° (6-2)",
-     "deck": "1 Ancestral Recall\n2 Atraxa, Grand Unifier\n1 Black Lotus\n2 Boseiju, Who Endures\n1 Brainstorm\n1 Dig Through Time\n2 Forbidden Orchard\n2 Force of Negation\n4 Force of Will\n1 Gaea's Blessing\n1 Gitaxian Probe\n1 Hedge Maze\n2 Lórien Revealed\n1 Mental Misstep\n2 Misty Rainforest\n1 Mox Emerald\n1 Mox Ruby\n1 Mox Sapphire\n3 Null Rod\n4 Oath of Druids\n2 Oko, Thief of Crowns\n2 Pyroblast\n2 Scalding Tarn\n4 Stock Up\n1 Strip Mine\n1 Thundering Falls\n1 Time Walk\n1 Treasure Cruise\n2 Tropical Island\n1 Veil of Summer\n1 Vexing Bauble\n2 Volcanic Island\n4 Wasteland\n2 Wrenn and Six\nSideboard\n3 Abrade\n1 Ancient Grudge\n2 Consign to Memory\n1 Dack Fayden\n2 Mindbreak Trap\n1 Narset, Parter of Veils\n2 Pithing Needle\n1 Pyroblast\n2 Soul-Guide Lantern"
-    },
-    {
      "name": "Raker Shops",
-     "share": "6,1%",
+     "share": "6,2%",
      "source": "LucasG1ggs, Vintage Challenge 32, 19 nov 2026, 3° (6-2)",
      "deck": "4 Ancient Tomb\n1 Black Lotus\n1 Chalice of the Void\n4 Glaring Fleshraker\n4 Grim Monolith\n1 Inventors' Fair\n1 Karn, the Great Creator\n1 Mana Crypt\n1 Mana Vault\n3 Manifold Key\n4 Mishra's Workshop\n1 Mox Emerald\n1 Mox Jet\n2 Mox Opal\n1 Mox Pearl\n1 Mox Ruby\n1 Mox Sapphire\n1 Mystic Forge\n4 Scrawling Crawler\n4 Sensei's Divining Top\n1 Sol Ring\n4 Talon Gates of Madara\n4 Tezzeret, Cruel Captain\n1 The Fantasticar\n4 The One Ring\n1 Time Vault\n1 Tolarian Academy\n1 Trinisphere\n1 Urza's Saga\n1 Vexing Bauble\nSideboard\n2 Argentum Masticore\n3 Dismember\n2 Grafdigger's Cage\n3 Mindbreak Trap\n1 Pithing Needle\n2 Portable Hole\n1 Soul-Guide Lantern"
     },
     {
+     "name": "Oath",
+     "share": "6,0%",
+     "source": "Wesal, Vintage Challenge 32, 21 nov 2026, 4° (6-2)",
+     "deck": "1 Ancestral Recall\n2 Atraxa, Grand Unifier\n1 Black Lotus\n2 Boseiju, Who Endures\n1 Brainstorm\n1 Dig Through Time\n2 Forbidden Orchard\n2 Force of Negation\n4 Force of Will\n1 Gaea's Blessing\n1 Gitaxian Probe\n1 Hedge Maze\n2 Lórien Revealed\n1 Mental Misstep\n2 Misty Rainforest\n1 Mox Emerald\n1 Mox Ruby\n1 Mox Sapphire\n3 Null Rod\n4 Oath of Druids\n2 Oko, Thief of Crowns\n2 Pyroblast\n2 Scalding Tarn\n4 Stock Up\n1 Strip Mine\n1 Thundering Falls\n1 Time Walk\n1 Treasure Cruise\n2 Tropical Island\n1 Veil of Summer\n1 Vexing Bauble\n2 Volcanic Island\n4 Wasteland\n2 Wrenn and Six\nSideboard\n3 Abrade\n1 Ancient Grudge\n2 Consign to Memory\n1 Dack Fayden\n2 Mindbreak Trap\n1 Narset, Parter of Veils\n2 Pithing Needle\n1 Pyroblast\n2 Soul-Guide Lantern"
+    },
+    {
      "name": "Jewel Shops",
-     "share": "6,1%",
+     "share": "6,0%",
      "source": "_Arise, Vintage Challenge 32, 19 nov 2026, 1° (6-2)",
      "deck": "1 Ancestral Recall\n4 Ancient Tomb\n1 Black Lotus\n4 Coveted Jewel\n2 Force of Negation\n4 Force of Will\n2 Grim Monolith\n1 Karn, the Great Creator\n3 Lieutenant Commander Data\n1 Mana Crypt\n1 Mana Vault\n1 Manifold Key\n1 Mental Misstep\n1 Minamo, School at Water's Edge\n4 Mishra's Workshop\n1 Mox Emerald\n1 Mox Jet\n1 Mox Pearl\n1 Mox Ruby\n1 Mox Sapphire\n1 Otawara, Soaring City\n4 Paradoxical Outcome\n4 Phyrexian Metamorph\n4 Sink into Stupor\n1 Sol Ring\n4 The One Ring\n1 Time Vault\n1 Time Walk\n1 Tinker\n1 Tolarian Academy\n1 Urza's Saga\n1 Vexing Bauble\nSideboard\n4 Consign to Memory\n1 Disruptor Flute\n1 Grafdigger's Cage\n3 Into the Flood Maw\n1 Mystical Dispute\n1 Pithing Needle\n3 Skysovereign, Consul Flagship\n1 Void Mirror"
     },
@@ -314,7 +314,7 @@
     },
     {
      "name": "Scam",
-     "share": "4,5%",
+     "share": "4,7%",
      "source": "Unlif3, Vintage Challenge 32, 19 nov 2026, 9° (4-2)",
      "deck": "1 Bloodstained Mire\n1 Boggart Trawler\n4 Dark Ritual\n2 Dauthi Voidwalker\n3 Deafening Silence\n4 Grief\n4 Guide of Souls\n1 Karakas\n1 Marsh Flats\n1 Mox Jet\n1 Mox Pearl\n4 Ocelot Pride\n4 Orcish Bowmasters\n1 Polluted Delta\n4 Reanimate\n4 Scrubland\n1 Shadowy Backstreet\n4 Solitude\n1 Strip Mine\n1 Swamp\n4 Thoughtseize\n2 Troll of Khazad-dûm\n1 Verdant Catacombs\n1 Vexing Bauble\n4 Wasteland\n1 Witch Enchanter\nSideboard\n4 Barrowgoyf\n3 Mai, Scornful Striker\n4 Stony Silence\n4 Swords to Plowshares"
     }
@@ -325,37 +325,37 @@
    "archetypes": [
     {
      "name": "Jace, Multiverse Architect",
-     "note": "comandante · 6504 mazzi su EDHREC",
+     "note": "comandante · 6361 mazzi su EDHREC",
      "deck": "Commander\n1 Jace, Multiverse Architect"
     },
     {
      "name": "Y'shtola, Night's Blessed",
-     "note": "comandante · 5182 mazzi su EDHREC",
+     "note": "comandante · 5113 mazzi su EDHREC",
      "deck": "Commander\n1 Y'shtola, Night's Blessed"
     },
     {
      "name": "Giada, Font of Hope",
-     "note": "comandante · 4281 mazzi su EDHREC",
+     "note": "comandante · 4205 mazzi su EDHREC",
      "deck": "Commander\n1 Giada, Font of Hope"
     },
     {
      "name": "Hearthhull, the Worldseed",
-     "note": "comandante · 3785 mazzi su EDHREC",
+     "note": "comandante · 3780 mazzi su EDHREC",
      "deck": "Commander\n1 Hearthhull, the Worldseed"
     },
     {
      "name": "Vraska, Soul of Stone",
-     "note": "comandante · 3743 mazzi su EDHREC",
+     "note": "comandante · 3667 mazzi su EDHREC",
      "deck": "Commander\n1 Vraska, Soul of Stone"
     },
     {
      "name": "Teval, the Balanced Scale",
-     "note": "comandante · 3554 mazzi su EDHREC",
+     "note": "comandante · 3551 mazzi su EDHREC",
      "deck": "Commander\n1 Teval, the Balanced Scale"
     },
     {
      "name": "Edgar Markov",
-     "note": "comandante · 3392 mazzi su EDHREC",
+     "note": "comandante · 3350 mazzi su EDHREC",
      "deck": "Commander\n1 Edgar Markov"
     },
     {
